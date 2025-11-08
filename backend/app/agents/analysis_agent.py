@@ -9,6 +9,7 @@ from typing import Any
 from pathlib import Path
 
 from app.agents.base_agent import BaseAgent
+from app.agents.prompts import AgentPrompts
 from app.tools.qwen_api_wrapper import QwenAPIWrapper
 from app.core.logging_config import get_logger
 
@@ -68,9 +69,18 @@ class AnalysisAgent(BaseAgent):
             descriptions = await self._analyze_images(uploaded_images)
             
             # Step 2: Generate search strategy based on descriptions
+            # 使用专业化的 System Prompt
+            system_prompt = AgentPrompts.get_system_prompt("analysis")
+            user_prompt = AgentPrompts.build_analysis_prompt(
+                image_descriptions=descriptions,
+                num_queries=5
+            )
+            
             search_strategy = await self.qwen_api.generate_search_strategy(
                 descriptions=descriptions,
-                num_queries=5
+                num_queries=5,
+                system_prompt=system_prompt,
+                user_prompt=user_prompt
             )
             
             logger.info(

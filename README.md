@@ -277,14 +277,6 @@ httpx = "^0.27.2"
 
 本项目是**毕业设计项目**，实现了以下学术概念：
 
-### IDEATE 框架
-
-**I**terative **D**ata **E**ngine via **A**gentic **T**ask **E**xecution
-
-- 📝 **论文**: (待发表)
-- 🎯 **目标**: 通过多智能体协作实现数据驱动的模型迭代
-- 💡 **创新**: 残差架构 + MCP工具 + 高级Prompt
-
 ### 核心贡献
 
 1. **残差连接的多智能体编排架构** (新)
@@ -295,58 +287,18 @@ httpx = "^0.27.2"
 
 ---
 
-## 🔮 路线图
-
-### v0.2.0 (当前)
-- ✅ 残差连接编排架构
-- ✅ MCP工具集成
-- ✅ 高级System Prompt
-- ✅ 数据库设计文档
-
-### v0.3.0 (计划中)
-- ⏳ 前端开发 (Vue3)
-- ⏳ 用户认证系统
-- ⏳ 实时训练监控
-- ⏳ 模型版本管理
-
-### v1.0.0 (未来)
-- 🔜 分布式训练支持
-- 🔜 多模态数据支持
-- 🔜 AutoML集成
-- 🔜 云部署方案
-
----
-
 ## 📝 开发日志
 
-### 2024-01-15
+### 2025-11-06
 - ✨ 实现残差连接编排架构
 - ✨ 集成MCP工具系统
 - ✨ 优化Agent System Prompt
 - 📚 完善数据库设计文档
 
-### 2024-01-14
+### 2024-11-05
 - 🎉 项目初始化
 - 🏗️ 基础架构搭建
 - 🧪 Playwright爬虫测试成功
-
----
-
-## 🤝 贡献指南
-
-欢迎贡献！请遵循以下步骤：
-
-1. Fork 本仓库
-2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
-
----
-
-## 📄 License
-
-本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
 
 ---
 
@@ -354,8 +306,7 @@ httpx = "^0.27.2"
 
 **Ryder Sun**
 
-- 🎓 毕业设计项目
-- 📧 Email: (联系方式)
+- 📧 Email: mhumble010221@gmail.com
 - 🔗 GitHub: [@Ryder-MHumble](https://github.com/Ryder-MHumble)
 
 ---
@@ -368,7 +319,7 @@ httpx = "^0.27.2"
 - Playwright 项目
 - 所有开源贡献者
 
----
+<!-- ---
 
 ## ⭐ Star History
 
@@ -376,7 +327,7 @@ httpx = "^0.27.2"
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Ryder-MHumble/EvoLabeler-AIAgent-MLOps&type=Date)](https://star-history.com/#Ryder-MHumble/EvoLabeler-AIAgent-MLOps&Date)
 
----
+--- -->
 
 <div align="center">
 

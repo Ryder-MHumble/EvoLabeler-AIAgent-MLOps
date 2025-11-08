@@ -95,7 +95,9 @@ class QwenAPIWrapper:
     async def generate_search_strategy(
         self, 
         descriptions: list[str],
-        num_queries: int = 5
+        num_queries: int = 5,
+        system_prompt: Optional[str] = None,
+        user_prompt: Optional[str] = None
     ) -> dict[str, Any]:
         """
         Generate search strategy based on image descriptions.
@@ -106,16 +108,20 @@ class QwenAPIWrapper:
         Args:
             descriptions: List of image descriptions
             num_queries: Number of search queries to generate
+            system_prompt: Custom system prompt (uses default if not provided)
+            user_prompt: Custom user prompt (uses default if not provided)
             
         Returns:
             Dictionary containing search queries and strategy
         """
         try:
-            combined_descriptions = "\n\n".join(
-                [f"图像 {i+1}: {desc}" for i, desc in enumerate(descriptions)]
-            )
+            # 使用自定义 Prompt 或默认 Prompt
+            if user_prompt is None:
+                combined_descriptions = "\n\n".join(
+                    [f"图像 {i+1}: {desc}" for i, desc in enumerate(descriptions)]
+                )
 
-            prompt = f"""
+                user_prompt = f"""
 作为一个遥感影像分析专家，请根据以下图像描述，生成用于网络搜索的关键词策略。
 
 图像描述：
@@ -136,12 +142,15 @@ class QwenAPIWrapper:
     "key_features": ["特征1", "特征2", ...]
 }}
 """
+            
+            if system_prompt is None:
+                system_prompt = "你是一个专业的遥感影像分析专家。"
 
             payload = {
                 "model": self.text_model,
                 "messages": [
-                    {"role": "system", "content": "你是一个专业的遥感影像分析专家。"},
-                    {"role": "user", "content": prompt},
+                    {"role": "system", "content": system_prompt},
+                    {"role": "user", "content": user_prompt},
                 ],
                 "max_tokens": 2000,
                 "temperature": 0.8,

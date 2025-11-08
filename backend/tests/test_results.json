@@ -1,0 +1,192 @@
+{
+  "timestamp": "2025-11-08T14:04:35.689189",
+  "summary": {
+    "total": 30,
+    "passed": 30,
+    "failed": 0,
+    "skipped": 0,
+    "success_rate": 100.0
+  },
+  "tests": [
+    {
+      "name": "环境文件存在",
+      "passed": true,
+      "message": "路径: /Users/sunminghao/Desktop/EvoLabeler/backend/.env",
+      "skipped": false
+    },
+    {
+      "name": "Supabase 配置",
+      "passed": true,
+      "message": "URL: https://jzkejgtalihqvomdwjrs.supabase.co...",
+      "skipped": false
+    },
+    {
+      "name": "Qwen API 配置",
+      "passed": true,
+      "message": "Key: sk-dnmawkcyhvdoufdwt...",
+      "skipped": false
+    },
+    {
+      "name": "FastAPI 安装",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "Supabase 安装",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "Playwright 安装",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "Pydantic 安装",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "HTTPX 安装",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "Supabase 客户端初始化",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "jobs 表存在",
+      "passed": true,
+      "message": "表可访问",
+      "skipped": false
+    },
+    {
+      "name": "inference_results 表存在",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "Qwen API 初始化",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "Qwen API 配置",
+      "passed": true,
+      "message": "Model: Qwen/Qwen2.5-72B-Instruct, VL Model: Qwen/Qwen2-VL-7B-Instruct",
+      "skipped": false
+    },
+    {
+      "name": "Playwright 导入",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "Chromium 浏览器启动",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "网页访问测试",
+      "passed": true,
+      "message": "成功访问百度",
+      "skipped": false
+    },
+    {
+      "name": "MCP 集成初始化",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "MCP 工具列表",
+      "passed": true,
+      "message": "找到 6 个工具",
+      "skipped": false
+    },
+    {
+      "name": "MCP 工具调用",
+      "passed": true,
+      "message": "Context7 工具测试成功",
+      "skipped": false
+    },
+    {
+      "name": "InferenceAgent 初始化",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "AnalysisAgent 初始化",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "AnalysisAgent System Prompt",
+      "passed": true,
+      "message": "Prompt 长度: 466 字符",
+      "skipped": false
+    },
+    {
+      "name": "AcquisitionAgent 初始化",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "TrainingAgent 初始化",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "基础编排器初始化",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "高级编排器初始化",
+      "passed": true,
+      "message": "支持残差连接和并行执行",
+      "skipped": false
+    },
+    {
+      "name": "图片爬取和下载",
+      "passed": true,
+      "message": "成功下载 8.7 KB",
+      "skipped": false
+    },
+    {
+      "name": "FastAPI 应用导入",
+      "passed": true,
+      "message": "",
+      "skipped": false
+    },
+    {
+      "name": "健康检查端点",
+      "passed": true,
+      "message": "路由: /health",
+      "skipped": false
+    },
+    {
+      "name": "任务创建端点",
+      "passed": true,
+      "message": "路由: /api/v1/jobs/",
+      "skipped": false
+    }
+  ]
+}

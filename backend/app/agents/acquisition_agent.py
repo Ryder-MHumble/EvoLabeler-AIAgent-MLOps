@@ -1,4 +1,4 @@
-  """
+"""
 Acquisition Agent for web-based data collection.
 
 This agent is responsible for acquiring new training data from
