@@ -1,5 +1,5 @@
 {
-  "timestamp": "2025-11-08T14:04:35.689189",
+  "timestamp": "2025-11-08T14:11:14.807244",
   "summary": {
     "total": 30,
     "passed": 30,
@@ -167,7 +167,7 @@
     {
       "name": "图片爬取和下载",
       "passed": true,
-      "message": "成功下载 8.7 KB",
+      "message": "成功下载 11.8 KB",
       "skipped": false
     },
     {

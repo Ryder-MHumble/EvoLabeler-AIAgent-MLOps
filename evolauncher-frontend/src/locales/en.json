@@ -1,0 +1,165 @@
+{
+  "app": {
+    "name": "EvoLabeler",
+    "tagline": "Intelligent Data Labeling with Active Learning"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "workspace": "Workspace",
+    "settings": "Settings"
+  },
+  "header": {
+    "search": "Search projects...",
+    "notifications": "Notifications",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "Projects",
+    "subtitle": "Manage labeling projects",
+    "createProject": "New Project",
+    "noProjects": "No projects yet",
+    "noProjectsDesc": "Create your first project to start",
+    "projectCount": "{count} projects",
+    "projectCreated": "Project '{name}' created",
+    "multiAgentTelemetry": "Multi-Agent Telemetry",
+    "liveSnapshots": "Live system snapshots",
+    "newProjectDialog": {
+      "title": "Create New Project",
+      "projectName": "Project Name",
+      "projectNamePlaceholder": "e.g., Urban Object Detection",
+      "projectNameRequired": "Project name is required",
+      "description": "Description",
+      "descriptionPlaceholder": "Describe your project objectives...",
+      "dataSource": "Data Source",
+      "selectDataSource": "Select source",
+      "localFiles": "Local Files",
+      "remoteUrl": "Remote URL",
+      "uploadData": "Upload Training Data",
+      "uploadDescription": "Drag files here or click to browse",
+      "modelSelection": "Detection Model",
+      "selectModel": "Choose base model",
+      "yolov8n": "YOLOv8-Nano (Fast)",
+      "yolov8s": "YOLOv8-Small (Balanced)",
+      "yolov8m": "YOLOv8-Medium (Accurate)",
+      "yolov8l": "YOLOv8-Large (High Precision)",
+      "customWeights": "Custom Weights (Optional)",
+      "uploadWeights": "Upload .pt file",
+      "advancedSettings": "Advanced Settings",
+      "batchSize": "Batch Size",
+      "learningRate": "Learning Rate",
+      "maxIterations": "Max Iterations",
+      "cancel": "Cancel",
+      "create": "Create Project",
+      "creating": "Creating..."
+    },
+    "stats": {
+      "totalProjects": "Projects",
+      "activeJobs": "Active Jobs",
+      "totalImages": "Images",
+      "avgAccuracy": "Avg Accuracy"
+    }
+  },
+  "project": {
+    "status": {
+      "idle": "Idle",
+      "training": "Training",
+      "labeling": "Labeling",
+      "completed": "Done",
+      "running": "Running",
+      "error": "Error"
+    },
+    "images": "{count} images",
+    "accuracy": "Accuracy: {value}%",
+    "viewDetails": "Details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "createdAt": "Created {date}",
+    "updatedAt": "Updated {date}"
+  },
+  "workspace": {
+    "title": "Workspace",
+    "subtitle": "Monitor your labeling workflow",
+    "evolutionMonitor": "Task Monitor",
+    "currentJob": "Current Job",
+    "noActiveJob": "No active job",
+    "startJob": "Start Job",
+    "pauseJob": "Pause",
+    "resumeJob": "Resume",
+    "stopJob": "Stop",
+    "jobDetails": "Job Details",
+    "progress": "Progress",
+    "estimatedTime": "Est. Done",
+    "logs": "Logs",
+    "metrics": "Metrics",
+    "status": "Status",
+    "agentTelemetry": "Agent Telemetry",
+    "residualConnections": "Residual connections monitoring",
+    "mcpToolRegistry": "MCP Tool Registry",
+    "toolCount": "{count} tools",
+    "latency": "Latency",
+    "completedViaResidual": "Completed",
+    "pendingExecution": "Pending"
+  },
+  "steps": {
+    "initialization": "Init",
+    "dataPreparation": "Data Prep",
+    "modelTraining": "Training",
+    "activeLearning": "Active Learn",
+    "inference": "Inference",
+    "completed": "Done"
+  },
+  "agent": {
+    "lastTask": "Last Task",
+    "nextAction": "Next Action",
+    "processed": "Processed",
+    "metrics": {
+      "confidence": "Confidence",
+      "throughput": "Throughput",
+      "success": "Success Rate"
+    }
+  },
+  "mcp": {
+    "tool": "Tool",
+    "usage": "Usage",
+    "status": "Status"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "auto": "Auto",
+    "toggle": "Theme"
+  },
+  "language": {
+    "en": "English",
+    "zh": "中文"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "delete": "Delete",
+    "edit": "Edit",
+    "close": "Close",
+    "back": "Back",
+    "minimize": "Minimize",
+    "maximize": "Maximize",
+    "language": "Language",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Info",
+    "active": "active",
+    "accuracy": "Accuracy",
+    "loss": "Loss",
+    "samples": "Samples",
+    "started": "Started"
+  },
+  "errors": {
+    "loadFailed": "Load failed",
+    "saveFailed": "Save failed",
+    "networkError": "Network error",
+    "unknownError": "Unknown error"
+  }
+}
+

@@ -1,0 +1,232 @@
+{
+  "app": {
+    "name": "EvoLabeler",
+    "tagline": "智能数据标注与主动学习"
+  },
+  "nav": {
+    "dashboard": "仪表盘",
+    "workspace": "工作区",
+    "settings": "设置"
+  },
+  "header": {
+    "search": "搜索项目...",
+    "notifications": "通知",
+    "profile": "个人资料"
+  },
+  "dashboard": {
+    "title": "项目仪表盘",
+    "subtitle": "管理您的标注项目",
+    "createProject": "新建项目",
+    "createFirstProject": "创建您的第一个进化项目",
+    "noProjects": "暂无项目",
+    "noProjectsDesc": "创建您的第一个项目开始使用",
+    "projectCount": "{count} 个项目",
+    "multiAgentTelemetry": "Multi-Agent 遥测",
+    "liveSnapshots": "来自 IDEATE 编排的实时快照",
+    "stats": {
+      "totalProjects": "总项目数",
+      "activeLoops": "活动循环",
+      "activeJobs": "活动任务",
+      "totalImages": "已标注图像",
+      "avgAccuracy": "平均准确率",
+      "uncertaintyDrop": "不确定性下降",
+      "autoLabeledSamples": "自动标注样本",
+      "deploymentLatency": "部署延迟"
+    },
+    "newProjectDialog": {
+      "title": "创建新项目",
+      "projectName": "项目名称",
+      "projectNamePlaceholder": "例如：海上风力发电场监测",
+      "projectNameRequired": "请输入项目名称",
+      "description": "项目描述（可选）",
+      "descriptionPlaceholder": "描述项目的目标和数据类型...",
+      "cancel": "取消",
+      "create": "启动",
+      "creating": "正在创建..."
+    },
+    "projectCreated": "项目 \"{name}\" 创建成功"
+  },
+  "project": {
+    "status": {
+      "idle": "空闲",
+      "training": "训练中",
+      "labeling": "标注中",
+      "completed": "已完成",
+      "running": "运行中",
+      "paused": "已暂停",
+      "failed": "失败"
+    },
+    "images": "{count} 张图片",
+    "accuracy": "准确率: {value}%",
+    "viewDetails": "查看详情",
+    "edit": "编辑",
+    "delete": "删除",
+    "createdAt": "创建于 {date}",
+    "updatedAt": "更新于 {date}",
+    "openWorkspace": "打开工作区"
+  },
+  "workspace": {
+    "title": "工作区",
+    "subtitle": "监控和控制您的标注工作流",
+    "evolutionMonitor": "进化任务监视器",
+    "currentJob": "当前任务",
+    "noActiveJob": "无活动任务",
+    "startJob": "开始新任务",
+    "pauseJob": "暂停",
+    "resumeJob": "继续",
+    "stopJob": "停止",
+    "jobDetails": "任务详情",
+    "progress": "进度",
+    "estimatedTime": "预计完成时间",
+    "logs": "日志",
+    "metrics": "指标",
+    "agentTelemetry": "Agent 遥测",
+    "mcpToolRegistry": "MCP 工具注册表",
+    "residualConnections": "残差连接",
+    "activeCount": "{count} 个活跃",
+    "toolCount": "{count} 个工具",
+    "completedViaResidual": "通过残差分支完成",
+    "pendingExecution": "等待执行",
+    "status": "状态",
+    "duration": "持续时间",
+    "imagesProcessed": "已处理图片",
+    "currentAccuracy": "当前准确率",
+    "uncertaintyScore": "不确定性分数",
+    "lastUpdated": "最后更新",
+    "noJobRunning": "当前没有运行中的任务",
+    "startFirstJob": "点击上方按钮开始第一个任务",
+    "latency": "延迟",
+    "model": "模型",
+    "dataset": "数据集",
+    "iteration": "迭代",
+    "epoch": "轮次",
+    "learningRate": "学习率",
+    "batchSize": "批次大小"
+  },
+  "agent": {
+    "inference": "推理 Agent",
+    "analysis": "分析 Agent",
+    "acquisition": "获取 Agent",
+    "training": "训练 Agent",
+    "confidence": "置信度",
+    "throughput": "吞吐量",
+    "processed": "已处理",
+    "success": "成功率",
+    "lastTask": "上次任务",
+    "nextAction": "下一步操作",
+    "inferenceAgent": {
+      "name": "推理代理",
+      "description": "运行基础检测器并生成主动学习的不确定性估计"
+    },
+    "analysisAgent": {
+      "name": "分析代理",
+      "description": "结合 LLM + VLM 推理来规划下一个获取周期"
+    },
+    "acquisitionAgent": {
+      "name": "获取代理",
+      "description": "收集新样本，应用自动标注和质量过滤"
+    },
+    "trainingAgent": {
+      "name": "训练代理",
+      "description": "策展数据集，调整配置并监督训练循环"
+    },
+    "metrics": {
+      "confidence": "置信度",
+      "throughput": "吞吐量",
+      "success": "成功率",
+      "lastActivity": "最近活动",
+      "nextAction": "下一步操作"
+    }
+  },
+  "mcp": {
+    "tool": "工具",
+    "latency": "延迟",
+    "usage": "使用率",
+    "status": "状态",
+    "online": "在线",
+    "degraded": "降级",
+    "offline": "离线",
+    "sceneClassifier": "场景分类器",
+    "keywordOptimizer": "关键词优化器",
+    "qualityGuardian": "质量守护者",
+    "uncertaintyOracle": "不确定性预言机",
+    "pseudoLabelCurator": "伪标注策展人"
+  },
+  "steps": {
+    "initialization": "初始化",
+    "dataPreparation": "数据准备",
+    "modelTraining": "模型训练",
+    "activeLearning": "主动学习",
+    "inference": "推理",
+    "completed": "已完成"
+  },
+  "theme": {
+    "light": "浅色模式",
+    "dark": "深色模式",
+    "auto": "自动",
+    "toggle": "切换主题"
+  },
+  "language": {
+    "en": "English",
+    "zh": "中文"
+  },
+  "common": {
+    "save": "保存",
+    "cancel": "取消",
+    "confirm": "确认",
+    "delete": "删除",
+    "edit": "编辑",
+    "close": "关闭",
+    "back": "返回",
+    "minimize": "最小化",
+    "maximize": "最大化",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "warning": "警告",
+    "info": "信息",
+    "language": "语言",
+    "refresh": "刷新",
+    "download": "下载",
+    "upload": "上传",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "viewAll": "查看全部",
+    "started": "开始时间",
+    "accuracy": "准确率",
+    "loss": "损失",
+    "samples": "样本",
+    "active": "活跃"
+  },
+  "errors": {
+    "loadFailed": "加载数据失败",
+    "saveFailed": "保存失败",
+    "networkError": "网络错误",
+    "unknownError": "发生未知错误",
+    "fileUploadFailed": "文件上传失败",
+    "invalidFormat": "格式无效"
+  },
+  "upload": {
+    "title": "上传种子数据",
+    "description": "拖入包含种子图片的 ZIP 文件，启动进化引擎",
+    "dragHere": "将文件拖到此处",
+    "orClick": "或点击选择文件",
+    "parsing": "正在解析种子...",
+    "success": "种子已播下！",
+    "starting": "进化引擎启动中...",
+    "noFile": "未选择文件",
+    "singleFileOnly": "仅支持单个文件上传",
+    "invalidType": "仅支持 ZIP 格式文件",
+    "fileTooLarge": "文件大小超过限制（最大 500MB）"
+  },
+  "evolution": {
+    "title": "进化进度",
+    "analyzing": "AI 正在理解图片内容...",
+    "searching": "正在网络上搜索新数据...",
+    "discovered": "已发现 {count} 张新图片",
+    "training": "正在使用新数据进行模型微调...",
+    "completed": "进化完成！",
+    "performanceImproved": "模型性能预估提升 {percent}%"
+  }
+}

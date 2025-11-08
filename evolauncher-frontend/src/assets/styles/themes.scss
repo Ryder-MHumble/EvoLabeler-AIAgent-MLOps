@@ -1,0 +1,147 @@
+// ============================================
+// Theme System using CSS Custom Properties
+// Enables instant theme switching with smooth transitions
+// ============================================
+
+:root {
+  // Light Theme Colors (default) - 优化配色方案
+  --color-bg: #F8FAFC;              // 更柔和的背景
+  --color-surface: #FFFFFF;
+  --color-surface-elevated: #FFFFFF;
+  --color-primary: #3B82F6;         // 更专业的蓝色
+  --color-primary-hover: #2563EB;
+  --color-primary-light: #60A5FA;
+  --color-secondary: #8B5CF6;       // 更现代的紫色
+  --color-success: #10B981;
+  --color-warning: #F59E0B;
+  --color-danger: #EF4444;
+  --color-info: #06B6D4;
+
+  // Text colors - 增强对比度
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #94A3B8;
+  --color-text-inverse: #FFFFFF;
+
+  // Border colors
+  --color-border: #E2E8F0;
+  --color-border-light: #F1F5F9;
+  --color-border-dark: #CBD5E1;
+
+  // Shadow and overlay
+  --shadow-color: rgba(15, 23, 42, 0.08);
+  --overlay-color: rgba(15, 23, 42, 0.5);
+
+  // Glassmorphism
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(226, 232, 240, 0.5);
+  
+  // ⭐ 主题切换动画
+  transition: 
+    background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// ⭐ 为所有使用CSS变量的元素添加平滑过渡
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 0.3s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Dark Theme - 优化暗色配色
+// Using .dark class on html element for instant switching
+.dark {
+  --color-bg: #0F172A;              // 更深邃的背景
+  --color-surface: #1E293B;
+  --color-surface-elevated: #334155;
+  --color-primary: #60A5FA;         // 更亮的主色调
+  --color-primary-hover: #3B82F6;
+  --color-primary-light: #93C5FD;
+  --color-secondary: #A78BFA;       // 紫色调整
+  --color-success: #34D399;
+  --color-warning: #FBBF24;
+  --color-danger: #F87171;
+  --color-info: #22D3EE;
+  
+  // Text colors - 优化可读性
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #CBD5E1;
+  --color-text-tertiary: #64748B;
+  --color-text-inverse: #0F172A;
+  
+  // Border colors
+  --color-border: #334155;
+  --color-border-light: #1E293B;
+  --color-border-dark: #475569;
+  
+  // Shadow and overlay
+  --shadow-color: rgba(0, 0, 0, 0.4);
+  --overlay-color: rgba(0, 0, 0, 0.75);
+  
+  // Glassmorphism for dark theme
+  --glass-bg: rgba(30, 41, 59, 0.75);
+  --glass-border: rgba(51, 65, 85, 0.5);
+}
+
+// ============================================
+// Theme-aware utility classes
+// ============================================
+
+// Background colors
+.bg-primary {
+  background-color: var(--color-bg);
+}
+
+.bg-surface {
+  background-color: var(--color-surface);
+}
+
+.bg-elevated {
+  background-color: var(--color-surface-elevated);
+}
+
+// Text colors
+.text-primary {
+  color: var(--color-text-primary);
+}
+
+.text-secondary {
+  color: var(--color-text-secondary);
+}
+
+.text-tertiary {
+  color: var(--color-text-tertiary);
+}
+
+// Borders
+.border-default {
+  border-color: var(--color-border);
+}
+
+// Glassmorphism effect
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--glass-border);
+}
+
+// ============================================
+// Smooth theme transition
+// All color properties transition smoothly when theme changes
+// ============================================
+
+* {
+  transition: 
+    background-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    border-color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    color 200ms cubic-bezier(0.4, 0, 0.2, 1),
+    fill 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+// Disable transitions during page load to prevent flash
+.preload * {
+  transition: none !important;
+}
+
