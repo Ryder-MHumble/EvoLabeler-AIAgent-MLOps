@@ -13,7 +13,7 @@ const registry: McpToolStatus[] = [
   {
     id: 'scene-annotator',
     name: 'scene_classifier',
-    description: 'Analyzes geospatial context to prioritize acquisition regions.',
+    description: '分析地理空间上下文以优先选择采集区域',
     latency: 180,
     usage: 68,
     status: 'online'
@@ -21,7 +21,7 @@ const registry: McpToolStatus[] = [
   {
     id: 'keyword-optimizer',
     name: 'keyword_optimizer',
-    description: 'Synthesizes search prompts for the acquisition agent.',
+    description: '为采集智能体合成搜索提示词',
     latency: 220,
     usage: 54,
     status: 'online'
@@ -29,7 +29,7 @@ const registry: McpToolStatus[] = [
   {
     id: 'quality-guardian',
     name: 'quality_guardian',
-    description: 'Ensures pseudo labels meet confidence thresholds.',
+    description: '确保伪标签满足置信度阈值要求',
     latency: 260,
     usage: 47,
     status: 'degraded'
@@ -37,7 +37,7 @@ const registry: McpToolStatus[] = [
   {
     id: 'uncertainty-oracle',
     name: 'uncertainty_oracle',
-    description: 'Quantifies epistemic uncertainty for active learning.',
+    description: '量化主动学习的认知不确定性',
     latency: 150,
     usage: 73,
     status: 'online'

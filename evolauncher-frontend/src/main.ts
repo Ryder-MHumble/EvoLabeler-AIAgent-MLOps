@@ -9,8 +9,7 @@ import router from './router'
 // Import global styles
 import '@/assets/styles/base.scss'
 
-// Import locale messages
-import en from '@/locales/en.json'
+// Import locale messages - 固定使用中文
 import zhCN from '@/locales/zh-CN.json'
 
 /**
@@ -34,14 +33,12 @@ app.use(pinia)
 // Setup Vue Router
 app.use(router)
 
-// Setup i18n for internationalization
-const savedLocale = localStorage.getItem('evolabeler-locale') || 'en'
+// Setup i18n for internationalization - 固定使用中文
 const i18n = createI18n({
   legacy: false,
-  locale: savedLocale,
-  fallbackLocale: 'en',
+  locale: 'zh-CN',
+  fallbackLocale: 'zh-CN',
   messages: {
-    en,
     'zh-CN': zhCN
   }
 })

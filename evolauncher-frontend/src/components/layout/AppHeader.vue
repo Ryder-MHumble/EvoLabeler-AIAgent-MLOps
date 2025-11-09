@@ -79,15 +79,6 @@ const closeWindow = () => {
   }
 }
 
-const changeLanguage = (lang: string) => {
-  try {
-    locale.value = lang
-    appStore.setLocale(lang)
-  } catch (error) {
-    console.error('Failed to change language:', error)
-  }
-}
-
 const goBack = () => {
   try {
     router.push('/dashboard')
@@ -196,25 +187,6 @@ onBeforeUnmount(() => {
       
       <!-- Right Section: Controls -->
       <div class="header-right non-draggable">
-        <!-- Language Selector -->
-        <el-dropdown @command="changeLanguage" trigger="click">
-          <button class="header-button" :aria-label="t('common.language')" :title="t('common.language')">
-            <Icon icon="ph:translate" :width="20" />
-          </button>
-          <template #dropdown>
-            <el-dropdown-menu>
-              <el-dropdown-item command="en">
-                <Icon icon="circle-flags:us" :width="16" class="mr-2" />
-                English
-              </el-dropdown-item>
-              <el-dropdown-item command="zh-CN">
-                <Icon icon="circle-flags:cn" :width="16" class="mr-2" />
-                中文
-              </el-dropdown-item>
-            </el-dropdown-menu>
-          </template>
-        </el-dropdown>
-        
         <!-- Theme Toggle -->
         <ThemeToggle />
       </div>

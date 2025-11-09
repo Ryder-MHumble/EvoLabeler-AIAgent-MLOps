@@ -22,6 +22,7 @@
 
 import { ref, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { useRouter, useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
 import gsap from 'gsap'
 import AnimatedCard from '@/components/common/AnimatedCard.vue'
@@ -42,6 +43,32 @@ const isLoadingAgents = ref(true)
 const isLoadingMcp = ref(true)
 const stepsContainer = ref<HTMLElement | null>(null)
 const stepHighlight = ref<HTMLElement | null>(null)
+
+// 当前项目信息（从路由获取）
+const router = useRouter()
+const route = useRoute()
+const currentProject = ref({
+  id: route.params.id || '2',
+  name: '医学影像数据集',
+  status: 'training' as const
+})
+
+// Loss数据 - 模拟训练损失曲线
+const lossData = ref({
+  epochs: Array.from({ length: 50 }, (_, i) => i + 1),
+  trainLoss: Array.from({ length: 50 }, (_, i) => {
+    const base = 2.5
+    const decay = Math.exp(-i / 15)
+    const noise = (Math.random() - 0.5) * 0.1
+    return Math.max(0.1, base * decay + noise)
+  }),
+  valLoss: Array.from({ length: 50 }, (_, i) => {
+    const base = 2.8
+    const decay = Math.exp(-i / 18)
+    const noise = (Math.random() - 0.5) * 0.15
+    return Math.max(0.15, base * decay + noise)
+  })
+})
 
 // Step configuration
 const steps = ref<Array<{ key: JobStep; label: string; icon: string }>>([
@@ -238,8 +265,12 @@ const animateMcpList = () => {
   <div class="workspace-view">
     <!-- Header -->
     <div class="workspace-header">
-      <div>
-        <h1 class="workspace-title">{{ $t('workspace.title') }}</h1>
+      <div class="header-main">
+        <div class="project-badge">
+          <Icon icon="ph:folder-open-fill" :width="20" />
+          <span>当前项目</span>
+        </div>
+        <h1 class="workspace-title">{{ currentProject.name }}</h1>
         <p class="workspace-subtitle">{{ $t('workspace.subtitle') }}</p>
       </div>
       
@@ -314,8 +345,100 @@ const animateMcpList = () => {
         </div>
       </AnimatedCard>
       
-      <!-- Middle Column: Job Details & Metrics -->
+      <!-- Middle Column: Loss Chart & Metrics -->
       <div class="middle-column">
+        <!-- Loss Chart Card -->
+        <AnimatedCard class="loss-chart-card" :hoverable="false">
+          <h2 class="card-title">
+            <Icon icon="ph:chart-line" :width="24" class="mr-2" />
+            训练损失曲线
+          </h2>
+          
+          <div class="chart-container">
+            <svg viewBox="0 0 600 240" class="loss-chart-svg">
+              <!-- 背景网格 -->
+              <defs>
+                <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" style="stop-color:#4A69FF;stop-opacity:0.3" />
+                  <stop offset="100%" style="stop-color:#4A69FF;stop-opacity:0.05" />
+                </linearGradient>
+              </defs>
+              
+              <!-- 网格线 -->
+              <g class="grid-lines">
+                <line v-for="i in 5" :key="`h${i}`" 
+                  x1="50" :y1="30 + (i - 1) * 40" 
+                  x2="560" :y2="30 + (i - 1) * 40" 
+                  stroke="var(--color-border)" 
+                  stroke-width="1" 
+                  opacity="0.3" />
+                <line v-for="i in 10" :key="`v${i}`" 
+                  :x1="50 + (i - 1) * 57" y1="30" 
+                  :x2="50 + (i - 1) * 57" y2="190" 
+                  stroke="var(--color-border)" 
+                  stroke-width="1" 
+                  opacity="0.3" />
+              </g>
+              
+              <!-- 训练损失曲线区域填充 -->
+              <path
+                :d="`M 50,190 ${lossData.epochs.map((e, i) => 
+                  `L ${50 + (i / 49) * 510},${190 - (lossData.trainLoss[i] / 2.5) * 160}`
+                ).join(' ')} L 560,190 Z`"
+                fill="url(#chartGradient)"
+              />
+              
+              <!-- 训练损失曲线 -->
+              <polyline
+                :points="lossData.epochs.map((e, i) => 
+                  `${50 + (i / 49) * 510},${190 - (lossData.trainLoss[i] / 2.5) * 160}`
+                ).join(' ')"
+                fill="none"
+                stroke="#4A69FF"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              
+              <!-- 验证损失曲线 -->
+              <polyline
+                :points="lossData.epochs.map((e, i) => 
+                  `${50 + (i / 49) * 510},${190 - (lossData.valLoss[i] / 2.5) * 160}`
+                ).join(' ')"
+                fill="none"
+                stroke="#10B981"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-dasharray="6,3"
+              />
+              
+              <!-- 坐标轴 -->
+              <line x1="50" y1="190" x2="560" y2="190" stroke="var(--color-text-secondary)" stroke-width="1.5" />
+              <line x1="50" y1="30" x2="50" y2="190" stroke="var(--color-text-secondary)" stroke-width="1.5" />
+              
+              <!-- 轴标签 -->
+              <text x="305" y="215" text-anchor="middle" fill="var(--color-text-secondary)" font-size="12">训练轮次 (Epochs)</text>
+              <text x="20" y="110" text-anchor="middle" fill="var(--color-text-secondary)" font-size="12" transform="rotate(-90, 20, 110)">Loss</text>
+            </svg>
+            
+            <!-- 图例 -->
+            <div class="chart-legend">
+              <div class="legend-item">
+                <div class="legend-line train"></div>
+                <span class="legend-label">训练损失</span>
+                <span class="legend-value">{{ lossData.trainLoss[lossData.trainLoss.length - 1].toFixed(3) }}</span>
+              </div>
+              <div class="legend-item">
+                <div class="legend-line val"></div>
+                <span class="legend-label">验证损失</span>
+                <span class="legend-value">{{ lossData.valLoss[lossData.valLoss.length - 1].toFixed(3) }}</span>
+              </div>
+            </div>
+          </div>
+        </AnimatedCard>
+        
+        <!-- Job Details Card -->
         <AnimatedCard class="details-card" :hoverable="false">
           <h2 class="card-title">
             <Icon icon="ph:info" :width="24" class="mr-2" />
@@ -531,8 +654,10 @@ const animateMcpList = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   padding: $spacing-2xl;
+  overflow-y: auto;
+  overflow-x: hidden;
+  @include custom-scrollbar;
   
   // 响应式设计
   @media (max-width: 1024px) {
@@ -561,16 +686,34 @@ const animateMcpList = () => {
   }
 }
 
+.header-main {
+  flex: 1;
+}
+
+.project-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  padding: $spacing-xs $spacing-md;
+  background: rgba(74, 105, 255, 0.1);
+  border-radius: $radius-full;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: var(--color-primary);
+  margin-bottom: $spacing-sm;
+}
+
 .workspace-title {
   font-size: $font-size-4xl;
   font-weight: $font-weight-bold;
   color: var(--color-text-primary);
-  margin-bottom: $spacing-xs;
+  margin: 0 0 $spacing-xs 0;
 }
 
 .workspace-subtitle {
-  font-size: $font-size-lg;
+  font-size: $font-size-base;
   color: var(--color-text-secondary);
+  margin: 0;
 }
 
 .job-controls {
@@ -589,63 +732,65 @@ const animateMcpList = () => {
   }
 }
 
-// Main Content
+// Main Content - 紧凑网格布局
 .workspace-content {
-  flex: 1;
   display: grid;
-  grid-template-columns: 350px 1fr 400px;
-  gap: $spacing-xl;
-  overflow: hidden;
+  grid-template-columns: 320px 1fr 360px;
+  grid-template-rows: auto auto;
+  gap: $spacing-lg;
+  width: 100%;
+  align-items: start;
   
-  // 响应式布局 - 渐进式降级
-  @media (max-width: 1680px) {
-    grid-template-columns: 300px 1fr 350px;
+  .monitor-card {
+    grid-row: 1 / 3;
+  }
+  
+  .middle-column {
+    grid-row: 1 / 3;
+    display: grid;
+    grid-template-rows: auto auto auto;
     gap: $spacing-lg;
   }
   
-  @media (max-width: 1440px) {
-    grid-template-columns: 280px 1fr 320px;
-    gap: $spacing-md;
+  .logs-card {
+    grid-row: 1 / 3;
   }
   
-  // 中等屏幕：两列布局
-  @media (max-width: 1280px) {
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: auto auto;
-    overflow-y: auto;
-    @include custom-scrollbar;
+  // 中等屏幕：2列布局
+  @media (max-width: 1440px) {
+    grid-template-columns: 280px 1fr;
+    gap: $spacing-lg;
     
     .monitor-card {
-      grid-column: 1 / 2;
       grid-row: 1 / 2;
-      max-height: 500px;
     }
     
     .middle-column {
-      grid-column: 2 / 3;
+      grid-column: 2;
       grid-row: 1 / 2;
     }
     
     .logs-card {
-      grid-column: 1 / 3;
+      grid-column: 1 / -1;
       grid-row: 2 / 3;
-      max-height: 400px;
     }
   }
   
   // 小屏幕：单列布局
-  @media (max-width: 900px) {
+  @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
     gap: $spacing-lg;
     
     .monitor-card,
     .middle-column,
     .logs-card {
-      grid-column: 1 / 2;
-      max-height: 500px;
-      overflow-y: auto;
+      grid-column: 1;
+      grid-row: auto;
     }
+  }
+  
+  @media (max-width: 768px) {
+    gap: $spacing-md;
   }
 }
 
@@ -663,14 +808,84 @@ const animateMcpList = () => {
 .logs-card {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
+  gap: $spacing-md;
+  min-height: 0;
 }
 
-.middle-column {
+// Loss Chart Card
+.loss-chart-card {
+  .card-title {
+    margin-bottom: $spacing-md;
+  }
+}
+
+.chart-container {
+  width: 100%;
+}
+
+.loss-chart-svg {
+  width: 100%;
+  height: 240px;
+  display: block;
+  margin-bottom: $spacing-sm;
+}
+
+.chart-legend {
   display: flex;
-  flex-direction: column;
+  justify-content: center;
   gap: $spacing-xl;
-  overflow: hidden;
+  padding-top: $spacing-sm;
+  border-top: 1px solid var(--color-border);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: $spacing-xs;
+}
+
+.legend-line {
+  width: 24px;
+  height: 3px;
+  border-radius: 2px;
+  
+  &.train {
+    background: #4A69FF;
+  }
+  
+  &.val {
+    background: #10B981;
+    position: relative;
+    
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      width: 6px;
+      height: 3px;
+      background: var(--color-surface);
+    }
+    
+    &::before {
+      left: 4px;
+    }
+    
+    &::after {
+      left: 14px;
+    }
+  }
+}
+
+.legend-label {
+  font-size: $font-size-xs;
+  color: var(--color-text-secondary);
+}
+
+.legend-value {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-bold;
+  color: var(--color-text-primary);
+  margin-left: $spacing-xs;
 }
 
 // Evolution Steps
@@ -679,7 +894,12 @@ const animateMcpList = () => {
   flex: 1;
   padding-left: $spacing-sm;
   overflow-y: auto;
+  max-height: 600px;
   @include custom-scrollbar;
+  
+  @media (max-width: 1024px) {
+    max-height: 400px;
+  }
 }
 
 .steps-highlight {
@@ -842,7 +1062,16 @@ const animateMcpList = () => {
   background: var(--color-bg);
   border-radius: $radius-md;
   padding: $spacing-md;
+  height: 300px;
   @include custom-scrollbar;
+  
+  @media (max-width: 1440px) {
+    height: 240px;
+  }
+  
+  @media (max-width: 1024px) {
+    height: 280px;
+  }
 }
 
 .log-entry {
@@ -866,26 +1095,19 @@ const animateMcpList = () => {
 }
 
 .workspace-secondary {
-  margin-top: $spacing-2xl;
+  margin-top: $spacing-xl;
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
-  gap: $spacing-xl;
+  grid-template-columns: 1.5fr 1fr;
+  gap: $spacing-lg;
+  align-items: start;
   
-  // 响应式布局
-  @media (max-width: 1440px) {
-    grid-template-columns: 1fr 1fr;
-    gap: $spacing-lg;
-  }
-  
+  // 小屏幕：单列布局
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: $spacing-lg;
-    margin-top: $spacing-xl;
   }
   
-  // 小屏幕优化
   @media (max-width: 768px) {
-    margin-top: $spacing-lg;
     gap: $spacing-md;
   }
 }
@@ -915,10 +1137,21 @@ const animateMcpList = () => {
 
 .agent-telemetry-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $spacing-lg;
   
-  // 小屏幕优化
+  // 大屏幕：3列布局
+  @media (min-width: 1600px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  
+  // 中等屏幕：2列布局
+  @media (max-width: 1440px) and (min-width: 769px) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: $spacing-md;
+  }
+  
+  // 小屏幕：单列布局
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: $spacing-md;
@@ -1037,9 +1270,12 @@ const animateMcpList = () => {
   word-break: break-word;
 }
 
+.agent-telemetry-panel,
 .mcp-panel {
   display: flex;
   flex-direction: column;
+  height: fit-content;
+  min-height: 0;
 }
 
 .mcp-table {
@@ -1101,4 +1337,5 @@ const animateMcpList = () => {
   word-break: break-word;
 }
 </style>
+
 
