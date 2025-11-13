@@ -54,17 +54,54 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  background-color: var(--color-bg);
+  position: relative;
+  
+  // 动态渐变背景
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(74, 105, 255, 0.03) 0%,
+      rgba(138, 43, 226, 0.03) 50%,
+      rgba(74, 105, 255, 0.03) 100%
+    );
+    background-size: 200% 200%;
+    animation: gradientShift 15s ease infinite;
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  .dark &::before {
+    background: linear-gradient(
+      135deg,
+      rgba(96, 165, 250, 0.05) 0%,
+      rgba(167, 139, 250, 0.05) 50%,
+      rgba(96, 165, 250, 0.05) 100%
+    );
+    background-size: 200% 200%;
+  }
   
   // 主题切换动画
   transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
 }
 
 .app-main {
   flex: 1;
   overflow: hidden;
   position: relative;
-  background-color: var(--color-bg);
+  z-index: 1;
+  background-color: transparent;
   
   // 主题切换动画
   transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);

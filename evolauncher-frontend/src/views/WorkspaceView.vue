@@ -651,13 +651,14 @@ const animateMcpList = () => {
 <style scoped lang="scss">
 .workspace-view {
   width: 100%;
-  height: 100%;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
   padding: $spacing-2xl;
   overflow-y: auto;
   overflow-x: hidden;
   @include custom-scrollbar;
+  position: relative;
   
   // 响应式设计
   @media (max-width: 1024px) {
@@ -732,60 +733,109 @@ const animateMcpList = () => {
   }
 }
 
-// Main Content - 紧凑网格布局
+// Main Content - 修复挤压和覆盖问题
 .workspace-content {
   display: grid;
-  grid-template-columns: 320px 1fr 360px;
-  grid-template-rows: auto auto;
-  gap: $spacing-lg;
+  grid-template-columns: minmax(260px, 1fr) minmax(400px, 2.5fr) minmax(300px, 1fr);
+  gap: $spacing-xl;
   width: 100%;
+  min-height: 600px;
+  max-height: calc(100vh - 300px);
   align-items: start;
+  position: relative;
+  z-index: 1;
   
   .monitor-card {
-    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+    max-height: calc(100vh - 250px);
+    overflow: hidden;
   }
   
   .middle-column {
-    grid-row: 1 / 3;
     display: grid;
-    grid-template-rows: auto auto auto;
-    gap: $spacing-lg;
+    grid-template-rows: minmax(300px, auto) minmax(200px, auto) minmax(200px, auto);
+    gap: $spacing-xl;
+    min-width: 0;
+    height: 100%;
+    max-height: calc(100vh - 250px);
+    
+    > * {
+      min-height: 0;
+      overflow: hidden;
+    }
   }
   
   .logs-card {
-    grid-row: 1 / 3;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    height: 100%;
+    max-height: calc(100vh - 250px);
+    overflow: hidden;
   }
   
   // 中等屏幕：2列布局
-  @media (max-width: 1440px) {
-    grid-template-columns: 280px 1fr;
-    gap: $spacing-lg;
+  @media (max-width: 1600px) {
+    grid-template-columns: minmax(240px, 1fr) minmax(400px, 2.8fr);
+    grid-template-rows: auto auto;
+    max-height: none;
     
     .monitor-card {
-      grid-row: 1 / 2;
+      grid-column: 1;
+      grid-row: 1;
+      height: auto;
+      max-height: 600px;
+      min-height: 400px;
     }
     
     .middle-column {
       grid-column: 2;
-      grid-row: 1 / 2;
+      grid-row: 1;
+      height: auto;
+      max-height: none;
+      grid-template-rows: auto auto auto;
     }
-    
+  
     .logs-card {
       grid-column: 1 / -1;
-      grid-row: 2 / 3;
+      grid-row: 2;
+      height: auto;
+      max-height: 500px;
+      min-height: 300px;
     }
   }
   
   // 小屏幕：单列布局
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    max-height: none;
     gap: $spacing-lg;
     
     .monitor-card,
     .middle-column,
     .logs-card {
       grid-column: 1;
-      grid-row: auto;
+      height: auto;
+      max-height: none;
+    }
+    
+    .monitor-card {
+      min-height: 400px;
+      max-height: 500px;
+    }
+    
+    .middle-column {
+      grid-template-rows: auto;
+      gap: $spacing-lg;
+    }
+    
+    .logs-card {
+      min-height: 300px;
+      max-height: 400px;
     }
   }
   
@@ -798,36 +848,60 @@ const animateMcpList = () => {
 .card-title {
   display: flex;
   align-items: center;
-  font-size: $font-size-xl;
+  font-size: clamp($font-size-base, 1.8vw, $font-size-xl);
   font-weight: $font-weight-semibold;
   color: var(--color-text-primary);
-  margin-bottom: $spacing-lg;
+  margin-bottom: clamp($spacing-sm, 1.2vw, $spacing-lg);
 }
 
 .monitor-card,
-.logs-card {
+.logs-card,
+.details-card,
+.metrics-card {
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
   min-height: 0;
+  overflow: hidden;
+  
+  > * {
+    flex-shrink: 0;
+    
+    &:last-child {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+      @include custom-scrollbar;
+    }
+  }
 }
 
 // Loss Chart Card
 .loss-chart-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  
   .card-title {
     margin-bottom: $spacing-md;
+    flex-shrink: 0;
   }
 }
 
 .chart-container {
   width: 100%;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 .loss-chart-svg {
   width: 100%;
-  height: 240px;
+  height: 200px;
   display: block;
-  margin-bottom: $spacing-sm;
+  margin-bottom: $spacing-xs;
 }
 
 .chart-legend {
@@ -894,12 +968,13 @@ const animateMcpList = () => {
   flex: 1;
   padding-left: $spacing-sm;
   overflow-y: auto;
-  max-height: 600px;
+  overflow-x: hidden;
+  min-height: 0;
   @include custom-scrollbar;
   
-  @media (max-width: 1024px) {
-    max-height: 400px;
-  }
+  // 确保内容不会被挤压
+  display: flex;
+  flex-direction: column;
 }
 
 .steps-highlight {
@@ -1057,20 +1132,18 @@ const animateMcpList = () => {
 .logs-container {
   flex: 1;
   overflow-y: auto;
+  overflow-x: hidden;
   font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   font-size: $font-size-sm;
   background: var(--color-bg);
   border-radius: $radius-md;
   padding: $spacing-md;
-  height: 300px;
+  min-height: 0;
   @include custom-scrollbar;
+  word-wrap: break-word;
   
-  @media (max-width: 1440px) {
-    height: 240px;
-  }
-  
-  @media (max-width: 1024px) {
-    height: 280px;
+  .dark & {
+    background: rgba(15, 23, 42, 0.6);
   }
 }
 
@@ -1095,20 +1168,27 @@ const animateMcpList = () => {
 }
 
 .workspace-secondary {
-  margin-top: $spacing-xl;
+  margin-top: $spacing-3xl;
+  padding-top: $spacing-xl;
   display: grid;
   grid-template-columns: 1.5fr 1fr;
-  gap: $spacing-lg;
+  gap: $spacing-xl;
   align-items: start;
+  position: relative;
+  z-index: 0;
+  clear: both;
   
   // 小屏幕：单列布局
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
     gap: $spacing-lg;
+    margin-top: $spacing-2xl;
+    padding-top: $spacing-lg;
   }
   
   @media (max-width: 768px) {
     gap: $spacing-md;
+    margin-top: $spacing-xl;
   }
 }
 
@@ -1137,19 +1217,8 @@ const animateMcpList = () => {
 
 .agent-telemetry-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: $spacing-lg;
-  
-  // 大屏幕：3列布局
-  @media (min-width: 1600px) {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-  
-  // 中等屏幕：2列布局
-  @media (max-width: 1440px) and (min-width: 769px) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: $spacing-md;
-  }
   
   // 小屏幕：单列布局
   @media (max-width: 768px) {
@@ -1166,6 +1235,11 @@ const animateMcpList = () => {
   flex-direction: column;
   gap: $spacing-sm;
   transition: transform $transition-base, box-shadow $transition-base;
+  min-width: 0;
+  
+  .dark & {
+    background: rgba(30, 41, 59, 0.4);
+  }
 
   &:hover {
     transform: translateY(-4px);
@@ -1293,6 +1367,11 @@ const animateMcpList = () => {
   border-radius: $radius-md;
   background: rgba(124, 170, 255, 0.08);
   transition: transform $transition-base, box-shadow $transition-base;
+  min-width: 0;
+
+  .dark & {
+    background: rgba(96, 165, 250, 0.12);
+  }
 
   &:hover {
     transform: translateY(-2px);
