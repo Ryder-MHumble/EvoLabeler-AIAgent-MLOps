@@ -326,8 +326,21 @@ async def main():
     try:
         # 初始化 Supabase 客户端
         print("\n1️⃣  初始化 Supabase 客户端...")
-        supabase_client = SupabaseClient()
-        print("   ✅ Supabase 客户端初始化成功\n")
+        try:
+            supabase_client = SupabaseClient()
+            print("   ✅ Supabase 客户端初始化成功\n")
+        except Exception as e:
+            print(f"   ❌ 初始化失败: {e}")
+            print("\n💡 请检查 .env 文件配置:")
+            print("   1. 确保 SUPABASE_URL 和 SUPABASE_KEY 已正确设置")
+            print("   2. SUPABASE_URL 格式: https://your-project.supabase.co")
+            print("   3. SUPABASE_KEY 应该是 anon/public key（不是 service_role key）")
+            print("   4. 确保 .env 文件在 backend/ 目录下")
+            print("\n   如果配置正确但仍失败，请检查:")
+            print("   - Supabase 项目是否活跃")
+            print("   - API key 是否有效")
+            print("   - 网络连接是否正常")
+            sys.exit(1)
         
         # 创建测试任务
         print("2️⃣  创建测试任务...")

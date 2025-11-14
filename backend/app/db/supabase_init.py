@@ -29,15 +29,20 @@ class SupabaseClientSingleton:
     def get_client(self) -> Client:
         """
         Get the Supabase client instance.
-        
+
         Returns:
             Initialized Supabase client
         """
         if self._client is None:
             logger.info("Initializing Supabase client")
+            # Use service key if available, otherwise use regular key
+            supabase_key = settings.supabase_service_key or settings.supabase_key
+            key_type = "service" if settings.supabase_service_key else "regular"
+
+            logger.info(f"Using {key_type} Supabase key")
             self._client = create_client(
                 supabase_url=settings.supabase_url,
-                supabase_key=settings.supabase_key,
+                supabase_key=supabase_key,
             )
             logger.info("Supabase client initialized successfully")
         return self._client
