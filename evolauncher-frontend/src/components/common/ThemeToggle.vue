@@ -52,7 +52,7 @@ const handleToggle = () => {
 <style scoped lang="scss">
 // Premium Day/Night Switch - Integrated from switch.css
 .theme-switch {
-  --toggle-size: 20px;
+  --toggle-size: 16px;
   --container-width: 5.625em;
   --container-height: 2.5em;
   --container-radius: 6.25em;

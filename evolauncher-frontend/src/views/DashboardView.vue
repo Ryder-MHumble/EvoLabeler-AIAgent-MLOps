@@ -239,37 +239,45 @@ onMounted(async () => {
         <div class="hero-text">
           <div class="hero-badge">
             <Icon icon="ph:sparkle-fill" :width="16" />
-            <span>AI驱动的进化式标注平台</span>
+            <span>基于多智能体的自进化遥感影像目标检测 MLOps 引擎</span>
           </div>
-          <h1 class="hero-title">{{ $t('dashboard.title') }}</h1>
-          <p class="hero-subtitle">通过主动学习与多智能体协作，持续优化模型性能，自动化标注流程，让AI训练更高效</p>
-        </div>
-        
-        <el-button 
-          type="primary" 
-          size="large" 
+          <h1 class="hero-title">
+            <span class="hero-title-main">EvoLabeler</span>
+            <span class="hero-title-sub">自进化智能标注系统</span>
+          </h1>
+          <p class="hero-subtitle">
+            基于 <strong>IDEATE</strong> 框架的创新型 MLOps 系统，通过多智能体协作实现遥感影像目标检测的完全自动化闭环。
+            集成主动学习、半监督学习与LLM驱动决策，让AI训练更智能、更高效。
+          </p>
+    </div>
+
+        <button 
           @click="handleCreateProject"
-          class="hero-cta"
+          class="hero-cta-premium"
         >
-          <Icon icon="ph:plus-circle" :width="22" />
-          <span>{{ $t('dashboard.createProject') }}</span>
-          <Icon icon="ph:arrow-right" :width="18" />
-        </el-button>
+          <span class="cta-bg"></span>
+          <span class="cta-content">
+            <Icon icon="ph:plus-circle" :width="22" />
+            <span>{{ $t('dashboard.createProject') }}</span>
+            <Icon icon="ph:arrow-right" :width="18" />
+          </span>
+          <span class="cta-shine"></span>
+        </button>
       </div>
       
       <!-- Quick Stats in Hero -->
       <div class="hero-stats">
         <div 
-          v-for="metric in metrics" 
-          :key="metric.id" 
+        v-for="metric in metrics"
+        :key="metric.id"
           class="hero-stat-item metric-card"
         >
           <div class="hero-stat-icon">
             <Icon 
-              :icon="metric.id === 'active-projects' ? 'ph:folder-open-fill' : 
-                     metric.id === 'total-images' ? 'ph:images-fill' : 
-                     metric.id === 'avg-accuracy' ? 'ph:chart-line-up-fill' : 
-                     'ph:cpu-fill'" 
+              :icon="metric.id === 'active-loops' ? 'ph:arrows-clockwise-fill' : 
+                     metric.id === 'uncertainty-drop' ? 'ph:chart-line-down-fill' : 
+                     metric.id === 'auto-labeled' ? 'ph:tag-fill' : 
+                     'ph:gauge-fill'" 
               :width="24" 
             />
           </div>
@@ -281,14 +289,14 @@ onMounted(async () => {
             <div class="hero-stat-label">{{ metric.label }}</div>
             <div class="hero-stat-trend" :class="metric.trend">
               <Icon :icon="trendIcon(metric.trend)" :width="14" />
-              <span v-if="metric.delta !== 0">
-                {{ metric.trend === 'down' ? '-' : '+' }}{{ metric.delta }}{{ metric.unit }}
-              </span>
-            </div>
-          </div>
+            <span v-if="metric.delta !== 0">
+              {{ metric.trend === 'down' ? '-' : '+' }}{{ metric.delta }}{{ metric.unit }}
+          </span>
+        </div>
         </div>
       </div>
-    </div>
+              </div>
+              </div>
 
     <!-- 项目创建向导 -->
     <CreateProjectWizard
@@ -311,29 +319,29 @@ onMounted(async () => {
                 {{ projects.length > 0 ? `共 ${projects.length} 个进化项目` : '开始创建您的第一个项目' }}
               </p>
             </div>
-          </div>
+            </div>
           <el-button text @click="handleCreateProject">
             <Icon icon="ph:plus" :width="18" />
             <span>新建</span>
           </el-button>
-        </div>
-
-        <!-- Loading State -->
+      </div>
+      
+      <!-- Loading State -->
         <div v-if="isLoading" class="projects-list">
-          <AnimatedCard
-            v-for="i in 6"
-            :key="`skeleton-${i}`"
-            :hoverable="false"
-          >
+        <AnimatedCard
+          v-for="i in 6"
+          :key="`skeleton-${i}`"
+          :hoverable="false"
+        >
             <LoadingSkeleton type="image" height="200px" />
-            <div class="mt-4">
-              <LoadingSkeleton type="title" width="60%" />
-              <LoadingSkeleton type="text" width="40%" count="2" />
-            </div>
-          </AnimatedCard>
-        </div>
-        
-        <!-- Projects List -->
+          <div class="mt-4">
+            <LoadingSkeleton type="title" width="60%" />
+            <LoadingSkeleton type="text" width="40%" count="2" />
+          </div>
+        </AnimatedCard>
+      </div>
+      
+      <!-- Projects List -->
         <div v-else-if="projects.length > 0" class="projects-list">
         <AnimatedCard
           v-for="project in projects"
@@ -356,7 +364,7 @@ onMounted(async () => {
               <div class="project-tag" :class="`tag-${project.status}`">
                 <span class="tag-dot"></span>
                 <span class="tag-text">{{ $t(`status.${project.status}`) }}</span>
-              </div>
+            </div>
             </div>
             <!-- Gradient Overlay -->
             <div class="project-image-overlay"></div>
@@ -385,19 +393,19 @@ onMounted(async () => {
             </div>
           </div>
         </AnimatedCard>
-        </div>
-        
-        <!-- Empty State -->
+      </div>
+      
+      <!-- Empty State -->
         <div v-else class="empty-state-modern">
           <div class="empty-illustration">
             <Icon icon="ph:folder-open" :width="80" />
           </div>
-          <h3 class="empty-title">{{ $t('dashboard.noProjects') }}</h3>
-          <p class="empty-description">{{ $t('dashboard.noProjectsDesc') }}</p>
+        <h3 class="empty-title">{{ $t('dashboard.noProjects') }}</h3>
+        <p class="empty-description">{{ $t('dashboard.noProjectsDesc') }}</p>
           <el-button type="primary" size="large" @click="handleCreateProject">
             <Icon icon="ph:plus-circle" :width="20" />
             <span>{{ $t('dashboard.createProject') }}</span>
-          </el-button>
+        </el-button>
         </div>
       </div>
       
@@ -491,34 +499,58 @@ onMounted(async () => {
   
   .dark & {
     background: linear-gradient(135deg, 
-      rgba(96, 165, 250, 0.08) 0%,
-      rgba(167, 139, 250, 0.08) 100%
+      rgba(15, 23, 42, 0.6) 0%,
+      rgba(30, 41, 59, 0.4) 100%
     );
   }
   
-  // 添加网格背景
+  // 波纹背景动画
   &::before {
     content: '';
     position: absolute;
     inset: 0;
-    background-image: 
-      linear-gradient(rgba(74, 105, 255, 0.03) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(74, 105, 255, 0.03) 1px, transparent 1px);
-    background-size: 50px 50px;
-    opacity: 0.5;
-    animation: gridMove 20s linear infinite;
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(74, 105, 255, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(138, 43, 226, 0.15) 0%, transparent 50%),
+      radial-gradient(circle at 40% 20%, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+    background-size: 200% 200%;
+    animation: waveMove 15s ease-in-out infinite;
+    opacity: 0.6;
     
     .dark & {
-      background-image: 
-        linear-gradient(rgba(96, 165, 250, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(96, 165, 250, 0.05) 1px, transparent 1px);
+      background: 
+        radial-gradient(circle at 20% 50%, rgba(96, 165, 250, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(167, 139, 250, 0.2) 0%, transparent 50%),
+        radial-gradient(circle at 40% 20%, rgba(16, 185, 129, 0.15) 0%, transparent 50%);
+      opacity: 0.4;
+    }
+  }
+  
+  // 第二层波纹
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: 
+      radial-gradient(circle at 60% 30%, rgba(74, 105, 255, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 30% 70%, rgba(138, 43, 226, 0.1) 0%, transparent 50%);
+    background-size: 300% 300%;
+    animation: waveMove 20s ease-in-out infinite reverse;
+    opacity: 0.4;
+    
+    .dark & {
+      opacity: 0.3;
     }
   }
 }
 
-@keyframes gridMove {
-  0% { transform: translate(0, 0); }
-  100% { transform: translate(50px, 50px); }
+@keyframes waveMove {
+  0%, 100% { 
+    background-position: 0% 50%, 100% 50%, 50% 0%;
+  }
+  50% { 
+    background-position: 100% 50%, 0% 50%, 50% 100%;
+  }
 }
 
 .hero-background {
@@ -624,14 +656,46 @@ onMounted(async () => {
 }
 
 .hero-title {
-  font-size: clamp($font-size-3xl, 5vw, 4rem);
-  font-weight: $font-weight-extrabold;
-  line-height: 1.1;
-  margin-bottom: $spacing-md;
-  background: linear-gradient(135deg, #4A69FF, #8B5CF6, #EC4899);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin: 0 0 $spacing-md 0;
+  line-height: 1.2;
+  max-width: 700px;
+}
+
+.hero-title-main {
+  font-size: clamp($font-size-4xl, 6vw, 72px);
+  font-weight: 900;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: linear-gradient(135deg, #4A69FF 0%, #7AA2F7 30%, #8B5CF6 60%, #10B981 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+  letter-spacing: -0.02em;
+  text-shadow: 0 0 40px rgba(74, 105, 255, 0.3);
+  
+  .dark & {
+    background: linear-gradient(135deg, #60A5FA 0%, #7AA2F7 30%, #A78BFA 60%, #34D399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.hero-title-sub {
+  font-size: clamp($font-size-lg, 2.5vw, $font-size-2xl);
+  font-weight: $font-weight-semibold;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.05em;
+  margin-top: -8px;
+}
+
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
 }
 
 .hero-subtitle {
@@ -641,7 +705,8 @@ onMounted(async () => {
   max-width: 600px;
 }
 
-.hero-cta {
+.hero-cta-premium {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: $spacing-sm;
@@ -649,12 +714,71 @@ onMounted(async () => {
   font-size: $font-size-lg;
   font-weight: $font-weight-bold;
   border-radius: $radius-full;
-  box-shadow: 0 8px 24px rgba(74, 105, 255, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: none;
+  cursor: pointer;
+  overflow: hidden;
+  background: linear-gradient(135deg, #4A69FF 0%, #7AA2F7 50%, #8B5CF6 100%);
+  color: white;
+  box-shadow: 0 8px 24px rgba(74, 105, 255, 0.4);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
+  
+  .cta-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, #5B7CFF 0%, #8BB3FF 50%, #9C6CFF 100%);
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  
+  .cta-content {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+  }
+  
+  .cta-shine {
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(
+      45deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 70%
+    );
+    transform: translateX(-100%) translateY(-100%) rotate(45deg);
+    transition: transform 0.6s ease;
+  }
   
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 12px 32px rgba(74, 105, 255, 0.4);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 16px 40px rgba(74, 105, 255, 0.5);
+    
+    .cta-bg {
+      opacity: 1;
+    }
+    
+    .cta-shine {
+      transform: translateX(100%) translateY(100%) rotate(45deg);
+    }
+  }
+  
+  &:active {
+    transform: translateY(-1px) scale(0.98);
+  }
+  
+  .dark & {
+    background: linear-gradient(135deg, #60A5FA 0%, #7AA2F7 50%, #A78BFA 100%);
+    box-shadow: 0 8px 24px rgba(96, 165, 250, 0.4);
+    
+    &:hover {
+      box-shadow: 0 16px 40px rgba(96, 165, 250, 0.6);
+    }
   }
 }
 
@@ -722,9 +846,9 @@ onMounted(async () => {
 .hero-stat-label {
   font-size: $font-size-sm;
   color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-weight: $font-weight-medium;
   margin-bottom: 4px;
+  line-height: 1.4;
 }
 
 .hero-stat-trend {

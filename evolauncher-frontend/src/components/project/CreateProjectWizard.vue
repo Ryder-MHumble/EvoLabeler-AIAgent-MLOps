@@ -701,7 +701,9 @@ watch(() => props.visible, (newVal) => {
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
     
     .dark & {
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
     }
     height: 90vh;
     max-height: 90vh;
@@ -727,7 +729,12 @@ watch(() => props.visible, (newVal) => {
     overflow-x: hidden;
     min-height: 0;
     max-height: calc(90vh - 200px);
+    background: transparent;
     @include custom-scrollbar;
+    
+    .dark & {
+      background: transparent;
+    }
   }
   
   :deep(.el-dialog__footer) {
@@ -991,18 +998,35 @@ watch(() => props.visible, (newVal) => {
     color: var(--color-text-primary);
     
     .dark & {
-      background: rgba(30, 41, 59, 0.5);
-      border-color: rgba(255, 255, 255, 0.1);
-      color: var(--color-text-primary);
+      background: rgba(30, 41, 59, 0.6) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
     }
     
     &::placeholder {
       color: var(--color-text-tertiary);
+      
+      .dark & {
+        color: rgba(255, 255, 255, 0.4) !important;
+      }
     }
     
     &:focus {
       background: var(--color-surface);
       border-color: var(--color-primary);
+      
+      .dark & {
+        background: rgba(30, 41, 59, 0.8) !important;
+        border-color: rgba(96, 165, 250, 0.6) !important;
+        color: rgba(255, 255, 255, 0.95) !important;
+      }
+    }
+  }
+  
+  :deep(.el-input__wrapper) {
+    .dark & {
+      background: rgba(30, 41, 59, 0.6) !important;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset !important;
     }
   }
 }

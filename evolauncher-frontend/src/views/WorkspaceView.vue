@@ -53,22 +53,102 @@ const currentProject = ref({
   status: 'training' as const
 })
 
-// Loss数据 - 模拟训练损失曲线
+// Loss数据 - 动态训练损失曲线
 const lossData = ref({
-  epochs: Array.from({ length: 50 }, (_, i) => i + 1),
-  trainLoss: Array.from({ length: 50 }, (_, i) => {
+  epochs: Array.from({ length: 100 }, (_, i) => i + 1),
+  trainLoss: Array.from({ length: 100 }, (_, i) => {
     const base = 2.5
     const decay = Math.exp(-i / 15)
     const noise = (Math.random() - 0.5) * 0.1
     return Math.max(0.1, base * decay + noise)
   }),
-  valLoss: Array.from({ length: 50 }, (_, i) => {
+  valLoss: Array.from({ length: 100 }, (_, i) => {
     const base = 2.8
     const decay = Math.exp(-i / 18)
     const noise = (Math.random() - 0.5) * 0.15
     return Math.max(0.15, base * decay + noise)
   })
 })
+
+const chartScrollRef = ref<HTMLElement | null>(null)
+const visibleRange = ref({ start: 70, end: 100 }) // 显示最后30个数据点
+const isDragging = ref(false)
+const dragStart = ref({ x: 0, scrollLeft: 0 })
+
+// 动态更新损失数据
+let lossUpdateInterval: ReturnType<typeof setInterval> | null = null
+
+const updateLossData = () => {
+  if (!currentJob.value || currentJob.value.status !== 'running') return
+  
+  const currentEpoch = lossData.value.epochs.length
+  const lastTrainLoss = lossData.value.trainLoss[lossData.value.trainLoss.length - 1]
+  const lastValLoss = lossData.value.valLoss[lossData.value.valLoss.length - 1]
+  
+  // 添加新数据点（模拟训练进行）
+  lossData.value.epochs.push(currentEpoch + 1)
+  lossData.value.trainLoss.push(
+    Math.max(0.05, lastTrainLoss - 0.01 + (Math.random() - 0.5) * 0.02)
+  )
+  lossData.value.valLoss.push(
+    Math.max(0.05, lastValLoss - 0.008 + (Math.random() - 0.5) * 0.02)
+  )
+  
+  // 保持最多200个数据点
+  if (lossData.value.epochs.length > 200) {
+    lossData.value.epochs.shift()
+    lossData.value.trainLoss.shift()
+    lossData.value.valLoss.shift()
+  }
+  
+  // 自动滚动到最新位置
+  if (chartScrollRef.value) {
+    chartScrollRef.value.scrollLeft = chartScrollRef.value.scrollWidth
+  }
+  
+  visibleRange.value = {
+    start: Math.max(0, lossData.value.epochs.length - 30),
+    end: lossData.value.epochs.length
+  }
+}
+
+const startLossUpdate = () => {
+  if (lossUpdateInterval) return
+  lossUpdateInterval = setInterval(updateLossData, 2000) // 每2秒更新一次
+}
+
+const stopLossUpdate = () => {
+  if (lossUpdateInterval) {
+    clearInterval(lossUpdateInterval)
+    lossUpdateInterval = null
+  }
+}
+
+// 拖动处理
+const handleMouseDown = (e: MouseEvent) => {
+  if (!chartScrollRef.value) return
+  isDragging.value = true
+  dragStart.value = {
+    x: e.pageX - chartScrollRef.value.offsetLeft,
+    scrollLeft: chartScrollRef.value.scrollLeft
+  }
+  chartScrollRef.value.style.cursor = 'grabbing'
+}
+
+const handleMouseMove = (e: MouseEvent) => {
+  if (!isDragging.value || !chartScrollRef.value) return
+  e.preventDefault()
+  const x = e.pageX - chartScrollRef.value.offsetLeft
+  const walk = (x - dragStart.value.x) * 2
+  chartScrollRef.value.scrollLeft = dragStart.value.scrollLeft - walk
+}
+
+const handleMouseUp = () => {
+  isDragging.value = false
+  if (chartScrollRef.value) {
+    chartScrollRef.value.style.cursor = 'grab'
+  }
+}
 
 // Step configuration
 const steps = ref<Array<{ key: JobStep; label: string; icon: string }>>([
@@ -94,6 +174,13 @@ const startJobMonitoring = () => {
     const stepIndex = steps.value.findIndex(s => s.key === status.currentStep)
     if (stepIndex !== -1 && stepIndex !== currentStepIndex.value) {
       animateStepTransition(stepIndex)
+    }
+    
+    // 启动损失更新
+    if (status.status === 'running' && stepIndex >= 2) {
+      startLossUpdate()
+    } else {
+      stopLossUpdate()
     }
   }, 2000)
 }
@@ -178,14 +265,23 @@ onMounted(() => {
 
   nextTick(() => {
     highlightStep(currentStepIndex.value)
+    // 初始化滚动到最新位置
+    if (chartScrollRef.value) {
+      chartScrollRef.value.scrollLeft = chartScrollRef.value.scrollWidth
+    }
   })
 
   window.addEventListener('resize', handleResize)
+  document.addEventListener('mousemove', handleMouseMove)
+  document.addEventListener('mouseup', handleMouseUp)
 })
 
 onUnmounted(() => {
   stopJobMonitoring()
+  stopLossUpdate()
   window.removeEventListener('resize', handleResize)
+  document.removeEventListener('mousemove', handleMouseMove)
+  document.removeEventListener('mouseup', handleMouseUp)
 })
 
 const formatTime = (isoString?: string) => {
@@ -212,7 +308,7 @@ const loadAgentTelemetry = async () => {
 }
 
 const animateAgentTelemetry = () => {
-  const cards = document.querySelectorAll('.agent-telemetry-card')
+  const cards = document.querySelectorAll('.agent-card-modern:not(.skeleton)')
   gsap.fromTo(
     cards,
     { opacity: 0, y: 20 },
@@ -245,7 +341,7 @@ const loadMcpRegistry = async () => {
 }
 
 const animateMcpList = () => {
-  const rows = document.querySelectorAll('.mcp-row')
+  const rows = document.querySelectorAll('.mcp-item-modern:not(.skeleton)')
   gsap.fromTo(
     rows,
     { opacity: 0, x: -12 },
@@ -286,7 +382,7 @@ const animateMcpList = () => {
       </div>
     </div>
     
-    <!-- Main Content -->
+    <!-- Main Content - 重构布局：指标为主，任务详情在侧 -->
     <div class="workspace-content">
       <!-- Left Column: Evolution Task Monitor -->
       <AnimatedCard class="monitor-card" :hoverable="false">
@@ -345,169 +441,212 @@ const animateMcpList = () => {
         </div>
       </AnimatedCard>
       
-      <!-- Middle Column: Loss Chart & Metrics -->
-      <div class="middle-column">
+      <!-- Middle Column: Metrics (Primary) + Loss Chart -->
+      <div class="middle-column-primary">
+        <!-- Metrics Card - 主要位置，更大更突出 -->
+        <AnimatedCard class="metrics-card-primary" :hoverable="false">
+          <div class="metrics-header-modern">
+            <div class="metrics-header-left">
+              <div class="metrics-icon-badge">
+                <Icon icon="ph:chart-bar-fill" :width="24" />
+              </div>
+              <div>
+                <h2 class="metrics-title-modern">核心指标</h2>
+                <p class="metrics-subtitle-modern">实时训练性能监控</p>
+              </div>
+            </div>
+          </div>
+          
+          <div v-if="currentJob?.metrics" class="metrics-grid-modern">
+            <div class="metric-card-modern accuracy">
+              <div class="metric-icon-wrapper">
+                <Icon icon="ph:target-fill" :width="28" />
+              </div>
+              <div class="metric-content-modern">
+                <div class="metric-label-modern">准确率</div>
+                <div class="metric-value-modern">
+                  {{ (currentJob.metrics.accuracy! * 100).toFixed(1) }}%
+                </div>
+                <div class="metric-trend">
+                  <Icon icon="ph:arrow-up-right" :width="14" />
+                  <span>+2.3%</span>
+                </div>
+              </div>
+            </div>
+            <div class="metric-card-modern loss">
+              <div class="metric-icon-wrapper">
+                <Icon icon="ph:trend-down-fill" :width="28" />
+              </div>
+              <div class="metric-content-modern">
+                <div class="metric-label-modern">损失值</div>
+                <div class="metric-value-modern">
+                  {{ currentJob.metrics.loss?.toFixed(3) }}
+                </div>
+                <div class="metric-trend down">
+                  <Icon icon="ph:arrow-down-right" :width="14" />
+                  <span>-0.125</span>
+                </div>
+              </div>
+            </div>
+            <div class="metric-card-modern samples">
+              <div class="metric-icon-wrapper">
+                <Icon icon="ph:database-fill" :width="28" />
+              </div>
+              <div class="metric-content-modern">
+                <div class="metric-label-modern">样本进度</div>
+                <div class="metric-value-modern">
+                  {{ currentJob.metrics.samplesProcessed }} / {{ currentJob.metrics.totalSamples }}
+                </div>
+                <div class="metric-progress-bar">
+                  <div 
+                    class="metric-progress-fill" 
+                    :style="{ width: `${(currentJob.metrics.samplesProcessed / currentJob.metrics.totalSamples) * 100}%` }"
+                  ></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </AnimatedCard>
+        
         <!-- Loss Chart Card -->
         <AnimatedCard class="loss-chart-card" :hoverable="false">
-          <h2 class="card-title">
-            <Icon icon="ph:chart-line" :width="24" class="mr-2" />
-            训练损失曲线
-          </h2>
-          
-          <div class="chart-container">
-            <svg viewBox="0 0 600 240" class="loss-chart-svg">
-              <!-- 背景网格 -->
-              <defs>
-                <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" style="stop-color:#4A69FF;stop-opacity:0.3" />
-                  <stop offset="100%" style="stop-color:#4A69FF;stop-opacity:0.05" />
-                </linearGradient>
-              </defs>
-              
-              <!-- 网格线 -->
-              <g class="grid-lines">
-                <line v-for="i in 5" :key="`h${i}`" 
-                  x1="50" :y1="30 + (i - 1) * 40" 
-                  x2="560" :y2="30 + (i - 1) * 40" 
-                  stroke="var(--color-border)" 
-                  stroke-width="1" 
-                  opacity="0.3" />
-                <line v-for="i in 10" :key="`v${i}`" 
-                  :x1="50 + (i - 1) * 57" y1="30" 
-                  :x2="50 + (i - 1) * 57" y2="190" 
-                  stroke="var(--color-border)" 
-                  stroke-width="1" 
-                  opacity="0.3" />
-              </g>
-              
-              <!-- 训练损失曲线区域填充 -->
-              <path
-                :d="`M 50,190 ${lossData.epochs.map((e, i) => 
-                  `L ${50 + (i / 49) * 510},${190 - (lossData.trainLoss[i] / 2.5) * 160}`
-                ).join(' ')} L 560,190 Z`"
-                fill="url(#chartGradient)"
-              />
-              
-              <!-- 训练损失曲线 -->
-              <polyline
-                :points="lossData.epochs.map((e, i) => 
-                  `${50 + (i / 49) * 510},${190 - (lossData.trainLoss[i] / 2.5) * 160}`
-                ).join(' ')"
-                fill="none"
-                stroke="#4A69FF"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-              
-              <!-- 验证损失曲线 -->
-              <polyline
-                :points="lossData.epochs.map((e, i) => 
-                  `${50 + (i / 49) * 510},${190 - (lossData.valLoss[i] / 2.5) * 160}`
-                ).join(' ')"
-                fill="none"
-                stroke="#10B981"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-dasharray="6,3"
-              />
-              
-              <!-- 坐标轴 -->
-              <line x1="50" y1="190" x2="560" y2="190" stroke="var(--color-text-secondary)" stroke-width="1.5" />
-              <line x1="50" y1="30" x2="50" y2="190" stroke="var(--color-text-secondary)" stroke-width="1.5" />
-              
-              <!-- 轴标签 -->
-              <text x="305" y="215" text-anchor="middle" fill="var(--color-text-secondary)" font-size="12">训练轮次 (Epochs)</text>
-              <text x="20" y="110" text-anchor="middle" fill="var(--color-text-secondary)" font-size="12" transform="rotate(-90, 20, 110)">Loss</text>
-            </svg>
-            
-            <!-- 图例 -->
-            <div class="chart-legend">
-              <div class="legend-item">
-                <div class="legend-line train"></div>
-                <span class="legend-label">训练损失</span>
-                <span class="legend-value">{{ lossData.trainLoss[lossData.trainLoss.length - 1].toFixed(3) }}</span>
-              </div>
-              <div class="legend-item">
-                <div class="legend-line val"></div>
-                <span class="legend-label">验证损失</span>
-                <span class="legend-value">{{ lossData.valLoss[lossData.valLoss.length - 1].toFixed(3) }}</span>
-              </div>
+          <div class="loss-chart-header">
+            <h2 class="card-title">
+              <Icon icon="ph:chart-line" :width="20" class="mr-2" />
+              训练损失曲线
+            </h2>
+            <div class="loss-chart-info">
+              <span class="loss-current-value">
+                训练: {{ lossData.trainLoss[lossData.trainLoss.length - 1]?.toFixed(3) }}
+              </span>
+              <span class="loss-current-value">
+                验证: {{ lossData.valLoss[lossData.valLoss.length - 1]?.toFixed(3) }}
+              </span>
             </div>
           </div>
-        </AnimatedCard>
-        
-        <!-- Job Details Card -->
-        <AnimatedCard class="details-card" :hoverable="false">
-          <h2 class="card-title">
-            <Icon icon="ph:info" :width="24" class="mr-2" />
-            {{ $t('workspace.jobDetails') }}
-          </h2>
           
-          <div v-if="currentJob" class="job-details">
-            <div class="detail-row">
-              <span class="detail-label">{{ $t('workspace.status') }}:</span>
-              <StatusBadge :status="currentJob.status" />
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">{{ $t('workspace.progress') }}:</span>
-              <span class="detail-value">{{ currentJob.progress.toFixed(1) }}%</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">{{ $t('common.started') }}:</span>
-              <span class="detail-value">{{ formatTime(currentJob.startedAt) }}</span>
-            </div>
-            <div class="detail-row">
-              <span class="detail-label">{{ $t('workspace.estimatedTime') }}:</span>
-              <span class="detail-value">{{ formatTime(currentJob.estimatedCompletion) }}</span>
-            </div>
-          </div>
-        </AnimatedCard>
-        
-        <AnimatedCard class="metrics-card" :hoverable="false">
-          <h2 class="card-title">
-            <Icon icon="ph:chart-bar" :width="24" class="mr-2" />
-            {{ $t('workspace.metrics') }}
-          </h2>
-          
-          <div v-if="currentJob?.metrics" class="metrics-grid">
-            <div class="metric-item">
-              <div class="metric-label">{{ $t('common.accuracy') }}</div>
-              <div class="metric-value">
-                {{ (currentJob.metrics.accuracy! * 100).toFixed(1) }}%
-              </div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">{{ $t('common.loss') }}</div>
-              <div class="metric-value">
-                {{ currentJob.metrics.loss?.toFixed(3) }}
-              </div>
-            </div>
-            <div class="metric-item">
-              <div class="metric-label">{{ $t('common.samples') }}</div>
-              <div class="metric-value">
-                {{ currentJob.metrics.samplesProcessed }} / {{ currentJob.metrics.totalSamples }}
-              </div>
+          <div 
+            ref="chartScrollRef"
+            class="chart-scroll-container"
+            @mousedown="handleMouseDown"
+          >
+            <div class="chart-wrapper" :style="{ width: `${lossData.epochs.length * 8}px` }">
+              <svg :viewBox="`0 0 ${lossData.epochs.length * 8} 200`" class="loss-chart-svg-horizontal">
+                <!-- 背景网格 -->
+                <defs>
+                  <linearGradient id="chartGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                    <stop offset="0%" style="stop-color:#4A69FF;stop-opacity:0.3" />
+                    <stop offset="100%" style="stop-color:#4A69FF;stop-opacity:0.05" />
+                  </linearGradient>
+                </defs>
+                
+                <!-- 网格线 -->
+                <g class="grid-lines">
+                  <line v-for="i in 5" :key="`h${i}`" 
+                    x1="0" :y1="20 + (i - 1) * 35" 
+                    :x2="lossData.epochs.length * 8" :y2="20 + (i - 1) * 35" 
+                    stroke="var(--color-border)" 
+                    stroke-width="1" 
+                    opacity="0.2" />
+                  <line v-for="i in Math.floor(lossData.epochs.length / 10)" :key="`v${i}`" 
+                    :x1="i * 80" y1="20" 
+                    :x2="i * 80" y2="175" 
+                    stroke="var(--color-border)" 
+                    stroke-width="1" 
+                    opacity="0.2" />
+                </g>
+                
+                <!-- 训练损失曲线区域填充 -->
+                <path
+                  :d="`M 0,175 ${lossData.epochs.map((e, i) => 
+                    `L ${i * 8},${175 - (lossData.trainLoss[i] / 2.5) * 155}`
+                  ).join(' ')} L ${lossData.epochs.length * 8},175 Z`"
+                  fill="url(#chartGradient)"
+                />
+                
+                <!-- 训练损失曲线 -->
+                <polyline
+                  :points="lossData.epochs.map((e, i) => 
+                    `${i * 8},${175 - (lossData.trainLoss[i] / 2.5) * 155}`
+                  ).join(' ')"
+                  fill="none"
+                  stroke="#4A69FF"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="loss-line-animated"
+                />
+                
+                <!-- 验证损失曲线 -->
+                <polyline
+                  :points="lossData.epochs.map((e, i) => 
+                    `${i * 8},${175 - (lossData.valLoss[i] / 2.5) * 155}`
+                  ).join(' ')"
+                  fill="none"
+                  stroke="#10B981"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-dasharray="5,3"
+                  class="loss-line-animated"
+                />
+                
+                <!-- 坐标轴 -->
+                <line x1="0" y1="175" :x2="lossData.epochs.length * 8" y2="175" stroke="var(--color-text-secondary)" stroke-width="1.5" />
+                <line x1="0" y1="20" x2="0" y2="175" stroke="var(--color-text-secondary)" stroke-width="1.5" />
+                
+                <!-- 轴标签 -->
+                <text :x="lossData.epochs.length * 4" y="195" text-anchor="middle" fill="var(--color-text-secondary)" font-size="11">训练轮次 (Epochs)</text>
+                <text x="15" y="100" text-anchor="middle" fill="var(--color-text-secondary)" font-size="11" transform="rotate(-90, 15, 100)">Loss</text>
+              </svg>
             </div>
           </div>
         </AnimatedCard>
       </div>
       
-      <!-- Right Column: Logs -->
-      <AnimatedCard class="logs-card" :hoverable="false">
+      <!-- Right Column: Job Details -->
+      <AnimatedCard class="details-card" :hoverable="false">
         <h2 class="card-title">
-          <Icon icon="ph:terminal-window" :width="24" class="mr-2" />
-          {{ $t('workspace.logs') }}
+          <Icon icon="ph:info" :width="20" class="mr-2" />
+          {{ $t('workspace.jobDetails') }}
         </h2>
         
-        <div class="logs-container">
-          <div
-            v-for="(log, index) in currentJob?.logs || []"
-            :key="index"
-            class="log-entry"
-          >
-            {{ log }}
+        <div v-if="currentJob" class="job-details-modern">
+          <div class="detail-item-modern">
+            <div class="detail-icon-wrapper">
+              <Icon icon="ph:circle-fill" :width="8" />
+            </div>
+            <div class="detail-content">
+              <span class="detail-label-modern">{{ $t('workspace.status') }}</span>
+              <StatusBadge :status="currentJob.status" />
+            </div>
+          </div>
+          <div class="detail-item-modern">
+            <div class="detail-icon-wrapper">
+              <Icon icon="ph:chart-line-up" :width="12" />
+            </div>
+            <div class="detail-content">
+              <span class="detail-label-modern">{{ $t('workspace.progress') }}</span>
+              <span class="detail-value-modern">{{ currentJob.progress.toFixed(1) }}%</span>
+            </div>
+          </div>
+          <div class="detail-item-modern">
+            <div class="detail-icon-wrapper">
+              <Icon icon="ph:clock" :width="12" />
+            </div>
+            <div class="detail-content">
+              <span class="detail-label-modern">{{ $t('common.started') }}</span>
+              <span class="detail-value-modern">{{ formatTime(currentJob.startedAt) }}</span>
+            </div>
+          </div>
+          <div class="detail-item-modern">
+            <div class="detail-icon-wrapper">
+              <Icon icon="ph:clock-countdown" :width="12" />
+            </div>
+            <div class="detail-content">
+              <span class="detail-label-modern">{{ $t('workspace.estimatedTime') }}</span>
+              <span class="detail-value-modern">{{ formatTime(currentJob.estimatedCompletion) }}</span>
+            </div>
           </div>
         </div>
       </AnimatedCard>
@@ -515,27 +654,28 @@ const animateMcpList = () => {
 
     <div class="workspace-secondary">
       <AnimatedCard class="agent-telemetry-panel" :hoverable="false">
-        <div class="panel-header">
-          <div>
-            <h2 class="panel-title">
-              <Icon icon="ph:circles-three-plus" :width="22" class="mr-2" />
-              {{ $t('workspace.agentTelemetry') }}
-            </h2>
-            <p class="panel-subtitle">
-              {{ $t('workspace.residualConnections') }}
-            </p>
+        <div class="panel-header-modern">
+          <div class="panel-header-left">
+            <div class="panel-icon-badge agent">
+              <Icon icon="ph:robot-fill" :width="20" />
+            </div>
+            <div>
+              <h2 class="panel-title-modern">Agent 遥测</h2>
+              <p class="panel-subtitle-modern">多智能体协作状态监控</p>
+            </div>
           </div>
-          <el-tag size="large" type="primary" effect="dark">
-            {{ agentTelemetry.length }} {{ $t('common.active') }}
-          </el-tag>
+          <div class="panel-badge-modern">
+            <span class="badge-value">{{ agentTelemetry.length }}</span>
+            <span class="badge-label">活跃</span>
+          </div>
         </div>
 
-        <div class="agent-telemetry-grid">
+        <div class="agent-telemetry-grid-modern">
           <div
             v-if="isLoadingAgents"
             v-for="i in 4"
             :key="`agent-loader-${i}`"
-            class="agent-telemetry-card skeleton"
+            class="agent-card-modern skeleton"
           >
             <LoadingSkeleton type="title" width="50%" />
             <LoadingSkeleton type="text" width="80%" count="2" />
@@ -545,45 +685,65 @@ const animateMcpList = () => {
             v-else
             v-for="agent in agentTelemetry"
             :key="agent.id"
-            class="agent-telemetry-card"
+            class="agent-card-modern"
+            :class="`agent-${agent.status}`"
           >
-            <div class="agent-telemetry-header">
-              <div>
-                <h3>{{ agent.displayName }}</h3>
-                <span class="agent-tag">{{ agent.name }}</span>
+            <div class="agent-card-header-modern">
+              <div class="agent-icon-wrapper">
+                <Icon 
+                  :icon="agent.name.includes('INFERENCE') ? 'ph:lightning-fill' :
+                         agent.name.includes('ANALYSIS') ? 'ph:brain-fill' :
+                         agent.name.includes('ACQUISITION') ? 'ph:download-fill' :
+                         'ph:gear-fill'" 
+                  :width="20" 
+                />
               </div>
-              <StatusBadge
-                :status="agent.status === 'waiting' ? 'idle' : agent.status"
-                :size="'small'"
-              />
-            </div>
-            <p class="agent-telemetry-description">
-              {{ agent.description }}
-            </p>
-
-            <div class="agent-telemetry-stats">
-              <div>
-                <span class="stat-label">{{ $t('agent.metrics.confidence') }}</span>
-                <span class="stat-value">{{ Math.round(agent.confidence * 100) }}%</span>
+              <div class="agent-info-modern">
+                <h3 class="agent-name-modern">{{ agent.displayName }}</h3>
+                <span class="agent-id-modern">{{ agent.name }}</span>
               </div>
-              <div>
-                <span class="stat-label">{{ $t('agent.metrics.throughput') }}</span>
-                <span class="stat-value">{{ agent.throughput }}/min</span>
-              </div>
-              <div>
-                <span class="stat-label">{{ $t('agent.processed') }}</span>
-                <span class="stat-value">{{ agent.metrics.processed }}</span>
+              <div class="agent-status-modern" :class="agent.status">
+                <span class="status-dot"></span>
+                <span class="status-text">{{ agent.status === 'running' ? '运行中' : agent.status === 'waiting' ? '等待' : '空闲' }}</span>
               </div>
             </div>
+            
+            <p class="agent-desc-modern">{{ agent.description }}</p>
 
-            <div class="agent-telemetry-footnote">
-              <div>
-                <span class="footnote-label">{{ $t('agent.lastTask') }}</span>
-                <p>{{ agent.lastTask }}</p>
+            <div class="agent-metrics-modern">
+              <div class="metric-item-modern">
+                <Icon icon="ph:gauge-fill" :width="14" />
+                <div class="metric-content">
+                  <span class="metric-label">置信度</span>
+                  <span class="metric-value">{{ Math.round(agent.confidence * 100) }}%</span>
+                </div>
               </div>
-              <div>
-                <span class="footnote-label">{{ $t('agent.nextAction') }}</span>
-                <p>{{ agent.nextAction }}</p>
+              <div class="metric-item-modern">
+                <Icon icon="ph:arrow-clockwise-fill" :width="14" />
+                <div class="metric-content">
+                  <span class="metric-label">吞吐量</span>
+                  <span class="metric-value">{{ agent.throughput }}/min</span>
+                </div>
+              </div>
+              <div class="metric-item-modern">
+                <Icon icon="ph:check-circle-fill" :width="14" />
+                <div class="metric-content">
+                  <span class="metric-label">已处理</span>
+                  <span class="metric-value">{{ agent.metrics.processed }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="agent-actions-modern">
+              <div class="action-item-modern">
+                <Icon icon="ph:clock-clockwise" :width="12" />
+                <span class="action-label">上次任务</span>
+                <span class="action-text">{{ agent.lastTask }}</span>
+              </div>
+              <div class="action-item-modern">
+                <Icon icon="ph:arrow-right" :width="12" />
+                <span class="action-label">下一步</span>
+                <span class="action-text">{{ agent.nextAction }}</span>
               </div>
             </div>
           </div>
@@ -591,34 +751,28 @@ const animateMcpList = () => {
       </AnimatedCard>
 
       <AnimatedCard class="mcp-panel" :hoverable="false">
-        <div class="panel-header">
-          <div>
-            <h2 class="panel-title">
-              <Icon icon="ph:factory" :width="22" class="mr-2" />
-              {{ $t('workspace.mcpToolRegistry') }}
-            </h2>
-            <p class="panel-subtitle">
-              通过模型上下文协议 (MCP) 编排工具，实现一致的自动化
-            </p>
+        <div class="panel-header-modern">
+          <div class="panel-header-left">
+            <div class="panel-icon-badge mcp">
+              <Icon icon="ph:toolbox-fill" :width="20" />
+            </div>
+            <div>
+              <h2 class="panel-title-modern">MCP 工具注册表</h2>
+              <p class="panel-subtitle-modern">模型上下文协议工具编排</p>
+            </div>
           </div>
-          <el-tag size="large" effect="dark">
-            {{ $t('workspace.toolCount', { count: mcpRegistry.length }) }}
-          </el-tag>
+          <div class="panel-badge-modern">
+            <span class="badge-value">{{ mcpRegistry.length }}</span>
+            <span class="badge-label">工具</span>
+          </div>
         </div>
 
-        <div class="mcp-table">
-          <div class="mcp-row header">
-            <span>{{ $t('mcp.tool') }}</span>
-            <span>{{ $t('workspace.latency') }}</span>
-            <span>{{ $t('mcp.usage') }}</span>
-            <span>{{ $t('mcp.status') }}</span>
-          </div>
-
+        <div class="mcp-list-modern">
           <div
             v-if="isLoadingMcp"
             v-for="i in 4"
             :key="`mcp-skeleton-${i}`"
-            class="mcp-row"
+            class="mcp-item-modern skeleton"
           >
             <LoadingSkeleton type="text" width="60%" />
           </div>
@@ -627,20 +781,43 @@ const animateMcpList = () => {
             v-else
             v-for="tool in mcpRegistry"
             :key="tool.id"
-            class="mcp-row"
+            class="mcp-item-modern"
+            :class="`mcp-${tool.status}`"
           >
-            <div>
-              <span class="mcp-name">{{ tool.name }}</span>
-              <p class="mcp-description">{{ tool.description }}</p>
+            <div class="mcp-item-header-modern">
+              <div class="mcp-icon-wrapper">
+                <Icon 
+                  :icon="tool.name.includes('Scene') ? 'ph:map-pin-fill' :
+                         tool.name.includes('Keyword') ? 'ph:key-fill' :
+                         tool.name.includes('Quality') ? 'ph:shield-check-fill' :
+                         'ph:cpu-fill'" 
+                  :width="18" 
+                />
+              </div>
+              <div class="mcp-info-modern">
+                <h3 class="mcp-name-modern">{{ tool.name }}</h3>
+                <p class="mcp-desc-modern">{{ tool.description }}</p>
+              </div>
             </div>
-            <span>{{ tool.latency }} ms</span>
-            <span>{{ tool.usage }}%</span>
-            <el-tag
-              :type="tool.status === 'online' ? 'success' : tool.status === 'degraded' ? 'warning' : 'danger'"
-              effect="dark"
-            >
-              {{ tool.status }}
-            </el-tag>
+            
+            <div class="mcp-metrics-modern">
+              <div class="mcp-metric-modern">
+                <Icon icon="ph:clock-fill" :width="12" />
+                <span class="mcp-metric-label">延迟</span>
+                <span class="mcp-metric-value">{{ tool.latency }}ms</span>
+              </div>
+              <div class="mcp-metric-modern">
+                <Icon icon="ph:chart-bar-fill" :width="12" />
+                <span class="mcp-metric-label">使用率</span>
+                <span class="mcp-metric-value">{{ tool.usage }}%</span>
+              </div>
+              <div class="mcp-status-modern" :class="tool.status">
+                <span class="status-indicator"></span>
+                <span class="status-text-modern">
+                  {{ tool.status === 'online' ? '在线' : tool.status === 'degraded' ? '降级' : '离线' }}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       </AnimatedCard>
@@ -651,10 +828,10 @@ const animateMcpList = () => {
 <style scoped lang="scss">
 .workspace-view {
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: $spacing-2xl;
+  padding: $spacing-lg $spacing-xl;
   overflow-y: auto;
   overflow-x: hidden;
   @include custom-scrollbar;
@@ -662,11 +839,11 @@ const animateMcpList = () => {
   
   // 响应式设计
   @media (max-width: 1024px) {
-    padding: $spacing-xl;
+    padding: $spacing-md $spacing-lg;
   }
   
   @media (max-width: 768px) {
-    padding: $spacing-lg;
+    padding: $spacing-sm $spacing-md;
   }
 }
 
@@ -675,7 +852,7 @@ const animateMcpList = () => {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: $spacing-2xl;
+  margin-bottom: $spacing-lg;
   flex-shrink: 0;
   gap: $spacing-md;
   
@@ -683,7 +860,7 @@ const animateMcpList = () => {
   @media (max-width: 768px) {
     flex-direction: column;
     align-items: stretch;
-    margin-bottom: $spacing-lg;
+    margin-bottom: $spacing-md;
   }
 }
 
@@ -733,94 +910,94 @@ const animateMcpList = () => {
   }
 }
 
-// Main Content - 修复挤压和覆盖问题
+// Main Content - 重构布局：指标为主，任务详情在右侧
 .workspace-content {
   display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(400px, 2.5fr) minmax(300px, 1fr);
-  gap: $spacing-xl;
+  grid-template-columns: minmax(260px, 1fr) minmax(600px, 2.8fr) minmax(280px, 1fr);
+  gap: $spacing-md;
   width: 100%;
   min-height: 600px;
-  max-height: calc(100vh - 300px);
-  align-items: start;
+  align-items: stretch;
   position: relative;
   z-index: 1;
+  flex-shrink: 0;
   
+  // 左侧：任务监视器
   .monitor-card {
     display: flex;
     flex-direction: column;
     min-width: 0;
     height: 100%;
-    max-height: calc(100vh - 250px);
     overflow: hidden;
   }
   
-  .middle-column {
-    display: grid;
-    grid-template-rows: minmax(300px, auto) minmax(200px, auto) minmax(200px, auto);
-    gap: $spacing-xl;
+  // 中间主要区域：指标 + 损失曲线
+  .middle-column-primary {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
     min-width: 0;
     height: 100%;
-    max-height: calc(100vh - 250px);
     
-    > * {
+    .metrics-card-primary {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    
+    .loss-chart-card {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      flex: 1;
       min-height: 0;
       overflow: hidden;
     }
   }
   
-  .logs-card {
+  // 右侧：任务详情
+  .details-card {
     display: flex;
     flex-direction: column;
     min-width: 0;
     height: 100%;
-    max-height: calc(100vh - 250px);
     overflow: hidden;
   }
   
   // 中等屏幕：2列布局
   @media (max-width: 1600px) {
-    grid-template-columns: minmax(240px, 1fr) minmax(400px, 2.8fr);
-    grid-template-rows: auto auto;
-    max-height: none;
+    grid-template-columns: minmax(240px, 1fr) minmax(500px, 2.5fr);
     
     .monitor-card {
       grid-column: 1;
       grid-row: 1;
-      height: auto;
-      max-height: 600px;
-      min-height: 400px;
     }
     
-    .middle-column {
+    .middle-column-primary {
       grid-column: 2;
       grid-row: 1;
-      height: auto;
-      max-height: none;
-      grid-template-rows: auto auto auto;
     }
   
-    .logs-card {
+    .details-card {
       grid-column: 1 / -1;
       grid-row: 2;
       height: auto;
-      max-height: 500px;
-      min-height: 300px;
+      max-height: 200px;
     }
   }
   
   // 小屏幕：单列布局
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    grid-template-rows: auto;
-    max-height: none;
-    gap: $spacing-lg;
+    gap: $spacing-md;
     
     .monitor-card,
-    .middle-column,
-    .logs-card {
+    .middle-column-primary,
+    .details-card {
       grid-column: 1;
       height: auto;
-      max-height: none;
     }
     
     .monitor-card {
@@ -828,19 +1005,13 @@ const animateMcpList = () => {
       max-height: 500px;
     }
     
-    .middle-column {
-      grid-template-rows: auto;
-      gap: $spacing-lg;
-    }
-    
-    .logs-card {
-      min-height: 300px;
-      max-height: 400px;
+    .details-card {
+      max-height: 200px;
     }
   }
   
   @media (max-width: 768px) {
-    gap: $spacing-md;
+    gap: $spacing-sm;
   }
 }
 
@@ -855,9 +1026,7 @@ const animateMcpList = () => {
 }
 
 .monitor-card,
-.logs-card,
-.details-card,
-.metrics-card {
+.logs-card {
   display: flex;
   flex-direction: column;
   gap: $spacing-md;
@@ -871,9 +1040,320 @@ const animateMcpList = () => {
       flex: 1;
       min-height: 0;
       overflow-y: auto;
-      @include custom-scrollbar;
+      overflow-x: hidden;
+      // 只在内容溢出时显示滚动条
+      scrollbar-width: thin;
+      scrollbar-color: transparent transparent;
+      
+      &:hover {
+        scrollbar-color: rgba(74, 105, 255, 0.3) transparent;
+      }
+      
+      // Webkit浏览器
+      &::-webkit-scrollbar {
+        width: 6px;
+      }
+      
+      &::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      
+      &::-webkit-scrollbar-thumb {
+        background: transparent;
+        border-radius: 3px;
+        transition: background 0.2s ease;
+      }
+      
+      &:hover::-webkit-scrollbar-thumb {
+        background: rgba(74, 105, 255, 0.3);
+      }
+      
+      // 只在内容溢出时显示
+      &:not(:hover) {
+        scrollbar-width: none;
+        
+        &::-webkit-scrollbar {
+          display: none;
+        }
+      }
     }
   }
+}
+
+// ========== Job Details Modern Design ==========
+// ========== Job Details Modern Design ==========
+.job-details-modern {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+}
+
+.detail-item-modern {
+  display: flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-sm;
+  border-radius: $radius-md;
+  background: var(--color-surface-elevated);
+  transition: all 0.2s ease;
+  
+  .dark & {
+    background: rgba(30, 41, 59, 0.3);
+  }
+  
+  &:hover {
+    background: rgba(74, 105, 255, 0.05);
+    
+    .dark & {
+      background: rgba(96, 165, 250, 0.1);
+    }
+  }
+}
+
+.detail-icon-wrapper {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  background: rgba(74, 105, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4A69FF;
+  flex-shrink: 0;
+}
+
+.detail-content {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-width: 0;
+}
+
+.detail-label-modern {
+  font-size: $font-size-xs;
+  color: var(--color-text-secondary);
+  font-weight: $font-weight-medium;
+}
+
+.detail-value-modern {
+  font-size: $font-size-sm;
+  color: var(--color-text-primary);
+  font-weight: $font-weight-semibold;
+  @include truncate;
+}
+
+// ========== Metrics Primary Design ==========
+.metrics-card-primary {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.metrics-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.metrics-header-left {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.metrics-icon-badge {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(74, 105, 255, 0.2), rgba(138, 43, 226, 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4A69FF;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(74, 105, 255, 0.2);
+}
+
+.metrics-title-modern {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: var(--color-text-primary);
+  margin: 0 0 2px 0;
+}
+
+.metrics-subtitle-modern {
+  font-size: $font-size-xs;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.metrics-grid-modern {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-md;
+  
+  @media (max-width: 1400px) {
+    grid-template-columns: 1fr;
+    gap: $spacing-sm;
+  }
+}
+
+.metric-card-modern {
+  background: var(--color-surface-elevated);
+  border-radius: 16px;
+  padding: $spacing-lg;
+  border: 1px solid var(--color-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4A69FF, #8B5CF6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .dark & {
+    background: rgba(30, 41, 59, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  &.accuracy {
+    &::before {
+      background: linear-gradient(90deg, #10B981, #34D399);
+    }
+    
+    .metric-icon-wrapper {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.15));
+      color: #10B981;
+    }
+  }
+  
+  &.loss {
+    &::before {
+      background: linear-gradient(90deg, #EF4444, #F87171);
+    }
+    
+    .metric-icon-wrapper {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(248, 113, 113, 0.15));
+      color: #EF4444;
+    }
+  }
+  
+  &.samples {
+    &::before {
+      background: linear-gradient(90deg, #3B82F6, #60A5FA);
+    }
+    
+    .metric-icon-wrapper {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(96, 165, 250, 0.15));
+      color: #3B82F6;
+    }
+  }
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-primary);
+    
+    &::before {
+      opacity: 1;
+    }
+    
+    .dark & {
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+.metric-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.3s ease;
+  
+  .metric-card-modern:hover & {
+    transform: scale(1.1) rotate(5deg);
+  }
+}
+
+.metric-content-modern {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+}
+
+.metric-label-modern {
+  font-size: $font-size-xs;
+  color: var(--color-text-secondary);
+  font-weight: $font-weight-medium;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric-value-modern {
+  font-size: clamp($font-size-2xl, 3vw, $font-size-4xl);
+  font-weight: $font-weight-extrabold;
+  color: var(--color-text-primary);
+  line-height: 1.1;
+}
+
+.metric-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: #10B981;
+  margin-top: 4px;
+  
+  &.down {
+    color: #EF4444;
+  }
+  
+  > svg {
+    flex-shrink: 0;
+  }
+}
+
+.metric-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(74, 105, 255, 0.1);
+  border-radius: $radius-full;
+  overflow: hidden;
+  margin-top: 8px;
+  
+  .dark & {
+    background: rgba(96, 165, 250, 0.15);
+  }
+}
+
+.metric-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3B82F6, #60A5FA);
+  border-radius: $radius-full;
+  transition: width 0.5s ease;
 }
 
 // Loss Chart Card
@@ -882,26 +1362,94 @@ const animateMcpList = () => {
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+}
+
+.loss-chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  flex-shrink: 0;
   
   .card-title {
-    margin-bottom: $spacing-md;
-    flex-shrink: 0;
+    margin: 0;
   }
 }
 
-.chart-container {
-  width: 100%;
-  flex: 1;
-  min-height: 0;
+.loss-chart-info {
   display: flex;
-  flex-direction: column;
+  gap: $spacing-lg;
 }
 
-.loss-chart-svg {
+.loss-current-value {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: var(--color-text-secondary);
+  padding: $spacing-xs $spacing-sm;
+  background: var(--color-surface-elevated);
+  border-radius: $radius-md;
+  
+  .dark & {
+    background: rgba(30, 41, 59, 0.5);
+  }
+}
+
+.chart-scroll-container {
+  width: 100%;
+  height: 220px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  cursor: grab;
+  position: relative;
+  @include custom-scrollbar;
+  
+  &:active {
+    cursor: grabbing;
+  }
+  
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: var(--color-surface-elevated);
+    border-radius: 4px;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(74, 105, 255, 0.4);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(74, 105, 255, 0.6);
+    }
+  }
+}
+
+.chart-wrapper {
+  height: 200px;
+  min-width: 100%;
+}
+
+.loss-chart-svg-horizontal {
   width: 100%;
   height: 200px;
   display: block;
-  margin-bottom: $spacing-xs;
+}
+
+.loss-line-animated {
+  animation: lineDraw 0.5s ease-out;
+}
+
+@keyframes lineDraw {
+  from {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 0;
+  }
 }
 
 .chart-legend {
@@ -1168,11 +1716,11 @@ const animateMcpList = () => {
 }
 
 .workspace-secondary {
-  margin-top: $spacing-3xl;
-  padding-top: $spacing-xl;
+  margin-top: $spacing-xl;
+  padding-top: $spacing-lg;
   display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: $spacing-xl;
+  grid-template-columns: 1.4fr 1fr;
+  gap: $spacing-lg;
   align-items: start;
   position: relative;
   z-index: 0;
@@ -1181,14 +1729,14 @@ const animateMcpList = () => {
   // 小屏幕：单列布局
   @media (max-width: 1024px) {
     grid-template-columns: 1fr;
-    gap: $spacing-lg;
-    margin-top: $spacing-2xl;
-    padding-top: $spacing-lg;
+    gap: $spacing-md;
+    margin-top: $spacing-lg;
+    padding-top: $spacing-md;
   }
   
   @media (max-width: 768px) {
-    gap: $spacing-md;
-    margin-top: $spacing-xl;
+    gap: $spacing-sm;
+    margin-top: $spacing-md;
   }
 }
 
@@ -1414,6 +1962,574 @@ const animateMcpList = () => {
   margin: 0;
   @include truncate; // 单行截断
   word-break: break-word;
+}
+
+// ========== Modern Panel Header ==========
+.panel-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.panel-header-left {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.panel-icon-badge {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  
+  &.agent {
+    background: linear-gradient(135deg, rgba(74, 105, 255, 0.15), rgba(138, 43, 226, 0.15));
+    color: #4A69FF;
+  }
+  
+  &.mcp {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
+    color: #10B981;
+  }
+}
+
+.panel-title-modern {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: var(--color-text-primary);
+  margin: 0 0 2px 0;
+}
+
+.panel-subtitle-modern {
+  font-size: $font-size-xs;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.panel-badge-modern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-xs $spacing-md;
+  background: var(--color-surface-elevated);
+  border-radius: $radius-md;
+  min-width: 60px;
+  
+  .dark & {
+    background: rgba(30, 41, 59, 0.5);
+  }
+}
+
+.badge-value {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-bold;
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.badge-label {
+  font-size: $font-size-xs;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+
+// ========== Agent Telemetry Modern Design ==========
+.agent-telemetry-grid-modern {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: $spacing-lg;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: $spacing-md;
+  }
+}
+
+.agent-card-modern {
+  background: var(--color-surface-elevated);
+  border-radius: 20px;
+  padding: $spacing-lg;
+  border: 2px solid var(--color-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #4A69FF, #8B5CF6);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  .dark & {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  &.agent-running {
+    border-color: rgba(16, 185, 129, 0.4);
+    border-width: 2px;
+    
+    &::before {
+      opacity: 1;
+      background: linear-gradient(90deg, #10B981, #34D399);
+    }
+  }
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+    border-color: var(--color-primary);
+    
+    &::before {
+      opacity: 1;
+    }
+    
+    .dark & {
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+    }
+  }
+  
+  &.skeleton {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transform: none;
+    
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.agent-card-header-modern {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+}
+
+.agent-icon-wrapper {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(74, 105, 255, 0.2), rgba(138, 43, 226, 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4A69FF;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(74, 105, 255, 0.2);
+}
+
+.agent-info-modern {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-name-modern {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: var(--color-text-primary);
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+  @include truncate;
+}
+
+.agent-id-modern {
+  font-size: $font-size-sm;
+  color: var(--color-text-tertiary);
+  font-family: 'Monaco', 'Courier New', monospace;
+  font-weight: $font-weight-medium;
+  @include truncate;
+}
+
+.agent-status-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: $radius-full;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  flex-shrink: 0;
+  
+  &.running {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10B981;
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+      animation: pulse 2s ease-in-out infinite;
+    }
+  }
+  
+  &.waiting {
+    background: rgba(251, 191, 36, 0.15);
+    color: #FBBF24;
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #FBBF24;
+    }
+  }
+  
+  &.idle {
+    background: rgba(156, 163, 175, 0.15);
+    color: #9CA3AF;
+    
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #9CA3AF;
+    }
+  }
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.1); }
+}
+
+.agent-desc-modern {
+  font-size: $font-size-sm;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+  @include line-clamp(2);
+}
+
+.agent-metrics-modern {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+}
+
+.metric-item-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: $spacing-sm $spacing-md;
+  background: rgba(74, 105, 255, 0.08);
+  border-radius: 12px;
+  font-size: $font-size-sm;
+  
+  .dark & {
+    background: rgba(96, 165, 250, 0.15);
+  }
+  
+  > svg {
+    color: #4A69FF;
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.metric-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+  gap: 2px;
+}
+
+.metric-label {
+  font-size: $font-size-xs;
+  color: var(--color-text-tertiary);
+  font-weight: $font-weight-medium;
+  @include truncate;
+}
+
+.metric-value {
+  font-size: $font-size-base;
+  font-weight: $font-weight-bold;
+  color: var(--color-text-primary);
+  @include truncate;
+}
+
+.agent-actions-modern {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-sm;
+  margin-top: $spacing-sm;
+  padding-top: $spacing-md;
+  border-top: 2px solid var(--color-border);
+}
+
+.action-item-modern {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  font-size: $font-size-sm;
+  line-height: 1.5;
+  
+  > svg {
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
+  }
+}
+
+.action-label {
+  color: var(--color-text-tertiary);
+  font-weight: $font-weight-semibold;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.action-text {
+  color: var(--color-text-secondary);
+  flex: 1;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+// ========== MCP Tools Modern Design ==========
+.mcp-list-modern {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+}
+
+.mcp-item-modern {
+  background: var(--color-surface-elevated);
+  border-radius: 16px;
+  padding: $spacing-lg;
+  border: 2px solid var(--color-border);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  
+  .dark & {
+    background: rgba(30, 41, 59, 0.5);
+    border-color: rgba(255, 255, 255, 0.15);
+  }
+  
+  &.mcp-online {
+    border-left: 4px solid #10B981;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #10B981, #34D399);
+      border-radius: 16px 0 0 16px;
+    }
+  }
+  
+  &.mcp-degraded {
+    border-left: 4px solid #F59E0B;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #F59E0B, #FBBF24);
+      border-radius: 16px 0 0 16px;
+    }
+  }
+  
+  &.mcp-offline {
+    border-left: 4px solid #EF4444;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      width: 4px;
+      background: linear-gradient(180deg, #EF4444, #F87171);
+      border-radius: 16px 0 0 16px;
+    }
+  }
+  
+  &:hover {
+    transform: translateX(6px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-color: var(--color-primary);
+    
+    .dark & {
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    }
+  }
+  
+  &.skeleton {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    transform: none;
+    
+    &::before {
+      display: none;
+    }
+  }
+}
+
+.mcp-item-header-modern {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
+}
+
+.mcp-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(59, 130, 246, 0.2));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #10B981;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+}
+
+.mcp-info-modern {
+  flex: 1;
+  min-width: 0;
+}
+
+.mcp-name-modern {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: var(--color-text-primary);
+  margin: 0 0 6px 0;
+  line-height: 1.3;
+  @include truncate;
+}
+
+.mcp-desc-modern {
+  font-size: $font-size-sm;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.6;
+  @include line-clamp(2);
+}
+
+.mcp-metrics-modern {
+  display: flex;
+  align-items: center;
+  gap: $spacing-lg;
+  flex-wrap: wrap;
+  padding-top: $spacing-sm;
+  border-top: 2px solid var(--color-border);
+}
+
+.mcp-metric-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: $font-size-sm;
+  
+  > svg {
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.mcp-metric-label {
+  color: var(--color-text-tertiary);
+  font-weight: $font-weight-medium;
+}
+
+.mcp-metric-value {
+  color: var(--color-text-primary);
+  font-weight: $font-weight-bold;
+  font-size: $font-size-base;
+}
+
+.mcp-status-modern {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: $radius-full;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  margin-left: auto;
+  
+  &.online {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10B981;
+    
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      background: #10B981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+    }
+  }
+  
+  &.degraded {
+    background: rgba(251, 191, 36, 0.15);
+    color: #FBBF24;
+    
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      background: #FBBF24;
+    }
+  }
+  
+  &.offline {
+    background: rgba(239, 68, 68, 0.15);
+    color: #EF4444;
+    
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      background: #EF4444;
+    }
+  }
+}
+
+.status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.status-text-modern {
+  @include truncate;
 }
 </style>
 

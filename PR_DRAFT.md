@@ -43,16 +43,18 @@ This PR introduces a **complete Electron + Vue 3 desktop application** for the E
 - ✅ **Evolution Task Monitor**: 6-step workflow visualization
   - Initialization → Data Preparation → Model Training
   - Active Learning → Inference → Completed
-- ✅ **Agent Telemetry**: Real-time status of 4 agents
+- ✅ **Agent Telemetry**: Real-time status of 4 agents with modern card design
   - InferenceAgent: Uncertainty quantification
   - AnalysisAgent: LLM-powered strategy planning
   - AcquisitionAgent: Web crawling & quality filtering
   - TrainingAgent: Model training & config generation
-- ✅ **MCP Tool Registry**: Status monitoring for 5 MCP tools
+  - Large, readable text with enhanced metrics display
+- ✅ **MCP Tool Registry**: Status monitoring for 5 MCP tools with improved UX
   - Scene_classifier, Keyword_optimizer, Quality_guardian
   - Uncertainty_oracle, Pseudo_label_curator
-- ✅ **Live Logs**: Real-time log streaming
-- ✅ **Metrics Visualization**: Training metrics display
+  - Enhanced card design with gradient borders and clear status indicators
+- ✅ **Job Details Panel**: Replaced logs with comprehensive job information
+- ✅ **Metrics Visualization**: Training metrics display with horizontal scrollable loss curve
 
 ### 6. **Seed Upload Zone** 🆕 (Based on UserMap.md)
 - ✅ Drag-and-drop file upload
@@ -229,7 +231,7 @@ For frontend-independent development, comprehensive mock data simulates:
 - Node.js 18+
 - npm/yarn/pnpm
 
-### Steps
+### Development Mode
 
 ```bash
 # 1. Navigate to frontend directory
@@ -242,12 +244,42 @@ npm install
 npm run electron:dev
 ```
 
+### Build Installer Package
+
+```bash
+# Build for current platform
+cd evolauncher-frontend
+npm run build
+
+# Output will be in release/ directory:
+# - macOS: EvoLabeler-1.0.0.dmg
+# - Windows: EvoLabeler Setup 1.0.0.exe
+# - Linux: EvoLabeler-1.0.0.AppImage
+```
+
+### Insert Test Data to Supabase
+
+```bash
+# Navigate to backend directory
+cd backend
+
+# Run test data insertion script
+python scripts/insert_test_data.py
+
+# This will:
+# - Create 5 test jobs with various statuses
+# - Crawl sample remote sensing images
+# - Upload images to Supabase Storage (if bucket exists)
+# - Create inference results for each job
+```
+
 **Expected Behavior:**
 1. Electron window opens with custom title bar
 2. Dashboard displays with project cards
 3. Click any project card → opens Workspace view
 4. Try theme toggle (moon/sun icon)
 5. Try language switch (globe icon → 中文)
+6. Workspace shows optimized layout with Agent Telemetry and MCP Tool Registry cards
 
 ## 📝 Breaking Changes
 
@@ -326,6 +358,9 @@ This frontend implements:
 - **2025-11-08**: ✅ Full Chinese translation added
 - **2025-11-08**: ✅ Responsive design & bug fixes
 - **2025-11-08**: ✅ UserMap.md interaction flow implemented
+- **2025-11-14**: ✅ Workspace layout optimization & Agent/MCP card redesign
+- **2025-11-14**: ✅ Electron build configuration & DMG package creation
+- **2025-11-14**: ✅ Supabase test data insertion script with image crawling
 
 ## 🎉 Summary
 
