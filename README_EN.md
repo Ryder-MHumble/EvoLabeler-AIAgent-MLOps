@@ -1,0 +1,320 @@
+# EvoLabeler - AI Agent Driven MLOps Engine
+
+<div align="center">
+
+**🚀 Self-Evolving MLOps Engine for Remote Sensing Object Detection Based on Multi-Agent Collaboration**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/python-3.13+-blue)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)](https://fastapi.tiangolo.com/)
+[![Vue](https://img.shields.io/badge/Vue-3.4-brightgreen)](https://vuejs.org/)
+[![Electron](https://img.shields.io/badge/Electron-28-blue)](https://www.electronjs.org/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
+[English](README_EN.md) | [中文文档](README.md)
+
+</div>
+
+---
+
+## 📖 Introduction
+
+**EvoLabeler** is an innovative MLOps system based on the **IDEATE (Iterative Data Engine via Agentic Task Execution)** framework, implementing fully automated closed-loop remote sensing image object detection through multi-agent collaboration.
+
+### 🎯 Key Features
+
+- **🤖 Multi-Agent Architecture**: 4 specialized agents working collaboratively
+- **🔄 Automated Closed-Loop**: Fully automated from data upload to model training
+- **🧠 LLM-Driven Decision Making**: Intelligent analysis and strategy planning
+- **🌐 Active Learning**: Uncertainty-based data acquisition
+- **📊 Semi-Supervised Learning**: High-quality pseudo-label generation
+- **🔗 Residual Architecture**: Information preservation and parallel execution
+- **📁 Project Management**: Complete project lifecycle management and monitoring
+
+---
+
+## 🏗️ System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                  Frontend (Electron Desktop)                │
+│       Vue3 + TypeScript + GSAP + Element Plus               │
+│   Project Dashboard | Workspace Monitor | Agent Viz | MCP  │
+└────────────────────────┬────────────────────────────────────┘
+                         │ REST API
+┌────────────────────────▼────────────────────────────────────┐
+│                    Backend (FastAPI)                        │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │       AdvancedJobOrchestrator (Orchestration Layer)     │ │
+│ │  Residual Connections | Parallel Execution | Feedback   │ │
+│ └─────────────────────────────────────────────────────────┘ │
+│ ┌────────┬──────────┬──────────────┬────────────┐          │
+│ │Inference│Analysis │Acquisition   │Training    │  Agents  │
+│ │Agent   │Agent    │Agent         │Agent       │          │
+│ └────────┴──────────┴──────────────┴────────────┘          │
+│ ┌────────┬──────────┬──────────────┬────────────┐          │
+│ │Supabase│QwenAPI  │WebCrawler    │Subprocess  │  Tools   │
+│ │Client  │Wrapper  │(Playwright)  │Executor    │          │
+│ └────────┴──────────┴──────────────┴────────────┘          │
+│ ┌─────────────────────────────────────────────────────────┐ │
+│ │                    MCP Tool Registry                    │ │
+│ │  Scene Classification | Keyword Optimization | Quality  │ │
+│ └─────────────────────────────────────────────────────────┘ │
+└─────────────────────────────────────────────────────────────┘
+                         │
+┌────────────────────────▼────────────────────────────────────┐
+│              External Services / Storage                    │
+│   Supabase DB  |  Qwen API  |  YOLO Scripts  |  Storage    │
+└─────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 🔬 Workflow
+
+### Complete Pipeline
+
+```
+User Upload ZIP
+    ↓
+[UPLOAD] Extract & Validate
+    ↓
+[INFERENCE] Model Inference (Residual)
+    ↓
+    ├─ Detection Results
+    ├─ Uncertainty Assessment
+    └─ Active Learning Signals
+    ↓
+[ANALYSIS] VLM+LLM Analysis (Residual + Parallel)
+    ↓
+    ├─ Scene Classification (MCP Tools)
+    ├─ Semantic Extraction
+    └─ Search Strategy Generation
+    ↓
+[Conditional Branch] Need More Data?
+    ├─ Yes → [ACQUISITION]
+    │         ├─ Web Crawling (Playwright)
+    │         ├─ Pseudo Labeling (YOLO)
+    │         └─ Quality Filtering (MCP Tools)
+    │         ↓
+    │      [Quality Check] (Feedback Loop)
+    │         ├─ Pass → Continue
+    │         └─ Fail → Supplement/End
+    │
+    └─ No → Skip Acquisition
+    ↓
+[TRAINING] Model Training (Residual)
+    ├─ Dataset Preparation
+    ├─ Configuration Generation
+    └─ Training Monitoring
+    ↓
+[COMPLETE] Done
+```
+
+### Academic Concepts Implementation
+
+| Concept | Implementation | Description |
+|---------|---------------|-------------|
+| **Active Learning** | InferenceAgent | Uncertainty assessment & sample selection |
+| **Semi-Supervised Learning** | AcquisitionAgent | High-quality pseudo-label generation |
+| **LLM in Agent** | AnalysisAgent | Strategy planning & decision making |
+| **Residual Connections** | AdvancedOrchestrator | Information preservation & gradient flow |
+| **Parallel Execution** | ParallelGroup | Accelerate independent tasks |
+| **MCP Integration** | MCPToolRegistry | Standardized tool invocation |
+
+---
+
+## 🚀 Quick Start
+
+### Prerequisites
+
+- Python 3.13+
+- Node.js 18+
+- Poetry (Python package manager)
+- Supabase Account
+- Qwen API Key (SiliconFlow)
+
+### Installation
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/Ryder-MHumble/EvoLabeler-AIAgent-MLOps.git
+cd EvoLabeler-AIAgent-MLOps
+
+# 2. Install backend dependencies
+cd backend
+poetry install
+poetry run playwright install
+
+# 3. Configure environment
+cp .env.example .env
+# Edit .env with your API keys
+
+# 4. Initialize database
+# Run in Supabase SQL Editor: backend/app/db/migrations/002_create_projects_table.sql
+poetry run python scripts/insert_test_projects.py
+
+# 5. Start backend service
+poetry run python run.py
+```
+
+### Start Frontend
+
+```bash
+# 1. Navigate to frontend directory
+cd ../evolauncher-frontend
+
+# 2. Install dependencies
+npm install
+
+# 3. Start Electron application
+npm run electron:dev
+```
+
+### Access Services
+
+- **Backend API Docs**: http://localhost:8000/docs
+- **Health Check**: http://localhost:8000/health
+- **Frontend**: Electron window opens automatically
+
+---
+
+## 📊 Performance Comparison
+
+### Orchestration Architecture
+
+| Metric | Traditional Serial | Residual + Parallel | Improvement |
+|--------|-------------------|---------------------|-------------|
+| Inference→Analysis Time | ~60s | ~35s | ⬇️ 42% |
+| Information Retention | ~60% | ~95% | ⬆️ 58% |
+| Parallel Task Support | ❌ | ✅ | - |
+| Conditional Branching | Basic | Advanced | - |
+| Feedback Loop | ❌ | ✅ | - |
+
+### Agent Capabilities
+
+| Agent | Basic Version | Optimized Version | Improvement |
+|-------|--------------|-------------------|-------------|
+| InferenceAgent | Simple inference | +Uncertainty+Active Learning | ⭐⭐⭐ |
+| AnalysisAgent | Basic description | +Domain Knowledge+MCP | ⭐⭐⭐⭐ |
+| AcquisitionAgent | Simple crawling | +Quality Control+Filtering | ⭐⭐⭐ |
+| TrainingAgent | Fixed config | +Adaptive Params+Monitoring | ⭐⭐ |
+
+---
+
+## 🛠️ Tech Stack
+
+### Backend
+
+- **Framework**: FastAPI 0.115
+- **Database**: Supabase (PostgreSQL)
+- **LLM/VLM**: Qwen API (SiliconFlow)
+- **Web Scraping**: Playwright
+- **Validation**: Pydantic V2
+- **Async**: asyncio
+
+### Frontend
+
+- **Desktop**: Electron 28
+- **Framework**: Vue 3.4 (Composition API)
+- **Build Tool**: Vite 5.0
+- **UI Library**: Element Plus 2.5
+- **Animation**: GSAP 3.12
+- **Styling**: Tailwind CSS + SCSS
+- **State Management**: Pinia 2.1
+- **Routing**: Vue Router 4.2
+- **i18n**: Vue I18n 9.9
+
+---
+
+## 📖 Documentation
+
+### Backend
+- [API Documentation](backend/docs/API.md)
+- [Architecture Design](backend/docs/ARCHITECTURE.md)
+- [Database Design](backend/app/db/DATABASE_DESIGN.md)
+- [Project Management](backend/docs/PROJECT_MANAGEMENT.md)
+
+### Frontend
+- [Frontend README](evolauncher-frontend/README.md)
+- [Quick Start Guide](evolauncher-frontend/QUICKSTART.md)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
+
+### Development Workflow
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🎓 Academic Background
+
+This project is a **graduation thesis project** implementing the following academic concepts:
+
+### Core Contributions
+
+**Backend Innovations:**
+1. Multi-agent orchestration architecture with residual connections
+2. Domain-specialized System Prompt design
+3. MCP standard tool integration framework
+4. Active learning-driven data acquisition strategy
+5. Pseudo-labeling quality control with semi-supervised learning
+
+**Frontend Innovations:**
+1. Real-time multi-agent workflow visualization
+2. Dynamic monitoring of 6-step evolution pipeline
+3. MCP tool registry UI showcase
+4. User story-based interaction flow design
+5. Professional animation system (GSAP)
+
+---
+
+## 👨‍💻 Author
+
+**Ryder Sun**
+
+- 📧 Email: mhumble010221@gmail.com
+- 🔗 GitHub: [@Ryder-MHumble](https://github.com/Ryder-MHumble)
+
+---
+
+## 🙏 Acknowledgments
+
+- FastAPI Team
+- Supabase Community
+- SiliconFlow API
+- Playwright Project
+- All open-source contributors
+
+---
+
+## 📞 Support
+
+- **Issues**: [GitHub Issues](https://github.com/Ryder-MHumble/EvoLabeler-AIAgent-MLOps/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/Ryder-MHumble/EvoLabeler-AIAgent-MLOps/discussions)
+- **Email**: mhumble010221@gmail.com
+
+---
+
+<div align="center">
+
+**Made with ❤️ by Ryder Sun**
+
+If you find this project helpful, please consider giving it a ⭐!
+
+</div>
+

@@ -13,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
-from app.api.v1.endpoints import jobs
+from app.api.v1.endpoints import jobs, projects
 from app.core.config import settings
 from app.core.logging_config import setup_logging, get_logger
 
@@ -147,6 +147,7 @@ async def root() -> dict[str, str]:
 
 # Include routers
 app.include_router(jobs.router, prefix="/api/v1")
+app.include_router(projects.router, prefix="/api/v1")
 
 
 # Request logging middleware

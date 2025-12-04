@@ -34,8 +34,11 @@ export default defineConfig({
         // Preload scripts
         entry: 'electron/preload.ts',
         onstart(options) {
-          // Notify the Renderer process to reload the page when the Preload scripts build is complete
-          options.reload()
+          // Only reload on subsequent builds, not the initial one
+          // This prevents double window creation during startup
+          if (options.startup) {
+            options.startup()
+          }
         },
         vite: {
           build: {

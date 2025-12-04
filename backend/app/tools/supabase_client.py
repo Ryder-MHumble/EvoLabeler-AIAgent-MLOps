@@ -259,4 +259,231 @@ class SupabaseClient:
             )
             raise
 
+    # ============================================
+    # Project Management Methods
+    # ============================================
+
+    async def create_project(self, project_data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Create a new project record.
+        
+        Args:
+            project_data: Project data dictionary
+            
+        Returns:
+            Created project record
+        """
+        try:
+            response = self.client.table("projects").insert(project_data).execute()
+            logger.info(
+                f"Created project: {project_data.get('project_id')}",
+                extra={"project_id": project_data.get("project_id")}
+            )
+            return response.data[0] if response.data else project_data
+            
+        except Exception as e:
+            logger.error(f"Failed to create project: {e}")
+            raise
+
+    async def get_project_by_id(self, project_id: str) -> dict[str, Any]:
+        """
+        Retrieve project by ID.
+        
+        Args:
+            project_id: Project identifier
+            
+        Returns:
+            Project record
+            
+        Raises:
+            ValueError: If project not found
+        """
+        try:
+            response = (
+                self.client.table("projects")
+                .select("*")
+                .eq("project_id", project_id)
+                .execute()
+            )
+            
+            if not response.data:
+                raise ValueError(f"Project not found: {project_id}")
+                
+            return response.data[0]
+            
+        except Exception as e:
+            logger.error(f"Failed to get project: {e}", extra={"project_id": project_id})
+            raise
+
+    async def list_projects(
+        self,
+        page: int = 1,
+        page_size: int = 20,
+        status_filter: Optional[str] = None,
+        sort_by: str = "created_at",
+        sort_order: str = "desc"
+    ) -> dict[str, Any]:
+        """
+        List projects with pagination and filtering.
+        
+        Args:
+            page: Page number (1-indexed)
+            page_size: Items per page
+            status_filter: Optional status filter
+            sort_by: Field to sort by
+            sort_order: Sort order (asc or desc)
+            
+        Returns:
+            Dictionary with 'projects' list and 'total' count
+        """
+        try:
+            # Build query
+            query = self.client.table("projects").select("*", count="exact")
+            
+            # Apply status filter if provided
+            if status_filter:
+                query = query.eq("status", status_filter)
+            
+            # Apply sorting
+            ascending = sort_order.lower() == "asc"
+            query = query.order(sort_by, desc=not ascending)
+            
+            # Apply pagination
+            start = (page - 1) * page_size
+            end = start + page_size - 1
+            query = query.range(start, end)
+            
+            # Execute query
+            response = query.execute()
+            
+            return {
+                "projects": response.data,
+                "total": response.count if hasattr(response, 'count') else len(response.data)
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to list projects: {e}")
+            raise
+
+    async def update_project(
+        self,
+        project_id: str,
+        update_data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Update project record.
+        
+        Args:
+            project_id: Project identifier
+            update_data: Fields to update
+            
+        Returns:
+            Updated project record
+            
+        Raises:
+            ValueError: If project not found
+        """
+        try:
+            response = (
+                self.client.table("projects")
+                .update(update_data)
+                .eq("project_id", project_id)
+                .execute()
+            )
+            
+            if not response.data:
+                raise ValueError(f"Project not found: {project_id}")
+            
+            logger.info(
+                f"Updated project: {project_id}",
+                extra={"project_id": project_id}
+            )
+            return response.data[0]
+            
+        except Exception as e:
+            logger.error(
+                f"Failed to update project: {e}",
+                extra={"project_id": project_id}
+            )
+            raise
+
+    async def delete_project(self, project_id: str) -> None:
+        """
+        Delete project record.
+        
+        Args:
+            project_id: Project identifier
+            
+        Raises:
+            ValueError: If project not found
+        """
+        try:
+            # First check if project exists
+            await self.get_project_by_id(project_id)
+            
+            # Delete project
+            response = (
+                self.client.table("projects")
+                .delete()
+                .eq("project_id", project_id)
+                .execute()
+            )
+            
+            logger.info(
+                f"Deleted project: {project_id}",
+                extra={"project_id": project_id}
+            )
+            
+        except Exception as e:
+            logger.error(
+                f"Failed to delete project: {e}",
+                extra={"project_id": project_id}
+            )
+            raise
+
+    async def get_project_stats(self) -> dict[str, Any]:
+        """
+        Get aggregate statistics for all projects.
+        
+        Returns:
+            Dictionary with project statistics
+        """
+        try:
+            # Get all projects
+            response = self.client.table("projects").select("*").execute()
+            projects = response.data
+            
+            total_projects = len(projects)
+            active_projects = sum(
+                1 for p in projects 
+                if p.get("status") in ["training", "labeling"]
+            )
+            completed_projects = sum(
+                1 for p in projects 
+                if p.get("status") == "completed"
+            )
+            total_images = sum(p.get("image_count", 0) for p in projects)
+            
+            # Calculate average accuracy (only for projects with accuracy)
+            accuracies = [
+                p.get("accuracy") for p in projects 
+                if p.get("accuracy") is not None
+            ]
+            average_accuracy = (
+                sum(accuracies) / len(accuracies) 
+                if accuracies else None
+            )
+            
+            return {
+                "total_projects": total_projects,
+                "active_projects": active_projects,
+                "completed_projects": completed_projects,
+                "total_images": total_images,
+                "average_accuracy": average_accuracy
+            }
+            
+        except Exception as e:
+            logger.error(f"Failed to get project stats: {e}")
+            raise
+
 

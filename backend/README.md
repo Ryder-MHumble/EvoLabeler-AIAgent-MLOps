@@ -50,18 +50,18 @@ GET  /api/v1/jobs/{id}/status  # 查询状态
 ```
 backend/
 ├── app/
-│   ├── agents/                 # 智能体层 ⭐
+│   ├── agents/                 # 智能体层
 │   │   ├── base_agent.py       # Agent基类
 │   │   ├── inference_agent.py  # 推理Agent
 │   │   ├── analysis_agent.py   # 分析Agent
 │   │   ├── acquisition_agent.py # 获取Agent
 │   │   ├── training_agent.py   # 训练Agent
-│   │   └── prompts.py          # 高级Prompt管理 🆕
+│   │   └── prompts.py          # 高级Prompt管理
 │   ├── services/               # 服务层
 │   │   ├── orchestrator.py     # 基础编排器
-│   │   └── advanced_orchestrator.py  # 高级编排器 🆕
+│   │   └── advanced_orchestrator.py  # 高级编排器
 │   ├── tools/                  # 工具层
-│   │   ├── mcp_tools.py        # MCP工具集成 🆕
+│   │   ├── mcp_tools.py        # MCP工具集成
 │   │   ├── supabase_client.py  # Supabase封装
 │   │   ├── qwen_api_wrapper.py # Qwen API
 │   │   ├── web_crawler.py      # Playwright爬虫
@@ -75,7 +75,7 @@ backend/
 │   │   ├── config.py           # 环境配置
 │   │   └── logging_config.py   # 日志配置
 │   ├── db/                     # 数据库
-│   │   ├── DATABASE_DESIGN.md  # 数据库设计文档 🆕
+│   │   ├── DATABASE_DESIGN.md  # 数据库设计文档
 │   │   ├── models.py           # Schema定义
 │   │   └── supabase_init.py    # 客户端初始化
 │   └── main.py                 # 应用入口
@@ -167,7 +167,7 @@ poetry run uvicorn app.main:app --reload
 UPLOAD → INFERENCE → ANALYSIS → ACQUISITION → TRAINING → COMPLETE
 ```
 
-#### 高级编排器 (advanced_orchestrator.py) 🆕
+#### 高级编排器 (advanced_orchestrator.py)
 
 ```python
 残差 + 并行 + 条件:
@@ -231,7 +231,7 @@ result = await mcp.execute_tool(
 
 ---
 
-## 📝 高级 System Prompt 🆕
+## 📝 高级 System Prompt
 
 每个 Agent 都配备了专业化的 System Prompt，位于 `app/agents/prompts.py`:
 
@@ -385,7 +385,7 @@ WantedBy=multi-user.target
 - [API 文档](docs/API.md)
 - [安装指南](docs/SETUP.md)
 - [架构设计](docs/ARCHITECTURE.md)
-- [数据库设计](app/db/DATABASE_DESIGN.md) 🆕
+- [数据库设计](app/db/DATABASE_DESIGN.md)
 - [项目总结](docs/PROJECT_SUMMARY.md)
 
 ---

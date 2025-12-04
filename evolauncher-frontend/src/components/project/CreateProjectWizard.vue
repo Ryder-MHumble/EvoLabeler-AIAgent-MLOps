@@ -338,7 +338,7 @@ watch(() => props.visible, (newVal) => {
             <span class="step-label">{{ step.title }}</span>
           </div>
         </div>
-      </div>n
+      </div>
     </template>
     
     <!-- 内容区域 -->

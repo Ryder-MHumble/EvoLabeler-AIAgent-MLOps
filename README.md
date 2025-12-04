@@ -4,12 +4,16 @@
 
 **🚀 基于多智能体的自进化遥感影像目标检测 MLOps 引擎**
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Python](https://img.shields.io/badge/python-3.13-blue)](https://www.python.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Python](https://img.shields.io/badge/python-3.13+-blue)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115-green)](https://fastapi.tiangolo.com/)
+[![Vue](https://img.shields.io/badge/Vue-3.4-brightgreen)](https://vuejs.org/)
+[![Electron](https://img.shields.io/badge/Electron-28-blue)](https://www.electronjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-Database-brightgreen)](https://supabase.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Code of Conduct](https://img.shields.io/badge/code%20of-conduct-ff69b4.svg)](CODE_OF_CONDUCT.md)
 
-[English](#) | [中文文档](#)
+[English](README_EN.md) | [中文文档](README.md)
 
 </div>
 
@@ -27,6 +31,7 @@
 - **🌐 主动学习**: 基于不确定性的数据获取
 - **📊 半监督学习**: 高质量伪标注生成
 - **🔗 残差架构**: 信息保留和并行执行
+- **📁 项目管理**: 完整的项目生命周期管理和监控
 
 ---
 
@@ -139,23 +144,35 @@ EvoLabeler/
 │   │   │   └── advanced_orchestrator.py  # 残差+并行编排
 │   │   ├── tools/             # 工具层
 │   │   │   ├── mcp_tools.py    # MCP工具集成
-│   │   │   ├── supabase_client.py
+│   │   │   ├── supabase_client.py  # 项目&任务数据库操作
 │   │   │   ├── qwen_api_wrapper.py
 │   │   │   ├── web_crawler.py
 │   │   │   └── subprocess_executor.py
 │   │   ├── api/               # API层
+│   │   │   └── v1/
+│   │   │       ├── endpoints/
+│   │   │       │   ├── projects.py    # 项目管理接口
+│   │   │       │   └── jobs.py        # 任务管理接口
+│   │   │       └── schemas/
+│   │   │           ├── project.py     # 项目数据模型
+│   │   │           └── job.py         # 任务数据模型
 │   │   ├── core/              # 核心配置
 │   │   └── db/                # 数据库
+│   │       ├── migrations/    # 数据库迁移
+│   │       │   └── 002_create_projects_table.sql
 │   │       ├── DATABASE_DESIGN.md  # 数据库设计文档
 │   │       └── models.py
 │   ├── tests/                 # 测试
 │   ├── scripts/               # 脚本
+│   │   └── insert_test_projects.py  # 测试数据插入
 │   └── docs/                  # 文档
 ├── evolauncher-frontend/      # 前端 Electron 应用
 │   ├── electron/             # Electron 主进程
 │   ├── src/                  # Vue 3 源码
 │   │   ├── views/           # Dashboard + Workspace
 │   │   ├── components/      # UI 组件
+│   │   ├── api/             # API 客户端
+│   │   │   └── projects.ts  # 项目API接口 (TypeScript)
 │   │   ├── mock/            # Mock 数据
 │   │   └── assets/styles/   # 主题系统
 │   └── README.md            # 前端文档
@@ -216,6 +233,17 @@ npm run electron:dev
 - **后端健康检查**: http://localhost:8000/health
 - **前端应用**: Electron 桌面窗口自动打开
 
+### 数据库初始化
+
+```bash
+# 创建项目表 (在 Supabase SQL Editor 中执行)
+# 运行: backend/app/db/migrations/002_create_projects_table.sql
+
+# 插入测试数据
+cd backend
+poetry run python scripts/insert_test_projects.py
+```
+
 ---
 
 ## 📊 性能对比
@@ -244,11 +272,10 @@ npm run electron:dev
 ## 📖 详细文档
 
 ### 后端文档
-- [后端 API 文档](backend/docs/API.md)
-- [安装指南](backend/docs/SETUP.md)
+- [后端 API 文档](backend/docs/API.md) - 包含项目和任务管理接口
 - [架构设计](backend/docs/ARCHITECTURE.md)
 - [数据库设计](backend/app/db/DATABASE_DESIGN.md)
-- [配置完成指南](backend/docs/SETUP_COMPLETE.md)
+- [项目表迁移 SQL](backend/app/db/migrations/002_create_projects_table.sql)
 
 ### 前端文档
 - [前端 README](evolauncher-frontend/README.md)
@@ -325,6 +352,26 @@ httpx = "^0.27.2"
 
 ---
 
+## 🤝 参与贡献
+
+我们欢迎所有形式的贡献！请查看 [贡献指南](CONTRIBUTING.md) 了解详情。
+
+### 快速开始贡献
+
+1. Fork 本仓库
+2. 创建你的特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交你的更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 开启一个 Pull Request
+
+---
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
+
+---
+
 ## 👨‍💻 作者
 
 **Ryder Sun**
@@ -341,6 +388,14 @@ httpx = "^0.27.2"
 - 硅基流动API
 - Playwright 项目
 - 所有开源贡献者
+
+---
+
+## 📞 支持
+
+- **问题反馈**: [GitHub Issues](https://github.com/Ryder-MHumble/EvoLabeler-AIAgent-MLOps/issues)
+- **讨论交流**: [GitHub Discussions](https://github.com/Ryder-MHumble/EvoLabeler-AIAgent-MLOps/discussions)
+- **邮件联系**: mhumble010221@gmail.com
 
 <!-- ---
 

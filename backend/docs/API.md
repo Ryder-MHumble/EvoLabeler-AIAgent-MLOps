@@ -39,6 +39,213 @@ GET /
 }
 ```
 
+### Project Endpoints
+
+#### Create Project
+
+Create a new EvoLabeler project with metadata.
+
+```http
+POST /api/v1/projects/
+Content-Type: application/json
+```
+
+**Request Body:**
+```json
+{
+  "project_id": "proj_wildlife_001",
+  "name": "野生动物分类识别",
+  "description": "野生动物物种识别的自动化标注项目",
+  "thumbnail_url": "https://example.com/image.jpg",
+  "metadata": {
+    "model_type": "yolov5m",
+    "classes": ["deer", "bear", "wolf"]
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "project_id": "proj_wildlife_001",
+  "name": "野生动物分类识别",
+  "description": "野生动物物种识别的自动化标注项目",
+  "status": "idle",
+  "image_count": 0,
+  "accuracy": null,
+  "thumbnail_url": "https://example.com/image.jpg",
+  "metadata": {},
+  "created_at": "2024-01-01T00:00:00.000Z",
+  "updated_at": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**Status Codes:**
+- `201`: Project created successfully
+- `400`: Invalid request data
+- `409`: Project ID already exists
+- `500`: Internal server error
+
+#### List Projects
+
+Retrieve a paginated list of all projects with optional filtering.
+
+```http
+GET /api/v1/projects/?page=1&page_size=20&status_filter=training&sort_by=created_at&sort_order=desc
+```
+
+**Query Parameters:**
+- `page` (integer, optional): Page number (default: 1)
+- `page_size` (integer, optional): Items per page (default: 20, max: 100)
+- `status_filter` (string, optional): Filter by status (idle|training|labeling|completed)
+- `sort_by` (string, optional): Sort field (default: created_at)
+- `sort_order` (string, optional): Sort order (asc|desc, default: desc)
+
+**Response:**
+```json
+{
+  "projects": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "project_id": "proj_wildlife_001",
+      "name": "野生动物分类识别",
+      "description": "野生动物物种识别的自动化标注项目",
+      "status": "completed",
+      "image_count": 1250,
+      "accuracy": 94.5,
+      "thumbnail_url": "https://example.com/image.jpg",
+      "metadata": {},
+      "created_at": "2024-01-01T00:00:00.000Z",
+      "updated_at": "2024-01-01T00:05:00.000Z"
+    }
+  ],
+  "total": 1,
+  "page": 1,
+  "page_size": 20
+}
+```
+
+**Status Codes:**
+- `200`: Success
+- `500`: Internal server error
+
+#### Get Project Details
+
+Retrieve detailed information about a specific project.
+
+```http
+GET /api/v1/projects/{project_id}
+```
+
+**Response:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "project_id": "proj_wildlife_001",
+  "name": "野生动物分类识别",
+  "description": "野生动物物种识别的自动化标注项目",
+  "status": "completed",
+  "image_count": 1250,
+  "accuracy": 94.5,
+  "thumbnail_url": "https://example.com/image.jpg",
+  "metadata": {},
+  "created_at": "2024-01-01T00:00:00.000Z",
+  "updated_at": "2024-01-01T00:05:00.000Z"
+}
+```
+
+**Status Codes:**
+- `200`: Success
+- `404`: Project not found
+- `500`: Internal server error
+
+#### Update Project
+
+Update an existing project's information.
+
+```http
+PUT /api/v1/projects/{project_id}
+Content-Type: application/json
+```
+
+**Request Body** (all fields optional):
+```json
+{
+  "name": "Updated Project Name",
+  "description": "Updated description",
+  "status": "training",
+  "image_count": 1500,
+  "accuracy": 95.2,
+  "thumbnail_url": "https://example.com/new-image.jpg",
+  "metadata": {
+    "additional_info": "value"
+  }
+}
+```
+
+**Response:**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "project_id": "proj_wildlife_001",
+  "name": "Updated Project Name",
+  "description": "Updated description",
+  "status": "training",
+  "image_count": 1500,
+  "accuracy": 95.2,
+  "thumbnail_url": "https://example.com/new-image.jpg",
+  "metadata": {},
+  "created_at": "2024-01-01T00:00:00.000Z",
+  "updated_at": "2024-01-01T00:10:00.000Z"
+}
+```
+
+**Status Codes:**
+- `200`: Success
+- `400`: No fields to update
+- `404`: Project not found
+- `500`: Internal server error
+
+#### Delete Project
+
+Delete a project and all associated data.
+
+```http
+DELETE /api/v1/projects/{project_id}
+```
+
+**Response:**
+- Status Code: `204 No Content`
+
+**Status Codes:**
+- `204`: Project deleted successfully
+- `404`: Project not found
+- `500`: Internal server error
+
+#### Get Project Statistics
+
+Get aggregate statistics across all projects.
+
+```http
+GET /api/v1/projects/stats/summary
+```
+
+**Response:**
+```json
+{
+  "total_projects": 8,
+  "active_projects": 3,
+  "completed_projects": 3,
+  "total_images": 43752,
+  "average_accuracy": 91.875
+}
+```
+
+**Status Codes:**
+- `200`: Success
+- `500`: Internal server error
+
 ### Job Endpoints
 
 #### Create Job
