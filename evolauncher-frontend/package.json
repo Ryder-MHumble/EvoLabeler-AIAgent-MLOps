@@ -10,11 +10,14 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && electron-builder",
-    "build:check": "vue-tsc --noEmit && vite build && electron-builder",
+    "build": "vite build",
+    "build:electron": "npm run build && electron-builder",
+    "build:mac": "npm run build && electron-builder --mac",
+    "build:check": "vue-tsc --noEmit && npm run build && electron-builder",
     "preview": "vite preview",
     "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "vite build && electron-builder"
+    "electron:build": "vite build && electron-builder",
+    "postinstall": "electron-builder install-app-deps"
   },
   "dependencies": {
     "@react-three/fiber": "^9.4.0",
@@ -62,20 +65,28 @@
     "files": [
       "dist/**/*",
       "dist-electron/**/*",
-      "package.json"
+      "package.json",
+      "!**/*.map"
     ],
     "extraResources": [],
+    "asar": true,
+    "asarUnpack": [
+      "dist/**/*"
+    ],
     "mac": {
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64"]
+          "arch": ["x64", "arm64"]
         }
       ],
+      "icon": "build/icon.icns",
       "category": "public.app-category.developer-tools",
       "identity": null,
       "hardenedRuntime": false,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist"
     },
     "win": {
       "target": [

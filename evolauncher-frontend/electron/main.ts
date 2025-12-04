@@ -13,8 +13,14 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // │ │ ├── main/main.js
 // │ │ └── preload/preload.js
 // │
-const DIST_PATH = path.join(__dirname, '../dist')
-const PRELOAD_DIST = path.join(__dirname, 'preload.js')
+// Determine paths based on whether app is packaged or in development
+const DIST_PATH = app.isPackaged 
+  ? path.join(process.resourcesPath, 'app.asar', 'dist')
+  : path.join(__dirname, '../dist')
+
+const PRELOAD_DIST = app.isPackaged
+  ? path.join(__dirname, 'preload.js')
+  : path.join(__dirname, 'preload.js')
 
 process.env.DIST = DIST_PATH
 process.env.DIST_ELECTRON = __dirname
