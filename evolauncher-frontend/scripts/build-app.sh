@@ -17,11 +17,19 @@ echo -e "${BLUE}║   EvoLabeler Build Script - macOS    ║${NC}"
 echo -e "${BLUE}╚═══════════════════════════════════════╝${NC}"
 echo ""
 
-# Step 1: Clean previous builds
+# Step 1: Clean previous builds (保留 Logo.png)
 echo -e "${YELLOW}🧹 Step 1/5: Cleaning previous builds...${NC}"
-rm -rf ../dist
+
+# 备份 Logo.png
+if [ -f "../dist/Logo.png" ]; then
+    echo -e "${BLUE}   📦 Backing up Logo.png...${NC}"
+    cp ../dist/Logo.png /tmp/evolabeler_logo_backup.png
+fi
+
+# 清理旧的构建文件
 rm -rf ../dist-electron
 rm -rf ../release
+
 echo -e "${GREEN}   ✓ Clean complete${NC}"
 echo ""
 
@@ -38,6 +46,14 @@ echo ""
 echo -e "${YELLOW}🔨 Step 3/5: Building frontend with Vite...${NC}"
 cd ..
 npm run build 2>&1 | grep -v "DEPRECATION WARNING" || true
+
+# 恢复 Logo.png
+if [ -f "/tmp/evolabeler_logo_backup.png" ]; then
+    echo -e "${BLUE}   📦 Restoring Logo.png...${NC}"
+    cp /tmp/evolabeler_logo_backup.png dist/Logo.png
+    rm /tmp/evolabeler_logo_backup.png
+fi
+
 echo -e "${GREEN}   ✓ Frontend build complete${NC}"
 echo ""
 

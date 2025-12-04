@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
 
 const routes: RouteRecordRaw[] = [
   {
@@ -24,7 +24,8 @@ const routes: RouteRecordRaw[] = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  // 使用 Hash 路由以兼容 Electron 打包后的 file:// 协议，避免首次进入白屏
+  history: createWebHashHistory(),
   routes
 })
 

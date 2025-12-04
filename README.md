@@ -216,6 +216,8 @@ poetry run python run.py
 
 ### 启动前端
 
+#### 开发模式
+
 ```bash
 # 1. 进入前端目录
 cd ../evolauncher-frontend
@@ -226,6 +228,45 @@ npm install
 # 3. 启动 Electron 应用
 npm run electron:dev
 ```
+
+#### 构建生产版本
+
+**方法 1: 一键构建（推荐）**
+
+```bash
+cd evolauncher-frontend/scripts
+./build-app.sh
+```
+
+**方法 2: 手动构建**
+
+```bash
+cd evolauncher-frontend
+
+# 1. 生成应用图标
+cd scripts
+./create-icons.sh
+cd ..
+
+# 2. 构建应用
+npm run build:mac
+```
+
+**构建输出位置**:
+```
+evolauncher-frontend/
+└── release/
+    ├── EvoLabeler-1.0.0-arm64.dmg    # Apple Silicon 版本
+    ├── EvoLabeler-1.0.0.dmg          # Intel 版本
+    └── mac/
+        └── EvoLabeler.app
+```
+
+**首次运行提示**:
+
+macOS 可能会显示安全警告（应用未签名），解决方法：
+- 右键点击 EvoLabeler.app → 选择"打开" → 点击"打开"按钮
+- 或使用命令：`xattr -cr /Applications/EvoLabeler.app`
 
 ### 访问服务
 

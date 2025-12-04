@@ -4,36 +4,22 @@ import path from 'node:path'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-// The built directory structure
-//
-// ├─┬─┬ dist
-// │ │ └── index.html
-// │ │
-// │ ├─┬ dist-electron
-// │ │ ├── main/main.js
-// │ │ └── preload/preload.js
-// │
-// Determine paths based on whether app is packaged or in development
-const DIST_PATH = app.isPackaged 
-  ? path.join(process.resourcesPath, 'app.asar', 'dist')
-  : path.join(__dirname, '../dist')
-
-const PRELOAD_DIST = app.isPackaged
-  ? path.join(__dirname, 'preload.js')
-  : path.join(__dirname, 'preload.js')
+// Dist paths (both dev & prod).
+// In production __dirname points to the dist-electron folder inside app.asar,
+// so ../dist correctly resolves to the bundled renderer assets.
+const DIST_PATH = path.join(__dirname, '../dist')
+const PRELOAD_DIST = path.join(__dirname, 'preload.js')
 
 process.env.DIST = DIST_PATH
 process.env.DIST_ELECTRON = __dirname
-process.env.VITE_PUBLIC = app.isPackaged ? process.env.DIST : path.join(process.env.DIST, '../public')
+process.env.VITE_PUBLIC = DIST_PATH
 
 let win: BrowserWindow | null
 
 const VITE_DEV_SERVER_URL = process.env['VITE_DEV_SERVER_URL']
 
 function createWindow() {
-  const preloadPath = app.isPackaged
-    ? PRELOAD_DIST
-    : path.join(process.cwd(), 'dist-electron/preload.js')
+  const preloadPath = PRELOAD_DIST
 
   win = new BrowserWindow({
     width: 1400,
@@ -65,8 +51,8 @@ function createWindow() {
   // Implement smooth window animations on show
   win.once('ready-to-show', () => {
     win?.show()
-    // Open DevTools in development (attached to the main window)
-    if (VITE_DEV_SERVER_URL && process.env.NODE_ENV !== 'production') {
+    // Open DevTools automatically in development
+    if (VITE_DEV_SERVER_URL) {
       win?.webContents.openDevTools({ mode: 'detach' })
     }
   })
@@ -75,7 +61,7 @@ function createWindow() {
   if (VITE_DEV_SERVER_URL) {
     win.loadURL(VITE_DEV_SERVER_URL)
   } else {
-    win.loadFile(path.join(process.env.DIST!, 'index.html'))
+    win.loadFile(path.join(DIST_PATH, 'index.html'))
   }
 
   const emitWindowState = () => {

@@ -160,6 +160,8 @@ poetry run python run.py
 
 ### Start Frontend
 
+#### Development Mode
+
 ```bash
 # 1. Navigate to frontend directory
 cd ../evolauncher-frontend
@@ -170,6 +172,45 @@ npm install
 # 3. Start Electron application
 npm run electron:dev
 ```
+
+#### Build Production Version
+
+**Method 1: One-Click Build (Recommended)**
+
+```bash
+cd evolauncher-frontend/scripts
+./build-app.sh
+```
+
+**Method 2: Manual Build**
+
+```bash
+cd evolauncher-frontend
+
+# 1. Generate app icons
+cd scripts
+./create-icons.sh
+cd ..
+
+# 2. Build the application
+npm run build:mac
+```
+
+**Build Output Location**:
+```
+evolauncher-frontend/
+└── release/
+    ├── EvoLabeler-1.0.0-arm64.dmg    # Apple Silicon version
+    ├── EvoLabeler-1.0.0.dmg          # Intel version
+    └── mac/
+        └── EvoLabeler.app
+```
+
+**First-Time Run Tips**:
+
+macOS may show a security warning (unsigned app). To resolve:
+- Right-click EvoLabeler.app → Select "Open" → Click "Open" button
+- Or use command: `xattr -cr /Applications/EvoLabeler.app`
 
 ### Access Services
 
