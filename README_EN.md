@@ -2,6 +2,8 @@
 
 <div align="center">
 
+<img src="evolauncher-frontend/dist/Logo.png" alt="EvoLabeler Logo" width="200"/>
+
 **🚀 Self-Evolving MLOps Engine for Remote Sensing Object Detection Based on Multi-Agent Collaboration**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
@@ -30,6 +32,8 @@
 - **📊 Semi-Supervised Learning**: High-quality pseudo-label generation
 - **🔗 Residual Architecture**: Information preservation and parallel execution
 - **📁 Project Management**: Complete project lifecycle management and monitoring
+- **🎨 Co-Pilot Workspace**: Data stream management, smart canvas, agent analysis, live terminal
+- **💻 Desktop Application**: Electron + Vue 3 modern desktop experience
 
 ---
 
@@ -39,7 +43,8 @@
 ┌─────────────────────────────────────────────────────────────┐
 │                  Frontend (Electron Desktop)                │
 │       Vue3 + TypeScript + GSAP + Element Plus               │
-│   Project Dashboard | Workspace Monitor | Agent Viz | MCP  │
+│   Project Dashboard | Workspace Monitor | Co-Pilot Workspace│
+│   Data Stream | Smart Canvas | Agent Analysis | Live Terminal│
 └────────────────────────┬────────────────────────────────────┘
                          │ REST API
 ┌────────────────────────▼────────────────────────────────────┐
@@ -110,19 +115,6 @@ User Upload ZIP
     ↓
 [COMPLETE] Done
 ```
-
-### Academic Concepts Implementation
-
-| Concept | Implementation | Description |
-|---------|---------------|-------------|
-| **Active Learning** | InferenceAgent | Uncertainty assessment & sample selection |
-| **Semi-Supervised Learning** | AcquisitionAgent | High-quality pseudo-label generation |
-| **LLM in Agent** | AnalysisAgent | Strategy planning & decision making |
-| **Residual Connections** | AdvancedOrchestrator | Information preservation & gradient flow |
-| **Parallel Execution** | ParallelGroup | Accelerate independent tasks |
-| **MCP Integration** | MCPToolRegistry | Standardized tool invocation |
-
----
 
 ## 🚀 Quick Start
 
@@ -218,31 +210,6 @@ macOS may show a security warning (unsigned app). To resolve:
 - **Health Check**: http://localhost:8000/health
 - **Frontend**: Electron window opens automatically
 
----
-
-## 📊 Performance Comparison
-
-### Orchestration Architecture
-
-| Metric | Traditional Serial | Residual + Parallel | Improvement |
-|--------|-------------------|---------------------|-------------|
-| Inference→Analysis Time | ~60s | ~35s | ⬇️ 42% |
-| Information Retention | ~60% | ~95% | ⬆️ 58% |
-| Parallel Task Support | ❌ | ✅ | - |
-| Conditional Branching | Basic | Advanced | - |
-| Feedback Loop | ❌ | ✅ | - |
-
-### Agent Capabilities
-
-| Agent | Basic Version | Optimized Version | Improvement |
-|-------|--------------|-------------------|-------------|
-| InferenceAgent | Simple inference | +Uncertainty+Active Learning | ⭐⭐⭐ |
-| AnalysisAgent | Basic description | +Domain Knowledge+MCP | ⭐⭐⭐⭐ |
-| AcquisitionAgent | Simple crawling | +Quality Control+Filtering | ⭐⭐⭐ |
-| TrainingAgent | Fixed config | +Adaptive Params+Monitoring | ⭐⭐ |
-
----
-
 ## 🛠️ Tech Stack
 
 ### Backend
@@ -279,57 +246,13 @@ macOS may show a security warning (unsigned app). To resolve:
 ### Frontend
 - [Frontend README](evolauncher-frontend/README.md)
 - [Quick Start Guide](evolauncher-frontend/QUICKSTART.md)
-
----
-
-## 🤝 Contributing
-
-We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details.
-
-### Development Workflow
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+- [Co-Pilot Workspace Features](evolauncher-frontend/CO_PILOT_FEATURES.md)
 
 ---
 
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## 🎓 Academic Background
-
-This project is a **graduation thesis project** implementing the following academic concepts:
-
-### Core Contributions
-
-**Backend Innovations:**
-1. Multi-agent orchestration architecture with residual connections
-2. Domain-specialized System Prompt design
-3. MCP standard tool integration framework
-4. Active learning-driven data acquisition strategy
-5. Pseudo-labeling quality control with semi-supervised learning
-
-**Frontend Innovations:**
-1. Real-time multi-agent workflow visualization
-2. Dynamic monitoring of 6-step evolution pipeline
-3. MCP tool registry UI showcase
-4. User story-based interaction flow design
-5. Professional animation system (GSAP)
-
----
-
-## 👨‍💻 Author
-
-**Ryder Sun**
-
-- 📧 Email: mhumble010221@gmail.com
-- 🔗 GitHub: [@Ryder-MHumble](https://github.com/Ryder-MHumble)
 
 ---
 
@@ -340,14 +263,6 @@ This project is a **graduation thesis project** implementing the following acade
 - SiliconFlow API
 - Playwright Project
 - All open-source contributors
-
----
-
-## 📞 Support
-
-- **Issues**: [GitHub Issues](https://github.com/Ryder-MHumble/EvoLabeler-AIAgent-MLOps/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/Ryder-MHumble/EvoLabeler-AIAgent-MLOps/discussions)
-- **Email**: mhumble010221@gmail.com
 
 ---
 

@@ -339,3 +339,4 @@ async def get_project_stats() -> ProjectStatsResponse:
             detail=f"Failed to get project statistics: {str(e)}"
         )
 
+

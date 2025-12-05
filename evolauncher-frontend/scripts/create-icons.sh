@@ -74,3 +74,4 @@ ls -lh "${BUILD_DIR}/icon.png"
 echo ""
 echo -e "${GREEN}🎉 Done! You can now build your Electron app.${NC}"
 
+

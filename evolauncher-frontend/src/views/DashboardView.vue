@@ -180,6 +180,11 @@ const handleCreateProject = () => {
   showCreateWizard.value = true
 }
 
+// 打开协同工作区
+const openCoPilotWorkspace = () => {
+  router.push({ name: 'CoPilotWorkspace' })
+}
+
 // 处理项目创建完成
 const handleProjectCreated = async (newProject: Project) => {
     // 添加到项目列表
@@ -251,18 +256,28 @@ onMounted(async () => {
           </p>
     </div>
 
-        <button 
-          @click="handleCreateProject"
-          class="hero-cta-premium"
-        >
-          <span class="cta-bg"></span>
-          <span class="cta-content">
-            <Icon icon="ph:plus-circle" :width="22" />
-            <span>{{ $t('dashboard.createProject') }}</span>
-            <Icon icon="ph:arrow-right" :width="18" />
-          </span>
-          <span class="cta-shine"></span>
-        </button>
+        <div class="hero-actions">
+          <button 
+            @click="handleCreateProject"
+            class="hero-cta-premium"
+          >
+            <span class="cta-bg"></span>
+            <span class="cta-content">
+              <Icon icon="ph:plus-circle" :width="22" />
+              <span>{{ $t('dashboard.createProject') }}</span>
+              <Icon icon="ph:arrow-right" :width="18" />
+            </span>
+            <span class="cta-shine"></span>
+          </button>
+          
+          <button 
+            @click="openCoPilotWorkspace"
+            class="hero-cta-secondary"
+          >
+            <Icon icon="ph:robot" :width="20" />
+            <span>协同工作区</span>
+          </button>
+        </div>
       </div>
       
       <!-- Quick Stats in Hero -->
@@ -363,7 +378,7 @@ onMounted(async () => {
             <div class="project-tag-wrapper">
               <div class="project-tag" :class="`tag-${project.status}`">
                 <span class="tag-dot"></span>
-                <span class="tag-text">{{ $t(`status.${project.status}`) }}</span>
+                <span class="tag-text">{{ $t(`project.status.${project.status}`) }}</span>
             </div>
             </div>
             <!-- Gradient Overlay -->
@@ -628,6 +643,48 @@ onMounted(async () => {
     flex-direction: column;
     text-align: center;
     align-items: center;
+  }
+}
+
+.hero-actions {
+  display: flex;
+  gap: $spacing-md;
+  align-items: center;
+  
+  @media (max-width: 1024px) {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+.hero-cta-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-sm;
+  padding: $spacing-lg $spacing-2xl;
+  font-size: $font-size-base;
+  font-weight: $font-weight-semibold;
+  border-radius: $radius-full;
+  border: 2px solid var(--color-primary);
+  background: transparent;
+  color: var(--color-primary);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  
+  &:hover {
+    background: var(--color-primary);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(74, 105, 255, 0.3);
+  }
+  
+  &:active {
+    transform: translateY(0);
+  }
+  
+  @media (max-width: 1024px) {
+    width: 100%;
+    justify-content: center;
   }
 }
 

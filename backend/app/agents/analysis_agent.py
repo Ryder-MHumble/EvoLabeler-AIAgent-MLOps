@@ -9,6 +9,7 @@ from typing import Any
 from pathlib import Path
 
 from app.agents.base_agent import BaseAgent
+from app.agents.state import AgentState
 from app.agents.prompts import AgentPrompts
 from app.tools.qwen_api_wrapper import QwenAPIWrapper
 from app.core.logging_config import get_logger
@@ -142,5 +143,69 @@ class AnalysisAgent(BaseAgent):
             )
         
         return descriptions
+
+
+# ==================== LangGraph Node Functions ====================
+
+async def analysis_node(state: AgentState) -> AgentState:
+    """
+    LangGraph 节点函数：分析图像并生成搜索策略。
+    
+    此函数作为 LangGraph 工作流中的 perception 节点，负责：
+    1. 使用 Qwen VLM 分析图像
+    2. 提取关键词和场景特征
+    3. 生成搜索策略
+    
+    Args:
+        state: AgentState 状态字典
+        
+    Returns:
+        更新后的 AgentState
+    """
+    logger.info("执行分析节点 (perception)")
+    
+    try:
+        # 初始化工具
+        qwen_api = QwenAPIWrapper()
+        
+        # 获取图像 URL 列表
+        image_urls = state.get("image_urls", [])
+        if not image_urls:
+            # 尝试从其他字段获取
+            image_urls = state.get("uploaded_images", [])
+        
+        if not image_urls:
+            error_msg = "未找到图像 URL"
+            logger.error(error_msg)
+            state["errors"] = state.get("errors", []) + [error_msg]
+            return state
+        
+        # 调用 Qwen API 分析图像
+        analysis_result = await qwen_api.analyze_image(image_urls)
+        
+        # 从分析结果提取搜索关键词
+        # 使用 LLM 生成搜索策略
+        search_strategy = await qwen_api.generate_search_strategy(
+            descriptions=analysis_result.get("descriptions", []),
+            num_queries=5
+        )
+        
+        # 更新状态
+        state["analysis_result"] = analysis_result
+        state["search_keywords"] = search_strategy.get("queries", [])
+        state["search_queries"] = search_strategy.get("queries", [])
+        state["scene_type"] = search_strategy.get("scene_type", "未知")
+        
+        logger.info(
+            f"分析完成: 生成 {len(state['search_keywords'])} 个搜索关键词"
+        )
+        
+        return state
+        
+    except Exception as e:
+        error_msg = f"分析节点执行失败: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        state["errors"] = state.get("errors", []) + [error_msg]
+        return state
 
 

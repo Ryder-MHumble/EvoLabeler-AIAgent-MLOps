@@ -36,6 +36,14 @@ class Settings(BaseSettings):
         default="Qwen/Qwen2.5-72B-Instruct", alias="QWEN_TEXT_MODEL"
     )
 
+    # Remote GPU Server Configuration (SSH)
+    remote_host: str = Field(..., alias="REMOTE_HOST")
+    remote_port: int = Field(default=22, alias="REMOTE_PORT")
+    remote_user: str = Field(..., alias="REMOTE_USER")
+    remote_key_path: Optional[str] = Field(default=None, alias="REMOTE_KEY_PATH")
+    remote_password: Optional[str] = Field(default=None, alias="REMOTE_PASSWORD")
+    remote_timeout: int = Field(default=30, alias="REMOTE_TIMEOUT")
+    
     # Remote YOLO Training Configuration
     remote_yolo_project_path: str = Field(..., alias="REMOTE_YOLO_PROJECT_PATH")
     remote_training_script: str = Field(default="train.py", alias="REMOTE_TRAINING_SCRIPT")

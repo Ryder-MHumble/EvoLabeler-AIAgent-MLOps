@@ -14,7 +14,8 @@
 
 - ✅ **FastAPI**: 高性能异步Web框架
 - ✅ **Multi-Agent**: 4个专业化智能体协同
-- ✅ **残差架构**: AdvancedJobOrchestrator
+- ✅ **编排系统**: 支持基础编排器、高级编排器和 LangGraph 工作流
+- ✅ **远程计算**: SSH 远程 GPU 服务器支持
 - ✅ **MCP工具**: 符合标准的工具集成
 - ✅ **Supabase**: PostgreSQL + Storage
 - ✅ **异步优先**: 全面的 async/await
@@ -52,6 +53,7 @@ backend/
 ├── app/
 │   ├── agents/                 # 智能体层
 │   │   ├── base_agent.py       # Agent基类
+│   │   ├── state.py            # LangGraph状态定义
 │   │   ├── inference_agent.py  # 推理Agent
 │   │   ├── analysis_agent.py   # 分析Agent
 │   │   ├── acquisition_agent.py # 获取Agent
@@ -59,13 +61,15 @@ backend/
 │   │   └── prompts.py          # 高级Prompt管理
 │   ├── services/               # 服务层
 │   │   ├── orchestrator.py     # 基础编排器
-│   │   └── advanced_orchestrator.py  # 高级编排器
+│   │   ├── advanced_orchestrator.py  # 高级编排器
+│   │   └── workflow_graph.py   # LangGraph工作流图
 │   ├── tools/                  # 工具层
 │   │   ├── mcp_tools.py        # MCP工具集成
 │   │   ├── supabase_client.py  # Supabase封装
 │   │   ├── qwen_api_wrapper.py # Qwen API
 │   │   ├── web_crawler.py      # Playwright爬虫
-│   │   └── subprocess_executor.py  # 外部脚本
+│   │   ├── subprocess_executor.py  # 外部脚本
+│   │   └── remote_client.py   # SSH远程客户端
 │   ├── api/v1/                 # API层
 │   │   ├── endpoints/
 │   │   │   └── jobs.py         # Job路由
@@ -156,7 +160,21 @@ poetry run uvicorn app.main:app --reload
 | **InferenceAgent** | 模型推理 + 不确定性评估 | YOLO, 主动学习 |
 | **AnalysisAgent** | 图像分析 + 策略规划 | VLM (Qwen), LLM, MCP工具 |
 | **AcquisitionAgent** | 数据爬取 + 伪标注 | Playwright, 质量控制 |
-| **TrainingAgent** | 模型训练管理 | YAML生成, 进度监控 |
+| **TrainingAgent** | 模型训练管理 | YAML生成, 进度监控, 远程SSH |
+
+### Agent 实现方式
+
+每个 Agent 提供两种使用方式：
+
+1. **类方式** (原有方式): 通过 `BaseAgent` 子类实现，用于 `JobOrchestrator` 和 `AdvancedJobOrchestrator`
+   - `AnalysisAgent.execute(context)`
+   - `AcquisitionAgent.execute(context)`
+   - `TrainingAgent.execute(context)`
+
+2. **LangGraph 节点函数** (新增方式): 作为 LangGraph 工作流的节点函数
+   - `analysis_node(state: AgentState) -> AgentState`
+   - `hunting_node(state: AgentState) -> AgentState`
+   - `evolution_node(state: AgentState) -> AgentState`
 
 ### 编排器对比
 
@@ -190,9 +208,77 @@ COMPLETE
 - ✅ 智能决策分支
 - ✅ 质量反馈循环
 
+#### LangGraph 工作流 (workflow_graph.py)
+
+```python
+基于 LangGraph StateGraph 的状态驱动工作流:
+START → perception (分析) 
+     → [条件判断] → hunter (获取) 
+     → [条件判断] → evolution (训练) 
+     → END
+```
+
+**特点**:
+- ✅ 状态驱动的节点编排
+- ✅ 类型安全的状态管理 (TypedDict)
+- ✅ 支持远程计算 (SSH)
+- ✅ 条件分支和错误处理
+
+**节点函数**:
+- `analysis_node()`: 图像分析和搜索策略生成
+- `hunting_node()`: 网络数据获取
+- `evolution_node()`: 远程训练任务触发
+
+**使用方式**:
+```python
+from app.services.workflow_graph import run_workflow
+from app.agents.state import AgentState
+
+initial_state: AgentState = {
+    "project_id": "project_123",
+    "image_urls": [...],
+    "analysis_result": {},
+    "search_keywords": [],
+    "crawled_count": 0,
+    "training_status": "pending",
+    "errors": []
+}
+
+final_state = await run_workflow(initial_state)
+```
+
 ---
 
-## 🛠️ MCP 工具系统 🆕
+## 🔌 远程计算支持
+
+### SSH 远程客户端 (remote_client.py)
+
+提供与远程 GPU 服务器的 SSH 连接能力，支持：
+
+- **远程命令执行**: 异步执行远程脚本
+- **文件传输**: SFTP 上传/下载
+- **训练任务触发**: 自动触发远程 YOLO 训练
+- **推理任务触发**: 自动触发远程模型推理
+
+**使用示例**:
+```python
+from app.tools.remote_client import RemoteClient
+
+async with RemoteClient() as client:
+    # 上传文件
+    await client.upload_file("local/path", "remote/path")
+    
+    # 触发训练
+    exit_code, stdout, stderr = await client.trigger_training(
+        data_yaml_path="/remote/path/data.yaml",
+        epochs=100,
+        batch_size=16
+    )
+```
+
+**配置要求**: 需要在 `.env` 中配置 `REMOTE_HOST`, `REMOTE_USER`, `REMOTE_KEY_PATH` 等参数。
+
+## 🛠️ MCP 工具系统
 
 ### 可用工具
 
@@ -233,29 +319,30 @@ result = await mcp.execute_tool(
 
 ## 📝 高级 System Prompt
 
-每个 Agent 都配备了专业化的 System Prompt，位于 `app/agents/prompts.py`:
+每个 Agent 都配备了专业化的 System Prompt 管理，位于 `app/agents/prompts.py`:
 
 ### 特点
 
-- **领域知识注入**: 遥感术语和概念
-- **角色定位**: 明确的专业身份
-- **任务导向**: 清晰的输出要求
-- **可配置**: 模板化设计
+- **模板化设计**: 提供 Prompt 模板和工具方法
+- **可配置**: 支持自定义 System Prompt
+- **领域知识**: 包含遥感术语和概念
 
-### 示例
+### 使用方式
 
 ```python
 from app.agents.prompts import AgentPrompts
 
-# 获取分析Agent的System Prompt
+# 获取 System Prompt (当前为占位符，API wrapper 会使用默认值)
 prompt = AgentPrompts.get_system_prompt("analysis")
 
-# 构建完整Prompt
+# 构建完整 Prompt
 full_prompt = AgentPrompts.build_analysis_prompt(
     image_descriptions=[...],
     num_queries=5
 )
 ```
+
+**注意**: System Prompt 当前为占位符，`QwenAPIWrapper` 会在需要时使用默认的专业提示。
 
 ---
 
@@ -337,8 +424,18 @@ SUPABASE_KEY=your-key
 QWEN_API_KEY=your-key
 QWEN_VL_MODEL=Qwen/Qwen2-VL-7B-Instruct
 
+# 远程 GPU 服务器 (SSH)
+REMOTE_HOST=your-gpu-server.com
+REMOTE_PORT=22
+REMOTE_USER=your-username
+REMOTE_KEY_PATH=/path/to/ssh/key
+# 或使用密码认证
+REMOTE_PASSWORD=your-password
+
 # YOLO
 REMOTE_YOLO_PROJECT_PATH=/path/to/yolo
+REMOTE_TRAINING_SCRIPT=train.py
+REMOTE_PREDICT_SCRIPT=predict.py
 
 # 应用
 DEBUG=true

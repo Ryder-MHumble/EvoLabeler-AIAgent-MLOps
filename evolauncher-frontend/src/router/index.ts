@@ -20,6 +20,14 @@ const routes: RouteRecordRaw[] = [
     meta: {
       title: '工作区'
     }
+  },
+  {
+    path: '/copilot/:id?',
+    name: 'CoPilotWorkspace',
+    component: () => import('@/views/CoPilotWorkspaceView.vue'),
+    meta: {
+      title: '协同工作区'
+    }
   }
 ]
 

@@ -10,8 +10,11 @@ from pathlib import Path
 import yaml
 
 from app.agents.base_agent import BaseAgent
+from app.agents.state import AgentState
+from app.tools.remote_client import RemoteClient
 from app.tools.subprocess_executor import SubprocessExecutor
 from app.tools.supabase_client import SupabaseClient
+from app.core.config import settings
 from app.core.logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -194,4 +197,76 @@ class TrainingAgent(BaseAgent):
         
         logger.info(f"Generated data.yaml at: {data_yaml_path}")
         return str(data_yaml_path)
+
+
+# ==================== LangGraph Node Functions ====================
+
+async def evolution_node(state: AgentState) -> AgentState:
+    """
+    LangGraph 节点函数：训练节点（evolution）。
+    
+    通过 SSH 发送指令触发远程训练任务。
+    
+    此函数作为 LangGraph 工作流中的 evolution 节点，负责：
+    1. 准备训练数据集
+    2. 通过 SSH 连接到远程 GPU 服务器
+    3. 触发训练脚本执行
+    
+    Args:
+        state: AgentState 状态字典
+        
+    Returns:
+        更新后的 AgentState
+    """
+    logger.info("执行训练节点 (evolution)")
+    
+    try:
+        # 检查是否有新数据
+        crawled_count = state.get("crawled_count", 0)
+        if crawled_count == 0:
+            logger.warning("没有新数据，跳过训练")
+            state["training_status"] = "skipped"
+            return state
+        
+        # 初始化远程客户端
+        remote_client = RemoteClient()
+        
+        try:
+            # 连接远程服务器
+            await remote_client.connect()
+            
+            # 准备训练数据（这里简化处理，实际应该上传数据文件）
+            # 假设数据已经在远程服务器上准备好
+            
+            # 触发远程训练
+            # 注意：这里需要根据实际情况调整路径和参数
+            data_yaml_path = f"{settings.remote_yolo_project_path}/data.yaml"
+            
+            exit_code, stdout, stderr = await remote_client.trigger_training(
+                data_yaml_path=data_yaml_path,
+                epochs=100,
+                batch_size=16,
+                img_size=640
+            )
+            
+            if exit_code == 0:
+                state["training_status"] = "completed"
+                logger.info("远程训练任务已成功触发")
+            else:
+                state["training_status"] = "failed"
+                error_msg = f"训练任务失败: {stderr[:200]}"
+                state["errors"] = state.get("errors", []) + [error_msg]
+                logger.error(error_msg)
+            
+        finally:
+            await remote_client.disconnect()
+        
+        return state
+        
+    except Exception as e:
+        error_msg = f"训练节点执行失败: {str(e)}"
+        logger.error(error_msg, exc_info=True)
+        state["training_status"] = "failed"
+        state["errors"] = state.get("errors", []) + [error_msg]
+        return state
 

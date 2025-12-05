@@ -85,3 +85,4 @@ class ErrorResponse(BaseModel):
     detail: str = Field(..., description="Error message")
     code: Optional[str] = Field(None, description="Error code")
 
+

@@ -13,6 +13,7 @@
     "build": "vite build",
     "build:electron": "npm run build && electron-builder",
     "build:mac": "npm run build && electron-builder --mac",
+    "build:win": "npm run build && electron-builder --win nsis",
     "build:check": "vue-tsc --noEmit && npm run build && electron-builder",
     "preview": "vite preview",
     "electron:dev": "vite",
@@ -95,7 +96,7 @@
           "arch": ["x64"]
         }
       ],
-      "icon": "build/icon.ico",
+      "icon": "build/icon.png",
       "publisherName": "Ryder Sun"
     },
     "linux": {

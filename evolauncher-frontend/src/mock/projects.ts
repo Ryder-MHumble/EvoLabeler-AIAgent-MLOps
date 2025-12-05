@@ -30,56 +30,67 @@ const getPlaceholderImage = (seed: number) => {
 export const mockProjects: Project[] = [
   {
     id: '1',
-    name: '野生动物分类识别',
-    imageCount: 1250,
+    name: '海上风电平台检测',
+    imageCount: 3420,
     createdAt: '2024-01-15T10:30:00Z',
     updatedAt: '2024-01-20T14:22:00Z',
     status: 'completed',
     thumbnailUrl: getPlaceholderImage(101),
-    description: '野生动物物种识别的自动化标注项目',
+    description: '基于卫星影像的海上风电平台自动检测与标注',
     accuracy: 94.5
   },
   {
     id: '2',
-    name: '医学影像数据集',
-    imageCount: 3420,
+    name: '建筑物提取',
+    imageCount: 8750,
     createdAt: '2024-01-18T09:15:00Z',
     updatedAt: '2024-01-22T16:45:00Z',
     status: 'training',
     thumbnailUrl: getPlaceholderImage(202),
-    description: 'X光和CT扫描图像的标注项目',
+    description: '高分辨率遥感影像中的建筑物轮廓提取与分类',
     accuracy: 87.2
   },
   {
     id: '3',
-    name: '城市交通分析',
-    imageCount: 8750,
+    name: '农田边界识别',
+    imageCount: 1250,
     createdAt: '2024-01-20T13:20:00Z',
     updatedAt: '2024-01-23T11:30:00Z',
     status: 'labeling',
     thumbnailUrl: getPlaceholderImage(303),
-    description: '城市环境中的车辆和行人检测'
+    description: '多光谱遥感影像的农田边界自动识别与面积计算'
   },
   {
     id: '4',
-    name: '商品目录管理',
-    imageCount: 542,
+    name: '道路网络提取',
+    imageCount: 5420,
     createdAt: '2024-01-22T08:45:00Z',
     updatedAt: '2024-01-22T08:45:00Z',
     status: 'idle',
     thumbnailUrl: getPlaceholderImage(404),
-    description: '电商产品分类与识别'
+    description: '卫星影像中的道路网络自动提取与矢量化'
   },
   {
     id: '5',
-    name: '卫星遥感影像',
+    name: '土地利用分类',
     imageCount: 15600,
     createdAt: '2024-01-10T07:00:00Z',
     updatedAt: '2024-01-24T19:15:00Z',
     status: 'completed',
     thumbnailUrl: getPlaceholderImage(505),
-    description: '基于卫星数据的土地利用分类',
+    description: '基于多时相遥感影像的土地利用/覆盖分类',
     accuracy: 91.8
+  },
+  {
+    id: '6',
+    name: '船舶目标检测',
+    imageCount: 2800,
+    createdAt: '2024-01-25T11:20:00Z',
+    updatedAt: '2024-01-26T15:30:00Z',
+    status: 'training',
+    thumbnailUrl: getPlaceholderImage(606),
+    description: '港口和海域卫星影像中的船舶目标自动检测',
+    accuracy: 82.3
   }
 ]
 

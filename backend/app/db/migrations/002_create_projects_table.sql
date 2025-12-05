@@ -136,3 +136,4 @@ COMMENT ON COLUMN public.projects.metadata IS
 COMMENT ON TABLE public.project_jobs IS 
     'Links projects with their associated jobs for tracking workflow progress';
 
+

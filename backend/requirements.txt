@@ -13,6 +13,12 @@ supabase==2.9.0
 # Web Scraping
 playwright==1.48.0
 
+# Multi-Agent Orchestration
+langgraph==0.2.40
+
+# Remote Server Access
+paramiko==3.4.0
+
 # Utilities
 python-dotenv==1.0.1
 httpx==0.27.2

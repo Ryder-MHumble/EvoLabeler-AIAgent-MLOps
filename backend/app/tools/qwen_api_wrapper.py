@@ -175,6 +175,93 @@ class QwenAPIWrapper:
             logger.error(f"Failed to generate search strategy: {e}", exc_info=True)
             raise
 
+    async def analyze_image(self, image_urls: list[str]) -> dict[str, Any]:
+        """
+        调用硅基流动 Qwen-VL 模型进行图像语义分析。
+        
+        此方法批量分析多张图像，提取语义特征和描述信息。
+        
+        Args:
+            image_urls: 图像 URL 列表（可以是本地路径或网络 URL）
+            
+        Returns:
+            包含分析结果的字典：
+            - descriptions: list[str] - 每张图像的描述
+            - key_features: list[str] - 关键特征列表
+            - scene_type: str - 场景类型
+            - analysis_summary: str - 分析摘要
+        """
+        try:
+            descriptions = []
+            
+            # 分析每张图像
+            for image_url in image_urls:
+                try:
+                    description = await self.get_image_description(
+                        image_path=image_url,
+                        prompt="请详细描述这张遥感影像中的内容，包括地形、地物、建筑等特征。"
+                    )
+                    descriptions.append(description)
+                    logger.info(f"图像分析完成: {image_url[:50]}...")
+                    
+                except Exception as e:
+                    logger.warning(f"图像分析失败 {image_url}: {e}")
+                    continue
+            
+            if not descriptions:
+                raise ValueError("所有图像分析均失败")
+            
+            # 提取关键特征和场景类型（可以使用 LLM 进行总结）
+            summary_prompt = f"""
+基于以下图像描述，提取关键特征和场景类型：
+
+图像描述：
+{chr(10).join([f"- {desc[:200]}..." for desc in descriptions])}
+
+请以 JSON 格式返回：
+{{
+    "key_features": ["特征1", "特征2", ...],
+    "scene_type": "场景类型",
+    "analysis_summary": "简要分析摘要"
+}}
+"""
+            
+            summary_result = await self.chat_completion(
+                messages=[
+                    {"role": "system", "content": "你是一个专业的遥感影像分析专家。"},
+                    {"role": "user", "content": summary_prompt}
+                ],
+                temperature=0.7,
+                max_tokens=1000
+            )
+            
+            # 解析 JSON 结果（简化处理）
+            import json
+            try:
+                summary_data = json.loads(summary_result)
+            except json.JSONDecodeError:
+                # 如果返回的不是 JSON，创建默认结构
+                summary_data = {
+                    "key_features": ["遥感影像", "地物检测"],
+                    "scene_type": "未知",
+                    "analysis_summary": "图像分析完成"
+                }
+            
+            result = {
+                "descriptions": descriptions,
+                "key_features": summary_data.get("key_features", []),
+                "scene_type": summary_data.get("scene_type", "未知"),
+                "analysis_summary": summary_data.get("analysis_summary", ""),
+                "num_images_analyzed": len(descriptions)
+            }
+            
+            logger.info(f"批量图像分析完成: {len(descriptions)} 张图像")
+            return result
+            
+        except Exception as e:
+            logger.error(f"图像分析失败: {e}", exc_info=True)
+            raise
+
     async def chat_completion(
         self,
         messages: list[dict[str, str]],
