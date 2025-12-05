@@ -4,10 +4,30 @@
 
 ### 方法 1: 使用自动化脚本（推荐）
 
+脚本支持跨平台构建，可以同时构建 macOS 和 Windows 安装包：
+
 ```bash
 cd evolauncher-frontend/scripts
+
+# 构建所有平台（macOS + Windows）
 ./build-app.sh
+# 或
+./build-app.sh --all
+
+# 仅构建 macOS
+./build-app.sh --mac
+
+# 仅构建 Windows
+./build-app.sh --win
 ```
+
+**Windows 构建说明**：
+- 在 macOS 上构建 Windows 安装包需要 Wine（用于 NSIS 安装程序）
+- 如果未安装 Wine，可以通过 Homebrew 安装：
+  ```bash
+  brew install --cask wine-stable
+  ```
+- 如果没有 Wine，Windows 构建可能会失败，但 macOS 构建不受影响
 
 ### 方法 2: 使用 npm 命令
 
@@ -16,6 +36,9 @@ cd evolauncher-frontend
 
 # 构建 macOS 应用
 npm run build:mac
+
+# 构建 Windows 应用
+npm run build:win
 
 # 或者使用通用构建命令
 npm run build:electron
@@ -86,29 +109,49 @@ cd scripts
 
 构建完成后，你会在 `release/` 目录找到：
 
+### macOS 输出
 ```
 release/
-├── EvoLabeler-1.0.0.dmg           # DMG 安装包
-├── EvoLabeler-1.0.0-mac.zip       # ZIP 压缩包
+├── EvoLabeler-1.0.0-arm64.dmg    # Apple Silicon 版本
+├── EvoLabeler-1.0.0.dmg          # Intel 版本（如果在 Intel Mac 上构建）
 └── mac/
-    └── EvoLabeler.app             # 应用程序
+    └── EvoLabeler.app
+```
+
+### Windows 输出
+```
+release/
+├── EvoLabeler Setup 1.0.0.exe    # Windows 安装程序 (NSIS)
+└── win-unpacked/                 # 未打包的应用文件
+    └── EvoLabeler.exe
+```
+
+### 跨平台构建输出示例
+如果同时构建 macOS 和 Windows，`release/` 目录将包含：
+```
+release/
+├── EvoLabeler-1.0.0-arm64.dmg    # macOS Apple Silicon
+├── EvoLabeler-1.0.0.dmg          # macOS Intel
+├── EvoLabeler Setup 1.0.0.exe    # Windows 安装程序
+├── mac/
+│   └── EvoLabeler.app
+└── win-unpacked/
+    └── EvoLabeler.exe
 ```
 
 ---
 
 ## 🚀 安装和运行
 
-### 从 DMG 安装
+### macOS 安装
 
-1. 打开 `release/EvoLabeler-*.dmg`
-2. 将 EvoLabeler 拖到 Applications 文件夹
+1. 打开 `release/EvoLabeler-*.dmg` 文件
+2. 将 `EvoLabeler.app` 拖拽到 `Applications` 文件夹
 3. 从 Applications 启动 EvoLabeler
 
-### 首次运行
+**首次运行**：
 
 macOS 可能会显示安全警告，因为应用未签名：
-
-**解决方法：**
 
 1. 右键点击 EvoLabeler.app
 2. 选择"打开"
@@ -119,6 +162,13 @@ macOS 可能会显示安全警告，因为应用未签名：
 ```bash
 xattr -cr /Applications/EvoLabeler.app
 ```
+
+### Windows 安装
+
+1. 运行 `release/EvoLabeler Setup *.exe` 安装程序
+2. 按照安装向导提示完成安装
+3. 安装完成后，可以从开始菜单或桌面快捷方式启动应用
+4. 如果 Windows Defender 或杀毒软件提示，选择"允许"或"信任"
 
 ---
 
@@ -190,7 +240,7 @@ xattr -cr /Applications/EvoLabeler.app
 
 3. 重新构建应用
 
-### 问题 4: Apple Silicon (M1/M2) 兼容性
+### 问题 5: Apple Silicon (M1/M2) 兼容性
 
 **症状**: 在 Apple Silicon Mac 上运行缓慢
 
