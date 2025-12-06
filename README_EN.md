@@ -2,7 +2,7 @@
 
 <div align="center">
 
-<img src="evolauncher-frontend/dist/Logo.png" alt="EvoLabeler Logo" width="200"/>
+<img src="docs/images/logo.png" alt="EvoLabeler Logo" width="200"/>
 
 **🚀 Self-Evolving MLOps Engine for Remote Sensing Object Detection Based on Multi-Agent Collaboration**
 
@@ -28,12 +28,63 @@
 - **🤖 Multi-Agent Architecture**: 4 specialized agents working collaboratively
 - **🔄 Automated Closed-Loop**: Fully automated from data upload to model training
 - **🧠 LLM-Driven Decision Making**: Intelligent analysis and strategy planning
-- **🌐 Active Learning**: Uncertainty-based data acquisition
-- **📊 Semi-Supervised Learning**: High-quality pseudo-label generation
+- **🌐 Active Learning**: Entropy-based uncertainty quantification and intelligent sample selection
+- **📊 Semi-Supervised Learning**: High-quality pseudo-labeling with quality scoring
+- **📚 Curriculum Learning**: Difficulty-sorted training (easy to hard)
 - **🔗 Residual Architecture**: Information preservation and parallel execution
-- **📁 Project Management**: Complete project lifecycle management and monitoring
 - **🎨 Co-Pilot Workspace**: Data stream management, smart canvas, agent analysis, live terminal
-- **💻 Desktop Application**: Electron + Vue 3 modern desktop experience
+
+---
+
+## 🔬 Core Algorithms & Academic Innovation
+
+### Active Learning
+
+Entropy-based uncertainty quantification for intelligent sample selection:
+
+```python
+# Entropy calculation: H = -Σ p(x) * log(p(x))
+def calculate_entropy(confidence: float) -> float:
+    if confidence <= 0 or confidence >= 1:
+        return 0.0
+    p, q = confidence, 1 - confidence
+    return -(p * math.log2(p) + q * math.log2(q))
+
+# Active learning decision
+requires_more_data = (
+    uncertainty_score > 0.3 or       # Uncertainty threshold
+    low_confidence_ratio > 0.2 or    # Low confidence ratio
+    boundary_sample_ratio > 0.2      # Boundary sample ratio
+)
+```
+
+### Semi-Supervised Learning
+
+Pseudo-labeling + Quality Assessment + Curriculum Learning pipeline:
+
+```python
+# Quality scoring formula
+quality_score = (
+    0.5 * avg_confidence +           # Average confidence
+    0.3 * high_confidence_ratio +    # High confidence ratio
+    0.2 * consistency_score          # Consistency score
+)
+
+# Curriculum learning sorting (easy to hard)
+sorted_samples = sort_by_quality(pseudo_labels, descending=True)
+```
+
+### Weakly Supervised Fine-tuning
+
+Optimized training strategy for pseudo-labels:
+
+```python
+weak_supervision_config = {
+    "pseudo_label_weight": 0.3,      # Pseudo-label loss weight
+    "confidence_weighted": True,      # Confidence-weighted loss
+    "min_confidence": 0.5,           # Minimum confidence threshold
+}
+```
 
 ---
 
@@ -56,6 +107,8 @@
 │ ┌────────┬──────────┬──────────────┬────────────┐          │
 │ │Inference│Analysis │Acquisition   │Training    │  Agents  │
 │ │Agent   │Agent    │Agent         │Agent       │          │
+│ │Active  │LLM      │Semi-Supervised│Curriculum  │          │
+│ │Learning│Decision │Learning      │Learning    │          │
 │ └────────┴──────────┴──────────────┴────────────┘          │
 │ ┌────────┬──────────┬──────────────┬────────────┐          │
 │ │Supabase│QwenAPI  │WebCrawler    │Subprocess  │  Tools   │
@@ -85,22 +138,22 @@ User Upload ZIP
 [UPLOAD] Extract & Validate
     ↓
 [INFERENCE] Model Inference (Residual)
-    ↓
     ├─ Detection Results
-    ├─ Uncertainty Assessment
-    └─ Active Learning Signals
+    ├─ Uncertainty Assessment (Entropy Calculation)
+    └─ Active Learning Signals (High-Value Sample Detection)
     ↓
 [ANALYSIS] VLM+LLM Analysis (Residual + Parallel)
-    ↓
     ├─ Scene Classification (MCP Tools)
     ├─ Semantic Extraction
-    └─ Search Strategy Generation
+    ├─ Search Strategy Generation
+    └─ Intelligent Decision (Data Acquisition Needed?)
     ↓
-[Conditional Branch] Need More Data?
+[Conditional Branch] Based on Active Learning Signals
     ├─ Yes → [ACQUISITION]
     │         ├─ Web Crawling (Playwright)
-    │         ├─ Pseudo Labeling (YOLO)
-    │         └─ Quality Filtering (MCP Tools)
+    │         ├─ Pseudo Labeling (Semi-Supervised)
+    │         ├─ Quality Scoring (Multi-dimensional)
+    │         └─ Diversity Filtering
     │         ↓
     │      [Quality Check] (Feedback Loop)
     │         ├─ Pass → Continue
@@ -109,11 +162,23 @@ User Upload ZIP
     └─ No → Skip Acquisition
     ↓
 [TRAINING] Model Training (Residual)
-    ├─ Dataset Preparation
-    ├─ Configuration Generation
+    ├─ Curriculum Learning Sorting (Easy to Hard)
+    ├─ Weakly Supervised Fine-tuning Config
+    ├─ Adaptive Training Parameters
     └─ Training Monitoring
     ↓
 [COMPLETE] Done
+
+### Key Academic Concepts
+
+| Concept | Implementation | Core Algorithm |
+|---------|---------------|----------------|
+| **Active Learning** | InferenceAgent | Entropy uncertainty, boundary sample detection |
+| **Semi-Supervised Learning** | AcquisitionAgent | Pseudo-labeling, quality scoring |
+| **Curriculum Learning** | TrainingAgent | Difficulty sorting, phased training |
+| **Weakly Supervised Fine-tuning** | TrainingAgent | Confidence-weighted loss, adaptive params |
+| **LLM Decision** | AnalysisAgent | Intelligent data acquisition decision |
+| **Residual Connection** | AdvancedOrchestrator | Information preservation |
 ```
 
 ## 🚀 Quick Start

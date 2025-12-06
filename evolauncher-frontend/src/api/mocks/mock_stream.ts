@@ -25,13 +25,14 @@ const generateBoundingBoxes = (count: number, baseConfidence: number): BoundingB
 }
 
 /**
- * 模拟图像数据流
+ * 模拟图像数据流 - 使用海上风电相关的真实图片
  */
 export const mockImageStream: ImageTask[] = [
   {
     id: 'img-001',
-    url: 'https://picsum.photos/seed/offshore1/800/600',
-    thumbnailUrl: 'https://picsum.photos/seed/offshore1/200/150',
+    // 海上风力发电场
+    url: 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=800&h=600&fit=crop',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=200&h=150&fit=crop',
     source: 'crawler',
     status: 'incoming',
     confidence: 0.72,
@@ -44,8 +45,9 @@ export const mockImageStream: ImageTask[] = [
   },
   {
     id: 'img-002',
-    url: 'https://picsum.photos/seed/offshore2/800/600',
-    thumbnailUrl: 'https://picsum.photos/seed/offshore2/200/150',
+    // 风力发电机近景
+    url: 'https://images.unsplash.com/photo-1467533003447-e295ff1b0435?w=800&h=600&fit=crop',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1467533003447-e295ff1b0435?w=200&h=150&fit=crop',
     source: 'crawler',
     status: 'pending',
     confidence: 0.85,
@@ -58,8 +60,9 @@ export const mockImageStream: ImageTask[] = [
   },
   {
     id: 'img-003',
-    url: 'https://picsum.photos/seed/offshore3/800/600',
-    thumbnailUrl: 'https://picsum.photos/seed/offshore3/200/150',
+    // 海上风电场航拍
+    url: 'https://images.unsplash.com/photo-1548337138-e87d889cc369?w=800&h=600&fit=crop',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1548337138-e87d889cc369?w=200&h=150&fit=crop',
     source: 'agent_recommended',
     status: 'pending',
     confidence: 0.68,
@@ -72,8 +75,9 @@ export const mockImageStream: ImageTask[] = [
   },
   {
     id: 'img-004',
-    url: 'https://picsum.photos/seed/offshore4/800/600',
-    thumbnailUrl: 'https://picsum.photos/seed/offshore4/200/150',
+    // 风电平台全景
+    url: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=600&fit=crop',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=200&h=150&fit=crop',
     source: 'manual',
     status: 'confirmed',
     confidence: 1.0,
@@ -95,8 +99,9 @@ export const mockImageStream: ImageTask[] = [
   },
   {
     id: 'img-005',
-    url: 'https://picsum.photos/seed/offshore5/800/600',
-    thumbnailUrl: 'https://picsum.photos/seed/offshore5/200/150',
+    // 日落风电场
+    url: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=800&h=600&fit=crop',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1466611653911-95081537e5b7?w=200&h=150&fit=crop',
     source: 'crawler',
     status: 'incoming',
     confidence: 0.55,
@@ -109,8 +114,9 @@ export const mockImageStream: ImageTask[] = [
   },
   {
     id: 'img-006',
-    url: 'https://picsum.photos/seed/offshore6/800/600',
-    thumbnailUrl: 'https://picsum.photos/seed/offshore6/200/150',
+    // 海上风电阵列
+    url: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=800&h=600&fit=crop',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1558449028-b53a39d100fc?w=200&h=150&fit=crop',
     source: 'crawler',
     status: 'pending',
     confidence: 0.78,
@@ -123,8 +129,9 @@ export const mockImageStream: ImageTask[] = [
   },
   {
     id: 'img-007',
-    url: 'https://picsum.photos/seed/offshore7/800/600',
-    thumbnailUrl: 'https://picsum.photos/seed/offshore7/200/150',
+    // 风力涡轮机特写
+    url: 'https://images.unsplash.com/photo-1559087867-ce4c91325525?w=800&h=600&fit=crop',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1559087867-ce4c91325525?w=200&h=150&fit=crop',
     source: 'manual',
     status: 'archived',
     confidence: 1.0,
@@ -217,5 +224,3 @@ export const updateBoundingBox = async (
     }, 200)
   })
 }
-
-

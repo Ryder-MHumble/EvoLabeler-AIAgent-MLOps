@@ -137,13 +137,27 @@ evolauncher-frontend/
 │   │   │   ├── LoadingSkeleton.vue
 │   │   │   ├── StatusBadge.vue
 │   │   │   └── ThemeToggle.vue
+│   │   ├── dashboard/               # 仪表盘模块化组件 (新)
+│   │   │   ├── HeroSection.vue      # 英雄区块
+│   │   │   ├── ProjectCard.vue      # 项目卡片
+│   │   │   ├── ProjectList.vue      # 项目列表
+│   │   │   └── AgentStatusList.vue  # Agent状态列表
+│   │   ├── copilot/                 # 协同工作区模块化组件 (新)
+│   │   │   └── WorkspaceHeader.vue  # 工作区头部
 │   │   ├── project/                 # 项目相关组件
 │   │   │   └── CreateProjectWizard.vue
-│   │   └── workspace/               # Workspace视图的核心组件
+│   │   └── workspace/               # 工作区模块化组件 (新)
+│   │       ├── types.ts             # 类型定义
+│   │       ├── EvolutionMonitor.vue # 进化任务监视器
+│   │       ├── YoloMetricsCard.vue  # YOLO训练指标
+│   │       ├── LossChartCard.vue    # 损失曲线图
+│   │       ├── TrainingDetailsCard.vue # 训练详情
+│   │       ├── AgentTelemetryPanel.vue # Agent遥测面板
+│   │       ├── McpToolsPanel.vue    # MCP工具面板
 │   │       ├── DataInbox.vue        # 左-数据流(收件箱)
-│   │       ├── SmartCanvas.vue      # 中-智能画布（检测框Overlay）
+│   │       ├── SmartCanvas.vue      # 中-智能画布
 │   │       ├── AgentPanel.vue       # 右-Agent分析与进度
-│   │       ├── LiveTerminal.vue     # 全局Agent终端(底部日志)
+│   │       ├── LiveTerminal.vue     # 全局Agent终端
 │   │       └── SeedUploadZone.vue
 │   │
 │   ├── store/                       # Pinia 状态管理
@@ -279,13 +293,15 @@ evolauncher-frontend/
 ### 4. Multi-Agent 可视化
 
 **展示内容:**
-- **InferenceAgent**: 推理 + 不确定性量化
-- **AnalysisAgent**: LLM 分析 + 策略规划
-- **AcquisitionAgent**: Web 爬取 + 质量过滤
-- **TrainingAgent**: 模型训练 + 配置生成
+- **InferenceAgent**: 推理 + 不确定性量化 + 主动学习信号
+- **AnalysisAgent**: LLM 分析 + 智能决策 + 策略规划
+- **AcquisitionAgent**: Web 爬取 + 半监督学习 + 质量评估
+- **TrainingAgent**: 模型训练 + 课程学习 + 弱监督微调
 
 **指标:**
 - Confidence (置信度)
+- Uncertainty Score (不确定性分数)
+- Quality Score (质量分数)
 - Throughput (吞吐量)
 - Success Rate (成功率)
 - Last Task / Next Action
@@ -475,6 +491,15 @@ npm install @iconify/json
 ---
 
 ## 📝 更新日志
+
+### 2025-12-06
+- 🔧 模块化重构：DashboardView (1379行→170行)
+- 🔧 模块化重构：WorkspaceView (3077行→387行)
+- 🔧 模块化重构：CoPilotWorkspaceView (479行→207行)
+- 🧩 新增 dashboard/ 组件目录
+- 🧩 新增 workspace/ 组件目录
+- 🧩 新增 copilot/ 组件目录
+- 📊 优化 Agent 遥测面板布局
 
 ### 2025-01-XX
 - ✨ 实现协同工作区（CoPilot Workspace）

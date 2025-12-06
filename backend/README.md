@@ -155,12 +155,54 @@ poetry run uvicorn app.main:app --reload
 
 ### Agent 职责分工
 
-| Agent | 职责 | 关键技术 |
-|-------|-----|---------|
-| **InferenceAgent** | 模型推理 + 不确定性评估 | YOLO, 主动学习 |
-| **AnalysisAgent** | 图像分析 + 策略规划 | VLM (Qwen), LLM, MCP工具 |
-| **AcquisitionAgent** | 数据爬取 + 伪标注 | Playwright, 质量控制 |
-| **TrainingAgent** | 模型训练管理 | YAML生成, 进度监控, 远程SSH |
+| Agent | 职责 | 关键技术 | 学术创新 |
+|-------|-----|---------|---------|
+| **InferenceAgent** | 模型推理 + 不确定性评估 | YOLO, 主动学习 | 熵值不确定性、边界样本检测、高价值样本识别 |
+| **AnalysisAgent** | 图像分析 + 策略规划 | VLM (Qwen), LLM, MCP工具 | LLM驱动智能决策、数据获取自动判断 |
+| **AcquisitionAgent** | 数据爬取 + 伪标注 | Playwright, 质量控制 | 多维度质量评分、多样性过滤、课程学习排序 |
+| **TrainingAgent** | 模型训练管理 | YAML生成, 进度监控, 远程SSH | 课程学习、弱监督微调、自适应训练参数 |
+
+### 主动学习实现 (InferenceAgent)
+
+```python
+# 熵值计算：H = -p*log(p) - (1-p)*log(1-p)
+def calculate_entropy(confidence: float) -> float:
+    if confidence <= 0 or confidence >= 1:
+        return 0.0
+    p, q = confidence, 1 - confidence
+    return -(p * math.log2(p) + q * math.log2(q))
+
+# 主动学习决策
+requires_more_data = (
+    uncertainty_score > 0.3 or       # 不确定性阈值
+    low_confidence_ratio > 0.2 or    # 低置信度比例
+    boundary_sample_ratio > 0.2      # 边界样本比例
+)
+```
+
+### 半监督学习实现 (AcquisitionAgent)
+
+```python
+# 质量评分公式
+quality_score = (
+    0.5 * avg_confidence +           # 平均置信度
+    0.3 * high_confidence_ratio +    # 高置信度比例
+    0.2 * consistency_score          # 一致性分数
+)
+
+# 课程学习排序（先易后难）
+sorted_samples = sort_by_quality(pseudo_labels, descending=True)
+```
+
+### 弱监督微调实现 (TrainingAgent)
+
+```python
+weak_supervision_config = {
+    "pseudo_label_weight": 0.3,      # 伪标签损失权重
+    "confidence_weighted": True,      # 置信度加权损失
+    "min_confidence": 0.5,           # 最小置信度阈值
+}
+```
 
 ### Agent 实现方式
 

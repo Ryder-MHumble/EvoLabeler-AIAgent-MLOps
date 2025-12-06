@@ -64,23 +64,20 @@ const getSourceColor = (source: ImageTask['source']) => {
 
 <template>
   <div class="data-inbox">
-    <!-- 分类标签 -->
+    <!-- 优化后的分类标签 - 更紧凑的统计面板 -->
     <div class="category-tabs">
-      <button
+      <div
         v-for="category in categories"
         :key="category.key"
         @click="activeCategory = category.key"
         :class="[
-          'category-tab',
+          'category-tab-compact',
           { 'active': activeCategory === category.key }
         ]"
       >
-        <Icon :icon="category.icon" :width="18" />
-        <span>{{ category.label }}</span>
-        <span class="category-count">
-          {{ missionStore.streamStats[category.key] }}
-        </span>
-      </button>
+        <span class="tab-label">{{ category.label }}</span>
+        <span class="tab-count">{{ missionStore.streamStats[category.key] }}</span>
+      </div>
     </div>
 
     <!-- 图像列表 -->
@@ -155,37 +152,65 @@ const getSourceColor = (source: ImageTask['source']) => {
 
 .category-tabs {
   display: flex;
-  gap: 4px;
-  padding: 12px;
+  gap: 6px;
+  padding: 10px;
   background: var(--color-surface-elevated);
   border-bottom: 1px solid var(--color-border);
 }
 
-.category-tab {
+.category-tab-compact {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text-secondary);
-  background: transparent;
-  border: none;
+  gap: 2px;
+  padding: 8px 6px;
+  border-radius: 10px;
   cursor: pointer;
   transition: all 0.2s ease;
+  background: transparent;
+  border: 2px solid transparent;
+  
+  .tab-label {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+  }
+  
+  .tab-count {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--color-text-secondary);
+  }
   
   &:hover {
-    background: var(--color-surface);
-    color: var(--color-text-primary);
+    background: rgba(74, 105, 255, 0.05);
+    border-color: rgba(74, 105, 255, 0.2);
+    
+    .tab-label {
+      color: var(--color-text-secondary);
+    }
+    
+    .tab-count {
+      color: var(--color-primary);
+    }
   }
   
   &.active {
-    background: linear-gradient(135deg, rgba(74, 105, 255, 0.15), rgba(138, 43, 226, 0.15));
-    color: var(--color-primary);
-    font-weight: 600;
+    background: linear-gradient(135deg, rgba(74, 105, 255, 0.1), rgba(138, 43, 226, 0.1));
+    border-color: rgba(74, 105, 255, 0.3);
+    
+    .tab-label {
+      color: var(--color-primary);
+      font-weight: 600;
+    }
+    
+    .tab-count {
+      color: var(--color-primary);
+      font-size: 18px;
+    }
   }
 }
 
@@ -196,10 +221,6 @@ const getSourceColor = (source: ImageTask['source']) => {
   background: rgba(74, 105, 255, 0.1);
   color: var(--color-primary);
   font-weight: 600;
-  
-  .category-tab.active & {
-    background: rgba(74, 105, 255, 0.2);
-  }
 }
 
 .image-list {

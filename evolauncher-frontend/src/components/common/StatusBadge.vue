@@ -14,7 +14,7 @@
 import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 
-type Status = 'idle' | 'running' | 'training' | 'labeling' | 'completed' | 'failed' | 'paused'
+type Status = 'idle' | 'running' | 'training' | 'labeling' | 'completed' | 'failed' | 'paused' | 'pending'
 
 interface Props {
   status: Status
@@ -33,6 +33,11 @@ const statusConfig = computed(() => {
       color: 'gray',
       icon: 'ph:minus-circle',
       label: 'Idle'
+    },
+    pending: {
+      color: 'yellow',
+      icon: 'ph:clock',
+      label: 'Pending'
     },
     running: {
       color: 'blue',

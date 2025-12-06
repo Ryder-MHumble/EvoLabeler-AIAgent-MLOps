@@ -22,11 +22,10 @@ export interface Project {
   accuracy?: number
 }
 
-// Generate placeholder image URLs (using picsum.photos for demo)
-const getPlaceholderImage = (seed: number) => {
-  return `https://picsum.photos/seed/${seed}/400/300`
-}
-
+/**
+ * 使用 Unsplash 提供更具代表性的图片
+ * 每个项目的图片都与其主题相关
+ */
 export const mockProjects: Project[] = [
   {
     id: '1',
@@ -35,7 +34,8 @@ export const mockProjects: Project[] = [
     createdAt: '2024-01-15T10:30:00Z',
     updatedAt: '2024-01-20T14:22:00Z',
     status: 'completed',
-    thumbnailUrl: getPlaceholderImage(101),
+    // 海上风力发电机组图像
+    thumbnailUrl: 'https://images.unsplash.com/photo-1532601224476-15c79f2f7a51?w=400&h=300&fit=crop',
     description: '基于卫星影像的海上风电平台自动检测与标注',
     accuracy: 94.5
   },
@@ -46,7 +46,8 @@ export const mockProjects: Project[] = [
     createdAt: '2024-01-18T09:15:00Z',
     updatedAt: '2024-01-22T16:45:00Z',
     status: 'training',
-    thumbnailUrl: getPlaceholderImage(202),
+    // 城市建筑鸟瞰图
+    thumbnailUrl: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400&h=300&fit=crop',
     description: '高分辨率遥感影像中的建筑物轮廓提取与分类',
     accuracy: 87.2
   },
@@ -57,7 +58,8 @@ export const mockProjects: Project[] = [
     createdAt: '2024-01-20T13:20:00Z',
     updatedAt: '2024-01-23T11:30:00Z',
     status: 'labeling',
-    thumbnailUrl: getPlaceholderImage(303),
+    // 农田航拍图
+    thumbnailUrl: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=400&h=300&fit=crop',
     description: '多光谱遥感影像的农田边界自动识别与面积计算'
   },
   {
@@ -67,7 +69,8 @@ export const mockProjects: Project[] = [
     createdAt: '2024-01-22T08:45:00Z',
     updatedAt: '2024-01-22T08:45:00Z',
     status: 'idle',
-    thumbnailUrl: getPlaceholderImage(404),
+    // 高速公路交叉口鸟瞰图
+    thumbnailUrl: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=400&h=300&fit=crop',
     description: '卫星影像中的道路网络自动提取与矢量化'
   },
   {
@@ -77,7 +80,8 @@ export const mockProjects: Project[] = [
     createdAt: '2024-01-10T07:00:00Z',
     updatedAt: '2024-01-24T19:15:00Z',
     status: 'completed',
-    thumbnailUrl: getPlaceholderImage(505),
+    // 卫星遥感影像 - 多种地类
+    thumbnailUrl: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=400&h=300&fit=crop',
     description: '基于多时相遥感影像的土地利用/覆盖分类',
     accuracy: 91.8
   },
@@ -88,7 +92,8 @@ export const mockProjects: Project[] = [
     createdAt: '2024-01-25T11:20:00Z',
     updatedAt: '2024-01-26T15:30:00Z',
     status: 'training',
-    thumbnailUrl: getPlaceholderImage(606),
+    // 港口船舶航拍图
+    thumbnailUrl: 'https://images.unsplash.com/photo-1605281317010-fe5ffe798166?w=400&h=300&fit=crop',
     description: '港口和海域卫星影像中的船舶目标自动检测',
     accuracy: 82.3
   }
@@ -134,4 +139,3 @@ export const fetchProjectById = (id: string): Promise<Project | undefined> => {
     })
   })
 }
-

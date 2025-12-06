@@ -4,14 +4,26 @@
  * 
  * 中间智能画布 - 显示图像和 Agent 标注的覆盖层
  * 支持交互式编辑边界框（拖动和调整大小）
+ * 支持绘制新的边界框
+ * 
+ * 功能特性：
+ * - 选择工具：选中并编辑现有标注框
+ * - 绘制工具：绘制新的标注框
+ * - 确认/删除标注
+ * - 标签编辑
+ * - 批量操作
  */
 
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useMissionStore } from '@/store/mission'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import type { BoundingBox } from '@/api/types'
 
 const missionStore = useMissionStore()
+
+// 工具类型
+type ToolType = 'select' | 'draw' | 'pan'
 
 // 画布引用
 const canvasRef = ref<HTMLDivElement | null>(null)
@@ -20,6 +32,9 @@ const svgRef = ref<SVGSVGElement | null>(null)
 
 // 当前图像
 const currentImage = computed(() => missionStore.currentImage)
+
+// 当前工具
+const currentTool = ref<ToolType>('select')
 
 // 选中的边界框
 const selectedBBox = ref<string | null>(null)
@@ -31,11 +46,25 @@ const imageLoaded = ref(false)
 const canvasSize = ref({ width: 0, height: 0 })
 const imageSize = ref({ width: 0, height: 0, naturalWidth: 0, naturalHeight: 0 })
 const imageScale = ref({ x: 1, y: 1 })
+const imageOffset = ref({ x: 0, y: 0 })
 
 // 拖动状态
 const isDragging = ref(false)
 const dragStart = ref({ x: 0, y: 0, bbox: null as BoundingBox | null })
-const resizeHandle = ref<string | null>(null) // 'nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'
+const resizeHandle = ref<string | null>(null)
+
+// 绘制状态
+const isDrawing = ref(false)
+const drawStart = ref({ x: 0, y: 0 })
+const drawCurrent = ref({ x: 0, y: 0 })
+
+// 缩放状态
+const zoomLevel = ref(1)
+const minZoom = 0.5
+const maxZoom = 3
+
+// 标签选项
+const labelOptions = ['海上风电平台', '风机叶片', '支撑结构', '建筑物', '道路', '农田', '船舶', '其他']
 
 // 监听图像变化
 watch(currentImage, () => {
@@ -43,6 +72,8 @@ watch(currentImage, () => {
   selectedBBox.value = null
   isDragging.value = false
   resizeHandle.value = null
+  isDrawing.value = false
+  zoomLevel.value = 1
 }, { immediate: true })
 
 // 更新画布尺寸和图像缩放
@@ -63,6 +94,12 @@ const updateCanvasSize = () => {
       naturalHeight: imageRef.value.naturalHeight
     }
     
+    // 计算图像在容器中的偏移
+    imageOffset.value = {
+      x: (containerRect.width - imgRect.width) / 2,
+      y: (containerRect.height - imgRect.height) / 2
+    }
+    
     // 计算缩放比例（归一化坐标到实际像素）
     imageScale.value = {
       x: imgRect.width / imageRef.value.naturalWidth,
@@ -71,14 +108,22 @@ const updateCanvasSize = () => {
   }
 }
 
-// 将归一化坐标转换为SVG像素坐标
-const normalizeToSVG = (normalized: number, dimension: number) => {
-  return normalized * dimension
+// 将归一化坐标转换为SVG像素坐标（考虑图像偏移）
+const normalizeToSVG = (normalized: number, dimension: 'x' | 'y') => {
+  if (dimension === 'x') {
+    return imageOffset.value.x + normalized * imageSize.value.width
+  } else {
+    return imageOffset.value.y + normalized * imageSize.value.height
+  }
 }
 
 // 将SVG像素坐标转换为归一化坐标
-const svgToNormalize = (pixel: number, dimension: number) => {
-  return Math.max(0, Math.min(1, pixel / dimension))
+const svgToNormalize = (pixel: number, dimension: 'x' | 'y') => {
+  if (dimension === 'x') {
+    return Math.max(0, Math.min(1, (pixel - imageOffset.value.x) / imageSize.value.width))
+  } else {
+    return Math.max(0, Math.min(1, (pixel - imageOffset.value.y) / imageSize.value.height))
+  }
 }
 
 // 获取置信度颜色
@@ -88,29 +133,37 @@ const getConfidenceColor = (confidence: number) => {
   return '#f97316' // orange
 }
 
+// 切换工具
+const setTool = (tool: ToolType) => {
+  currentTool.value = tool
+  selectedBBox.value = null
+}
+
 // 点击边界框
 const handleBBoxClick = (bbox: BoundingBox, event: MouseEvent) => {
+  if (currentTool.value !== 'select') return
   event.stopPropagation()
   selectedBBox.value = bbox.id
 }
 
-// 点击画布空白处取消选择
-const handleCanvasClick = () => {
-  selectedBBox.value = null
+// 点击画布空白处
+const handleCanvasClick = (event: MouseEvent) => {
+  if (currentTool.value === 'select') {
+    selectedBBox.value = null
+  }
 }
 
-// 开始拖动
-const handleMouseDown = (bbox: BoundingBox, event: MouseEvent, handle?: string) => {
+// 开始拖动边界框
+const handleBBoxMouseDown = (bbox: BoundingBox, event: MouseEvent, handle?: string) => {
+  if (currentTool.value !== 'select') return
   event.stopPropagation()
   event.preventDefault()
   
   selectedBBox.value = bbox.id
   
   if (handle) {
-    // 调整大小
     resizeHandle.value = handle
   } else {
-    // 拖动整个边界框
     isDragging.value = true
   }
   
@@ -121,9 +174,36 @@ const handleMouseDown = (bbox: BoundingBox, event: MouseEvent, handle?: string) 
   }
 }
 
+// 开始绘制新边界框
+const handleDrawStart = (event: MouseEvent) => {
+  if (currentTool.value !== 'draw' || !canvasRef.value) return
+  
+  event.preventDefault()
+  const rect = canvasRef.value.getBoundingClientRect()
+  const x = event.clientX - rect.left
+  const y = event.clientY - rect.top
+  
+  isDrawing.value = true
+  drawStart.value = { x, y }
+  drawCurrent.value = { x, y }
+}
+
 // 鼠标移动
 const handleMouseMove = (event: MouseEvent) => {
-  if (!currentImage.value || !selectedBBox.value) return
+  if (!currentImage.value) return
+  
+  // 绘制模式
+  if (isDrawing.value && canvasRef.value) {
+    const rect = canvasRef.value.getBoundingClientRect()
+    drawCurrent.value = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    }
+    return
+  }
+  
+  // 选择模式 - 拖动或调整大小
+  if (!selectedBBox.value) return
   
   const bbox = currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
   if (!bbox) return
@@ -132,14 +212,13 @@ const handleMouseMove = (event: MouseEvent) => {
   const deltaY = (event.clientY - dragStart.value.y) / imageSize.value.height
   
   if (isDragging.value && dragStart.value.bbox) {
-    // 拖动整个边界框
+    // 拖动整个边界框 - 优化性能，直接修改数据
     const newX = Math.max(0, Math.min(1 - bbox.width, dragStart.value.bbox.x + deltaX))
     const newY = Math.max(0, Math.min(1 - bbox.height, dragStart.value.bbox.y + deltaY))
     
-    missionStore.updateBBox(currentImage.value.id, bbox.id, {
-      x: newX,
-      y: newY
-    })
+    // 直接修改本地数据以提高性能
+    bbox.x = newX
+    bbox.y = newY
   } else if (resizeHandle.value && dragStart.value.bbox) {
     // 调整大小
     let newX = dragStart.value.bbox.x
@@ -149,17 +228,17 @@ const handleMouseMove = (event: MouseEvent) => {
     
     if (resizeHandle.value.includes('w')) {
       newX = Math.max(0, dragStart.value.bbox.x + deltaX)
-      newWidth = Math.max(0.05, dragStart.value.bbox.width - deltaX)
+      newWidth = Math.max(0.03, dragStart.value.bbox.width - deltaX)
     }
     if (resizeHandle.value.includes('e')) {
-      newWidth = Math.max(0.05, dragStart.value.bbox.width + deltaX)
+      newWidth = Math.max(0.03, dragStart.value.bbox.width + deltaX)
     }
     if (resizeHandle.value.includes('n')) {
       newY = Math.max(0, dragStart.value.bbox.y + deltaY)
-      newHeight = Math.max(0.05, dragStart.value.bbox.height - deltaY)
+      newHeight = Math.max(0.03, dragStart.value.bbox.height - deltaY)
     }
     if (resizeHandle.value.includes('s')) {
-      newHeight = Math.max(0.05, dragStart.value.bbox.height + deltaY)
+      newHeight = Math.max(0.03, dragStart.value.bbox.height + deltaY)
     }
     
     // 确保不超出边界
@@ -170,17 +249,65 @@ const handleMouseMove = (event: MouseEvent) => {
       newHeight = 1 - newY
     }
     
-    missionStore.updateBBox(currentImage.value.id, bbox.id, {
-      x: newX,
-      y: newY,
-      width: newWidth,
-      height: newHeight
-    })
+    // 直接修改本地数据以提高性能
+    bbox.x = newX
+    bbox.y = newY
+    bbox.width = newWidth
+    bbox.height = newHeight
   }
 }
 
 // 鼠标释放
 const handleMouseUp = () => {
+  // 完成绘制
+  if (isDrawing.value && currentImage.value) {
+    const x1 = svgToNormalize(Math.min(drawStart.value.x, drawCurrent.value.x), 'x')
+    const y1 = svgToNormalize(Math.min(drawStart.value.y, drawCurrent.value.y), 'y')
+    const x2 = svgToNormalize(Math.max(drawStart.value.x, drawCurrent.value.x), 'x')
+    const y2 = svgToNormalize(Math.max(drawStart.value.y, drawCurrent.value.y), 'y')
+    
+    const width = x2 - x1
+    const height = y2 - y1
+    
+    // 只有当边界框足够大时才创建
+    if (width > 0.02 && height > 0.02) {
+      const newBBox: BoundingBox = {
+        id: `bbox-${Date.now()}`,
+        x: x1,
+        y: y1,
+        width,
+        height,
+        confidence: 1.0,
+        label: '目标',
+        status: 'pending'
+      }
+      
+      currentImage.value.boundingBoxes.push(newBBox)
+      selectedBBox.value = newBBox.id
+      setTool('select')
+      
+      ElMessage.success('标注框已创建，请设置标签')
+    }
+    
+    isDrawing.value = false
+    drawStart.value = { x: 0, y: 0 }
+    drawCurrent.value = { x: 0, y: 0 }
+    return
+  }
+  
+  // 完成拖动/调整大小 - 同步到 store
+  if ((isDragging.value || resizeHandle.value) && selectedBBox.value && currentImage.value) {
+    const bbox = currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
+    if (bbox) {
+      missionStore.updateBBox(currentImage.value.id, bbox.id, {
+        x: bbox.x,
+        y: bbox.y,
+        width: bbox.width,
+        height: bbox.height
+      })
+    }
+  }
+  
   isDragging.value = false
   resizeHandle.value = null
   dragStart.value = { x: 0, y: 0, bbox: null }
@@ -193,41 +320,112 @@ const handleImageLoad = async () => {
   updateCanvasSize()
 }
 
-// 键盘快捷键 - 空格键确认
+// 确认选中的标注框
+const confirmSelectedBBox = () => {
+  if (!selectedBBox.value || !currentImage.value) return
+  
+  const bbox = currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
+  if (bbox && bbox.status === 'pending') {
+    missionStore.updateBBox(currentImage.value.id, bbox.id, {
+      status: 'confirmed'
+    })
+    ElMessage.success('标注已确认')
+  }
+}
+
+// 删除选中的标注框
+const deleteSelectedBBox = () => {
+  if (!selectedBBox.value || !currentImage.value) return
+  
+  const index = currentImage.value.boundingBoxes.findIndex(b => b.id === selectedBBox.value)
+  if (index > -1) {
+    currentImage.value.boundingBoxes.splice(index, 1)
+    selectedBBox.value = null
+    ElMessage.info('标注已删除')
+  }
+}
+
+// 更新标签
+const updateLabel = (label: string) => {
+  if (!selectedBBox.value || !currentImage.value) return
+  
+  const bbox = currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
+  if (bbox) {
+    missionStore.updateBBox(currentImage.value.id, bbox.id, {
+      label
+    })
+  }
+}
+
+// 确认所有标注
+const confirmAllBBoxes = async () => {
+  if (!currentImage.value) return
+  
+  try {
+    await ElMessageBox.confirm(
+      '确认将所有标注框标记为已确认？',
+      '批量确认',
+      { confirmButtonText: '确认', cancelButtonText: '取消', type: 'info' }
+    )
+    
+    currentImage.value.boundingBoxes.forEach(bbox => {
+      if (bbox.status === 'pending') {
+        missionStore.updateBBox(currentImage.value!.id, bbox.id, {
+          status: 'confirmed'
+        })
+      }
+    })
+    
+    ElMessage.success('所有标注已确认')
+  } catch {
+    // 用户取消
+  }
+}
+
+// 键盘快捷键
 const handleKeyPress = (e: KeyboardEvent) => {
+  // 空格键确认
   if (e.code === 'Space' && selectedBBox.value && currentImage.value) {
     e.preventDefault()
-    const bbox = currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
-    if (bbox && bbox.status === 'pending') {
-      missionStore.updateBBox(currentImage.value.id, bbox.id, {
-        status: 'confirmed'
-      })
-    }
+    confirmSelectedBBox()
   }
   
-  // Delete键删除选中的边界框
+  // Delete/Backspace键删除
   if ((e.key === 'Delete' || e.key === 'Backspace') && selectedBBox.value && currentImage.value) {
     e.preventDefault()
-    const bbox = currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
-    if (bbox) {
-      // 从图像中移除边界框
-      const index = currentImage.value.boundingBoxes.findIndex(b => b.id === bbox.id)
-      if (index > -1) {
-        currentImage.value.boundingBoxes.splice(index, 1)
-        selectedBBox.value = null
-      }
-    }
+    deleteSelectedBBox()
   }
+  
+  // V键切换选择工具
+  if (e.key === 'v' || e.key === 'V') {
+    setTool('select')
+  }
+  
+  // B键切换绘制工具
+  if (e.key === 'b' || e.key === 'B') {
+    setTool('draw')
+  }
+  
+  // Escape取消选择
+  if (e.key === 'Escape') {
+    selectedBBox.value = null
+    isDrawing.value = false
+  }
+}
+
+// 缩放控制
+const handleZoom = (delta: number) => {
+  const newZoom = Math.max(minZoom, Math.min(maxZoom, zoomLevel.value + delta))
+  zoomLevel.value = newZoom
 }
 
 // 获取调整大小手柄位置
 const getResizeHandlePosition = (bbox: BoundingBox, handle: string) => {
-  const x = normalizeToSVG(bbox.x, canvasSize.value.width)
-  const y = normalizeToSVG(bbox.y, canvasSize.value.height)
-  const w = normalizeToSVG(bbox.width, canvasSize.value.width)
-  const h = normalizeToSVG(bbox.height, canvasSize.value.height)
+  const x = normalizeToSVG(bbox.x, 'x')
+  const y = normalizeToSVG(bbox.y, 'y')
+  const w = bbox.width * imageSize.value.width
+  const h = bbox.height * imageSize.value.height
   
-  const handleSize = 8
   const positions: Record<string, { x: number; y: number }> = {
     'nw': { x: x, y: y },
     'ne': { x: x + w, y: y },
@@ -241,6 +439,24 @@ const getResizeHandlePosition = (bbox: BoundingBox, handle: string) => {
   
   return positions[handle] || { x: 0, y: 0 }
 }
+
+// 获取绘制中边界框的样式
+const getDrawingRect = computed(() => {
+  if (!isDrawing.value) return null
+  
+  const x = Math.min(drawStart.value.x, drawCurrent.value.x)
+  const y = Math.min(drawStart.value.y, drawCurrent.value.y)
+  const width = Math.abs(drawCurrent.value.x - drawStart.value.x)
+  const height = Math.abs(drawCurrent.value.y - drawStart.value.y)
+  
+  return { x, y, width, height }
+})
+
+// 获取选中的边界框
+const selectedBBoxData = computed(() => {
+  if (!selectedBBox.value || !currentImage.value) return null
+  return currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
+})
 
 onMounted(() => {
   window.addEventListener('resize', updateCanvasSize)
@@ -259,17 +475,80 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="smart-canvas" ref="canvasRef" @click="handleCanvasClick">
+  <div class="smart-canvas" ref="canvasRef">
+    <!-- 工具栏 -->
+    <div class="canvas-toolbar">
+      <div class="toolbar-group">
+        <button
+          @click="setTool('select')"
+          :class="['tool-btn', { active: currentTool === 'select' }]"
+          title="选择工具 (V)"
+        >
+          <Icon icon="ph:cursor" :width="20" />
+        </button>
+        <button
+          @click="setTool('draw')"
+          :class="['tool-btn', { active: currentTool === 'draw' }]"
+          title="绘制工具 (B)"
+        >
+          <Icon icon="ph:selection" :width="20" />
+        </button>
+      </div>
+      
+      <div class="toolbar-divider"></div>
+      
+      <div class="toolbar-group">
+        <button
+          @click="handleZoom(-0.25)"
+          class="tool-btn"
+          :disabled="zoomLevel <= minZoom"
+          title="缩小"
+        >
+          <Icon icon="ph:minus" :width="18" />
+        </button>
+        <span class="zoom-label">{{ Math.round(zoomLevel * 100) }}%</span>
+        <button
+          @click="handleZoom(0.25)"
+          class="tool-btn"
+          :disabled="zoomLevel >= maxZoom"
+          title="放大"
+        >
+          <Icon icon="ph:plus" :width="18" />
+        </button>
+      </div>
+      
+      <div class="toolbar-divider"></div>
+      
+      <div class="toolbar-group" v-if="currentImage">
+        <button
+          @click="confirmAllBBoxes"
+          class="tool-btn success"
+          title="确认所有标注"
+        >
+          <Icon icon="ph:check-circle" :width="20" />
+          <span>全部确认</span>
+        </button>
+      </div>
+    </div>
+
     <!-- 空状态 -->
     <div v-if="!currentImage" class="empty-canvas">
-      <Icon icon="ph:image-square" :width="64" />
-      <p>请从左侧选择一张图像</p>
+      <div class="empty-icon">
+        <Icon icon="ph:image-square" :width="80" />
+      </div>
+      <h3>请从左侧选择一张图像</h3>
+      <p>选择图像后即可开始标注工作</p>
     </div>
 
     <!-- 图像和覆盖层 -->
     <div v-else class="canvas-content">
       <!-- 图像容器 -->
-      <div class="image-container">
+      <div 
+        class="image-container"
+        :class="{ 'tool-draw': currentTool === 'draw' }"
+        @mousedown="handleDrawStart"
+        @click="handleCanvasClick"
+      >
         <img
           v-if="currentImage.url"
           ref="imageRef"
@@ -277,6 +556,7 @@ onUnmounted(() => {
           :alt="currentImage.id"
           @load="handleImageLoad"
           class="canvas-image"
+          :style="{ transform: `scale(${zoomLevel})` }"
           draggable="false"
         />
         
@@ -294,62 +574,141 @@ onUnmounted(() => {
           :width="canvasSize.width"
           :height="canvasSize.height"
         >
+          <!-- 现有边界框 -->
           <g
             v-for="bbox in currentImage.boundingBoxes"
             :key="bbox.id"
             @click.stop="handleBBoxClick(bbox, $event)"
-            @mousedown.stop="handleMouseDown(bbox, $event)"
+            @mousedown.stop="handleBBoxMouseDown(bbox, $event)"
             :class="[
               'bbox-group',
-              { 'selected': selectedBBox === bbox.id }
+              { 'selected': selectedBBox === bbox.id },
+              { 'confirmed': bbox.status === 'confirmed' }
             ]"
           >
             <!-- 边界框 -->
             <rect
-              :x="normalizeToSVG(bbox.x, canvasSize.width)"
-              :y="normalizeToSVG(bbox.y, canvasSize.height)"
-              :width="normalizeToSVG(bbox.width, canvasSize.width)"
-              :height="normalizeToSVG(bbox.height, canvasSize.height)"
+              :x="normalizeToSVG(bbox.x, 'x')"
+              :y="normalizeToSVG(bbox.y, 'y')"
+              :width="bbox.width * imageSize.width"
+              :height="bbox.height * imageSize.height"
               :fill="getConfidenceColor(bbox.confidence)"
-              :fill-opacity="bbox.status === 'confirmed' ? 0.2 : 0.1"
-              :stroke="getConfidenceColor(bbox.confidence)"
-              :stroke-width="selectedBBox === bbox.id ? 3 : (bbox.status === 'confirmed' ? 2 : 2)"
-              :stroke-dasharray="bbox.status === 'pending' ? '5,5' : '0'"
+              :fill-opacity="bbox.status === 'confirmed' ? 0.15 : 0.08"
+              :stroke="selectedBBox === bbox.id ? '#4A69FF' : getConfidenceColor(bbox.confidence)"
+              :stroke-width="selectedBBox === bbox.id ? 3 : 2"
+              :stroke-dasharray="bbox.status === 'pending' ? '6,4' : '0'"
               rx="4"
-              :class="{ 'cursor-move': selectedBBox === bbox.id }"
+              class="bbox-rect"
             />
             
             <!-- 标签 -->
-            <text
-              :x="normalizeToSVG(bbox.x, canvasSize.width) + 4"
-              :y="normalizeToSVG(bbox.y, canvasSize.height) - 4"
-              :fill="getConfidenceColor(bbox.confidence)"
-              font-size="12"
-              font-weight="600"
-              class="bbox-label"
-            >
-              {{ bbox.label || '目标' }} {{ Math.round(bbox.confidence * 100) }}%
-            </text>
+            <g class="bbox-label-group">
+              <rect
+                :x="normalizeToSVG(bbox.x, 'x')"
+                :y="normalizeToSVG(bbox.y, 'y') - 24"
+                :width="Math.max(60, (bbox.label?.length || 4) * 10 + 50)"
+                height="22"
+                :fill="selectedBBox === bbox.id ? '#4A69FF' : getConfidenceColor(bbox.confidence)"
+                rx="4"
+                class="bbox-label-bg"
+              />
+              <text
+                :x="normalizeToSVG(bbox.x, 'x') + 6"
+                :y="normalizeToSVG(bbox.y, 'y') - 8"
+                fill="white"
+                font-size="12"
+                font-weight="600"
+                class="bbox-label"
+              >
+                {{ bbox.label || '目标' }} {{ Math.round(bbox.confidence * 100) }}%
+              </text>
+            </g>
             
             <!-- 调整大小手柄（仅选中时显示） -->
-            <template v-if="selectedBBox === bbox.id">
+            <template v-if="selectedBBox === bbox.id && currentTool === 'select'">
               <circle
                 v-for="handle in ['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w']"
                 :key="handle"
                 :cx="getResizeHandlePosition(bbox, handle).x"
                 :cy="getResizeHandlePosition(bbox, handle).y"
                 r="6"
-                :fill="getConfidenceColor(bbox.confidence)"
-                :stroke="'white'"
+                fill="#4A69FF"
+                stroke="white"
                 stroke-width="2"
                 class="resize-handle"
                 :class="`handle-${handle}`"
-                @mousedown.stop="handleMouseDown(bbox, $event, handle)"
-                style="cursor: nwse-resize;"
+                @mousedown.stop="handleBBoxMouseDown(bbox, $event, handle)"
               />
             </template>
           </g>
+          
+          <!-- 绘制中的边界框 -->
+          <rect
+            v-if="isDrawing && getDrawingRect"
+            :x="getDrawingRect.x"
+            :y="getDrawingRect.y"
+            :width="getDrawingRect.width"
+            :height="getDrawingRect.height"
+            fill="rgba(74, 105, 255, 0.1)"
+            stroke="#4A69FF"
+            stroke-width="2"
+            stroke-dasharray="8,4"
+            rx="4"
+            class="drawing-rect"
+          />
         </svg>
+      </div>
+
+      <!-- 选中边界框的编辑面板 -->
+      <div v-if="selectedBBoxData && currentTool === 'select'" class="bbox-edit-panel">
+        <div class="edit-panel-header">
+          <Icon icon="ph:pencil-simple" :width="18" />
+          <span>编辑标注</span>
+        </div>
+        
+        <div class="edit-panel-body">
+          <div class="edit-row">
+            <label>标签</label>
+            <select 
+              :value="selectedBBoxData.label"
+              @change="updateLabel(($event.target as HTMLSelectElement).value)"
+              class="label-select"
+            >
+              <option v-for="label in labelOptions" :key="label" :value="label">
+                {{ label }}
+              </option>
+            </select>
+          </div>
+          
+          <div class="edit-row">
+            <label>置信度</label>
+            <span class="confidence-value" :style="{ color: getConfidenceColor(selectedBBoxData.confidence) }">
+              {{ Math.round(selectedBBoxData.confidence * 100) }}%
+            </span>
+          </div>
+          
+          <div class="edit-row">
+            <label>状态</label>
+            <span :class="['status-badge', selectedBBoxData.status]">
+              {{ selectedBBoxData.status === 'confirmed' ? '已确认' : '待确认' }}
+            </span>
+          </div>
+        </div>
+        
+        <div class="edit-panel-actions">
+          <button 
+            @click="confirmSelectedBBox"
+            class="action-btn confirm"
+            :disabled="selectedBBoxData.status === 'confirmed'"
+          >
+            <Icon icon="ph:check" :width="16" />
+            确认
+          </button>
+          <button @click="deleteSelectedBBox" class="action-btn delete">
+            <Icon icon="ph:trash" :width="16" />
+            删除
+          </button>
+        </div>
       </div>
 
       <!-- 图像信息栏 -->
@@ -372,9 +731,9 @@ onUnmounted(() => {
                    currentImage.source === 'agent_recommended' ? 'Agent推荐' : 
                    '手动上传' }}</span>
         </div>
-        <div v-if="selectedBBox" class="info-item hint">
+        <div class="info-item hint">
           <Icon icon="ph:keyboard" :width="16" />
-          <span>空格确认 | Delete删除</span>
+          <span>V选择 | B绘制 | 空格确认 | Del删除</span>
         </div>
       </div>
     </div>
@@ -394,6 +753,84 @@ onUnmounted(() => {
   min-height: 0;
 }
 
+// 工具栏
+.canvas-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  background: var(--color-surface-elevated);
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border);
+  margin: 0 8px;
+}
+
+.tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &:hover:not(:disabled) {
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+  }
+  
+  &.active {
+    background: linear-gradient(135deg, rgba(74, 105, 255, 0.15), rgba(138, 43, 226, 0.15));
+    color: var(--color-primary);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  &.success {
+    width: auto;
+    padding: 0 12px;
+    color: #10b981;
+    
+    &:hover {
+      background: rgba(16, 185, 129, 0.1);
+    }
+    
+    span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+  }
+}
+
+.zoom-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  min-width: 45px;
+  text-align: center;
+}
+
+// 空状态
 .empty-canvas {
   flex: 1;
   display: flex;
@@ -401,20 +838,43 @@ onUnmounted(() => {
   align-items: center;
   justify-content: center;
   gap: 16px;
-  color: var(--color-text-tertiary);
-  
-  p {
-    margin: 0;
-    font-size: 16px;
-  }
+  padding: 40px;
+  text-align: center;
 }
 
+.empty-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(74, 105, 255, 0.1), rgba(138, 43, 226, 0.1));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  opacity: 0.7;
+}
+
+.empty-canvas h3 {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.empty-canvas p {
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+// 画布内容
 .canvas-content {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+  position: relative;
 }
 
 .image-container {
@@ -427,6 +887,11 @@ onUnmounted(() => {
   overflow: hidden;
   min-height: 0;
   max-height: 100%;
+  cursor: default;
+  
+  &.tool-draw {
+    cursor: crosshair;
+  }
 }
 
 .canvas-image {
@@ -435,6 +900,7 @@ onUnmounted(() => {
   object-fit: contain;
   user-select: none;
   pointer-events: none;
+  transition: transform 0.2s ease;
 }
 
 .image-loading {
@@ -453,6 +919,7 @@ onUnmounted(() => {
   }
 }
 
+// 边界框覆盖层
 .bbox-overlay {
   position: absolute;
   top: 0;
@@ -463,26 +930,37 @@ onUnmounted(() => {
   .bbox-group {
     pointer-events: all;
     cursor: pointer;
-    transition: filter 0.2s ease;
     
-    &:hover {
-      filter: brightness(1.1);
+    .bbox-rect {
+      transition: fill-opacity 0.2s ease, stroke 0.2s ease;
     }
     
-    &.selected {
-      filter: brightness(1.3);
+    &:hover .bbox-rect {
+      fill-opacity: 0.15;
+    }
+    
+    &.selected .bbox-rect {
+      fill-opacity: 0.2;
+    }
+    
+    &.confirmed .bbox-rect {
+      stroke-dasharray: 0;
     }
   }
   
-  .bbox-label {
+  .bbox-label-group {
     pointer-events: none;
     user-select: none;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  }
+  
+  .bbox-label {
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   
   .resize-handle {
     pointer-events: all;
     cursor: nwse-resize;
+    transition: r 0.15s ease, fill 0.15s ease;
     
     &.handle-nw { cursor: nwse-resize; }
     &.handle-ne { cursor: nesw-resize; }
@@ -495,11 +973,153 @@ onUnmounted(() => {
     
     &:hover {
       r: 8;
-      filter: brightness(1.2);
+      fill: #6366f1;
+    }
+  }
+  
+  .drawing-rect {
+    animation: drawPulse 1s ease-in-out infinite;
+  }
+}
+
+@keyframes drawPulse {
+  0%, 100% { stroke-opacity: 1; }
+  50% { stroke-opacity: 0.5; }
+}
+
+// 编辑面板
+.bbox-edit-panel {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 220px;
+  background: var(--color-surface-elevated);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.edit-panel-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  background: linear-gradient(135deg, rgba(74, 105, 255, 0.1), rgba(138, 43, 226, 0.1));
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  
+  svg {
+    color: var(--color-primary);
+  }
+}
+
+.edit-panel-body {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.edit-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  label {
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+  }
+}
+
+.label-select {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 12px;
+  cursor: pointer;
+  outline: none;
+  min-width: 100px;
+  
+  &:focus {
+    border-color: var(--color-primary);
+  }
+}
+
+.confidence-value {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  
+  &.pending {
+    background: rgba(234, 179, 8, 0.15);
+    color: #eab308;
+  }
+  
+  &.confirmed {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+  }
+}
+
+.edit-panel-actions {
+  display: flex;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--color-border);
+}
+
+.action-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  &.confirm {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    
+    &:hover:not(:disabled) {
+      background: rgba(16, 185, 129, 0.25);
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  }
+  
+  &.delete {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    
+    &:hover {
+      background: rgba(239, 68, 68, 0.25);
     }
   }
 }
 
+// 信息栏
 .image-info-bar {
   display: flex;
   align-items: center;
@@ -527,6 +1147,19 @@ onUnmounted(() => {
     margin-left: auto;
     color: var(--color-text-tertiary);
     font-size: 12px;
+    background: rgba(74, 105, 255, 0.08);
+    padding: 4px 10px;
+    border-radius: 6px;
   }
+}
+
+// 动画
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 </style>
