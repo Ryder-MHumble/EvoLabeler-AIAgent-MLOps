@@ -9,9 +9,11 @@
  * - TrainingDetailsCard: 训练详情
  * - AgentTelemetryPanel: Agent遥测
  * - McpToolsPanel: MCP工具注册表
+ * 
+ * 现在支持：根据项目ID加载不同的项目特定数据
  */
 
-import { ref, onMounted, onUnmounted, watch } from 'vue'
+import { ref, onMounted, onUnmounted, watch, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute } from 'vue-router'
 import { Icon } from '@iconify/vue'
@@ -26,10 +28,21 @@ import McpToolsPanel from '@/components/workspace/McpToolsPanel.vue'
 
 // 类型和Mock数据
 import type { StepConfig, YoloLossData, ProjectInfo, JobStatus } from '@/components/workspace/types'
-import { createJobStatusStream, type JobStep } from '@/mock/jobStatus'
+import { 
+  getProjectConfig, 
+  generateProjectLossData, 
+  createProjectJobStream,
+  type ProjectWorkspaceConfig 
+} from '@/mock/projectWorkspaceData'
 
 const { t } = useI18n()
 const route = useRoute()
+
+// 当前项目ID
+const projectId = computed(() => (route.params.id as string) || '2')
+
+// 项目配置（响应式）
+const projectConfig = ref<ProjectWorkspaceConfig>(getProjectConfig(projectId.value))
 
 // 状态
 const currentJob = ref<JobStatus | null>(null)
@@ -37,12 +50,12 @@ const stopStream = ref<(() => void) | null>(null)
 const currentStepIndex = ref(0)
 const lossChartRef = ref<InstanceType<typeof LossChartCard> | null>(null)
 
-// 当前项目信息
-const currentProject = ref<ProjectInfo>({
-  id: route.params.id || '2',
-  name: '医学影像数据集',
-  status: 'training'
-})
+// 当前项目信息（从配置派生）
+const currentProject = computed<ProjectInfo>(() => ({
+  id: projectConfig.value.id,
+  name: projectConfig.value.name,
+  status: projectConfig.value.status
+}))
 
 // 步骤配置
 const steps = ref<StepConfig[]>([
@@ -54,43 +67,15 @@ const steps = ref<StepConfig[]>([
   { key: 'completed', label: t('steps.completed'), icon: 'ph:check-circle' }
 ])
 
-// 损失数据生成
-const generateYoloLossData = (): YoloLossData => {
-  const epochs = Array.from({ length: 100 }, (_, i) => i + 1)
-  
-  const boxLoss = epochs.map((_, i) => {
-    const base = 0.08
-    const decay = Math.exp(-i / 25) * 0.06
-    const noise = (Math.random() - 0.5) * 0.003
-    return Math.max(0.015, base * (0.3 + decay) + noise)
-  })
-  
-  const clsLoss = epochs.map((_, i) => {
-    const base = 0.05
-    const decay = Math.exp(-i / 30) * 0.04
-    const noise = (Math.random() - 0.5) * 0.002
-    return Math.max(0.008, base * (0.25 + decay) + noise)
-  })
-  
-  const objLoss = epochs.map((_, i) => {
-    const base = 0.04
-    const decay = Math.exp(-i / 20) * 0.035
-    const noise = (Math.random() - 0.5) * 0.002
-    return Math.max(0.006, base * (0.2 + decay) + noise)
-  })
-  
-  const totalLoss = epochs.map((_, i) => boxLoss[i] + clsLoss[i] + objLoss[i])
-  const valLoss = totalLoss.map((loss) => Math.max(0.03, loss * 1.15 + (Math.random() - 0.4) * 0.01))
-  
-  return { epochs, boxLoss, clsLoss, objLoss, totalLoss, valLoss }
-}
-
-const lossData = ref<YoloLossData>(generateYoloLossData())
+// 使用项目特定的损失数据
+const lossData = ref<YoloLossData>(generateProjectLossData(projectConfig.value))
 let lossUpdateInterval: ReturnType<typeof setInterval> | null = null
 
 // 更新损失数据
 const updateLossData = () => {
   if (!currentJob.value || currentJob.value.status !== 'running') return
+  
+  const { noise } = projectConfig.value.lossCharacteristics
   
   const lastBoxLoss = lossData.value.boxLoss[lossData.value.boxLoss.length - 1]
   const lastClsLoss = lossData.value.clsLoss[lossData.value.clsLoss.length - 1]
@@ -99,15 +84,15 @@ const updateLossData = () => {
   
   lossData.value.epochs.push(lossData.value.epochs.length + 1)
   
-  const newBoxLoss = Math.max(0.015, lastBoxLoss - 0.0003 + (Math.random() - 0.5) * 0.002)
-  const newClsLoss = Math.max(0.008, lastClsLoss - 0.0002 + (Math.random() - 0.5) * 0.001)
-  const newObjLoss = Math.max(0.006, lastObjLoss - 0.0002 + (Math.random() - 0.5) * 0.001)
+  const newBoxLoss = Math.max(0.008, lastBoxLoss - 0.0003 + (Math.random() - 0.5) * noise)
+  const newClsLoss = Math.max(0.005, lastClsLoss - 0.0002 + (Math.random() - 0.5) * noise * 0.8)
+  const newObjLoss = Math.max(0.004, lastObjLoss - 0.0002 + (Math.random() - 0.5) * noise * 0.6)
   
   lossData.value.boxLoss.push(newBoxLoss)
   lossData.value.clsLoss.push(newClsLoss)
   lossData.value.objLoss.push(newObjLoss)
   lossData.value.totalLoss.push(newBoxLoss + newClsLoss + newObjLoss)
-  lossData.value.valLoss.push(Math.max(0.03, lastValLoss - 0.0006 + (Math.random() - 0.4) * 0.003))
+  lossData.value.valLoss.push(Math.max(0.02, lastValLoss - 0.0006 + (Math.random() - 0.4) * noise * 2))
   
   // 保持最多300个数据点
   if (lossData.value.epochs.length > 300) {
@@ -134,9 +119,9 @@ const stopLossUpdate = () => {
   }
 }
 
-// 任务监控
+// 任务监控 - 使用项目特定的 Job 流
 const startJobMonitoring = () => {
-  stopStream.value = createJobStatusStream((status: JobStatus) => {
+  stopStream.value = createProjectJobStream(projectId.value, (status: JobStatus) => {
     currentJob.value = status
     
     const stepIndex = steps.value.findIndex(s => s.key === status.currentStep)
@@ -159,6 +144,21 @@ const stopJobMonitoring = () => {
   }
 }
 
+// 当项目ID变化时重新加载数据
+watch(projectId, (newId) => {
+  // 停止旧的监控
+  stopJobMonitoring()
+  stopLossUpdate()
+  
+  // 加载新项目配置
+  projectConfig.value = getProjectConfig(newId)
+  lossData.value = generateProjectLossData(projectConfig.value)
+  currentStepIndex.value = projectConfig.value.initialStepIndex
+  
+  // 启动新的监控
+  startJobMonitoring()
+}, { immediate: false })
+
 watch(() => currentJob.value?.status, (status) => {
   if (status === 'completed') {
     setTimeout(stopJobMonitoring, 3000)
@@ -166,6 +166,11 @@ watch(() => currentJob.value?.status, (status) => {
 })
 
 onMounted(() => {
+  // 初始化项目配置
+  projectConfig.value = getProjectConfig(projectId.value)
+  lossData.value = generateProjectLossData(projectConfig.value)
+  currentStepIndex.value = projectConfig.value.initialStepIndex
+  
   startJobMonitoring()
 })
 
@@ -217,7 +222,7 @@ onUnmounted(() => {
           </div>
           
       <!-- 右侧：训练详情 -->
-      <TrainingDetailsCard :current-job="currentJob" class="details-panel" />
+      <TrainingDetailsCard :current-job="currentJob" :project-config="projectConfig" class="details-panel" />
     </section>
     
     <!-- 底部区域：Agent遥测 + MCP工具 -->

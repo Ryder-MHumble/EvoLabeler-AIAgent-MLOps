@@ -12,6 +12,8 @@
  * - 确认/删除标注
  * - 标签编辑
  * - 批量操作
+ * - 图像上传功能
+ * - 导出YOLO格式标注
  */
 
 import { computed, ref, watch, onMounted, onUnmounted, nextTick } from 'vue'
@@ -29,9 +31,20 @@ type ToolType = 'select' | 'draw' | 'pan'
 const canvasRef = ref<HTMLDivElement | null>(null)
 const imageRef = ref<HTMLImageElement | null>(null)
 const svgRef = ref<SVGSVGElement | null>(null)
+const imageWrapperRef = ref<HTMLDivElement | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
 // 当前图像
-const currentImage = computed(() => missionStore.currentImage)
+const currentImage = computed(() => localImage.value || missionStore.currentImage)
+
+// 本地上传的图像
+const localImage = ref<{
+  id: string
+  url: string
+  confidence: number
+  source: 'upload' | 'crawler' | 'agent_recommended'
+  boundingBoxes: BoundingBox[]
+} | null>(null)
 
 // 当前工具
 const currentTool = ref<ToolType>('select')
@@ -42,11 +55,12 @@ const selectedBBox = ref<string | null>(null)
 // 图像加载状态
 const imageLoaded = ref(false)
 
-// 画布尺寸和图像实际尺寸
+// 画布尺寸和图像实际尺寸（未缩放前）
 const canvasSize = ref({ width: 0, height: 0 })
-const imageSize = ref({ width: 0, height: 0, naturalWidth: 0, naturalHeight: 0 })
+const baseImageSize = ref({ width: 0, height: 0, naturalWidth: 0, naturalHeight: 0 })
 const imageScale = ref({ x: 1, y: 1 })
-const imageOffset = ref({ x: 0, y: 0 })
+// 平移偏移（用于 pan 工具）
+const panOffset = ref({ x: 0, y: 0 })
 
 // 拖动状态
 const isDragging = ref(false)
@@ -58,71 +72,105 @@ const isDrawing = ref(false)
 const drawStart = ref({ x: 0, y: 0 })
 const drawCurrent = ref({ x: 0, y: 0 })
 
+// Pan 状态
+const isPanning = ref(false)
+const panStart = ref({ x: 0, y: 0 })
+
 // 缩放状态
 const zoomLevel = ref(1)
-const minZoom = 0.5
-const maxZoom = 3
+const minZoom = 0.25
+const maxZoom = 5
 
 // 标签选项
 const labelOptions = ['海上风电平台', '风机叶片', '支撑结构', '建筑物', '道路', '农田', '船舶', '其他']
 
 // 监听图像变化
-watch(currentImage, () => {
-  imageLoaded.value = false
-  selectedBBox.value = null
-  isDragging.value = false
-  resizeHandle.value = null
-  isDrawing.value = false
-  zoomLevel.value = 1
+watch(() => missionStore.currentImage, () => {
+  if (!localImage.value) {
+    imageLoaded.value = false
+    selectedBBox.value = null
+    isDragging.value = false
+    resizeHandle.value = null
+    isDrawing.value = false
+    zoomLevel.value = 1
+    panOffset.value = { x: 0, y: 0 }
+  }
 }, { immediate: true })
+
+// 监听缩放级别变化，更新画布尺寸
+watch(zoomLevel, () => {
+  nextTick(updateCanvasSize)
+})
 
 // 更新画布尺寸和图像缩放
 const updateCanvasSize = () => {
   if (canvasRef.value && imageRef.value && imageLoaded.value) {
     const containerRect = canvasRef.value.getBoundingClientRect()
-    const imgRect = imageRef.value.getBoundingClientRect()
     
     canvasSize.value = {
       width: containerRect.width,
       height: containerRect.height
     }
     
-    imageSize.value = {
-      width: imgRect.width,
-      height: imgRect.height,
-      naturalWidth: imageRef.value.naturalWidth,
-      naturalHeight: imageRef.value.naturalHeight
+    // 获取未缩放时的图像尺寸
+    const naturalWidth = imageRef.value.naturalWidth
+    const naturalHeight = imageRef.value.naturalHeight
+    
+    // 计算适应容器的基础尺寸（不考虑缩放）
+    const containerAspect = containerRect.width / containerRect.height
+    const imageAspect = naturalWidth / naturalHeight
+    
+    let baseWidth: number, baseHeight: number
+    if (imageAspect > containerAspect) {
+      baseWidth = containerRect.width * 0.95
+      baseHeight = baseWidth / imageAspect
+    } else {
+      baseHeight = containerRect.height * 0.95
+      baseWidth = baseHeight * imageAspect
     }
     
-    // 计算图像在容器中的偏移
-    imageOffset.value = {
-      x: (containerRect.width - imgRect.width) / 2,
-      y: (containerRect.height - imgRect.height) / 2
+    baseImageSize.value = {
+      width: baseWidth,
+      height: baseHeight,
+      naturalWidth,
+      naturalHeight
     }
     
-    // 计算缩放比例（归一化坐标到实际像素）
+    // 计算缩放比例（归一化坐标到基础像素）
     imageScale.value = {
-      x: imgRect.width / imageRef.value.naturalWidth,
-      y: imgRect.height / imageRef.value.naturalHeight
+      x: baseWidth / naturalWidth,
+      y: baseHeight / naturalHeight
     }
   }
 }
 
-// 将归一化坐标转换为SVG像素坐标（考虑图像偏移）
+// 计算当前缩放后的图像尺寸
+const scaledImageSize = computed(() => ({
+  width: baseImageSize.value.width * zoomLevel.value,
+  height: baseImageSize.value.height * zoomLevel.value
+}))
+
+// 计算图像在容器中的偏移（居中 + 平移）
+const imageOffset = computed(() => ({
+  x: (canvasSize.value.width - scaledImageSize.value.width) / 2 + panOffset.value.x,
+  y: (canvasSize.value.height - scaledImageSize.value.height) / 2 + panOffset.value.y
+}))
+
+// 将归一化坐标转换为SVG像素坐标（考虑缩放和偏移）
 const normalizeToSVG = (normalized: number, dimension: 'x' | 'y') => {
   if (dimension === 'x') {
-    return imageOffset.value.x + normalized * imageSize.value.width
+    return imageOffset.value.x + normalized * scaledImageSize.value.width
   } else {
-    return imageOffset.value.y + normalized * imageSize.value.height
+    return imageOffset.value.y + normalized * scaledImageSize.value.height
   }
 }
 
 // 将SVG像素坐标转换为归一化坐标
 const svgToNormalize = (pixel: number, dimension: 'x' | 'y') => {
   if (dimension === 'x') {
-    return Math.max(0, Math.min(1, (pixel - imageOffset.value.x) / imageSize.value.width))
+    return Math.max(0, Math.min(1, (pixel - imageOffset.value.x) / scaledImageSize.value.width))
   } else {
-    return Math.max(0, Math.min(1, (pixel - imageOffset.value.y) / imageSize.value.height))
+    return Math.max(0, Math.min(1, (pixel - imageOffset.value.y) / scaledImageSize.value.height))
   }
 }
 
@@ -176,13 +224,24 @@ const handleBBoxMouseDown = (bbox: BoundingBox, event: MouseEvent, handle?: stri
 
 // 开始绘制新边界框
 const handleDrawStart = (event: MouseEvent) => {
-  if (currentTool.value !== 'draw' || !canvasRef.value) return
+  if (!canvasRef.value) return
   
-  event.preventDefault()
   const rect = canvasRef.value.getBoundingClientRect()
   const x = event.clientX - rect.left
   const y = event.clientY - rect.top
   
+  // Pan 模式
+  if (currentTool.value === 'pan') {
+    event.preventDefault()
+    isPanning.value = true
+    panStart.value = { x: event.clientX, y: event.clientY }
+    return
+  }
+  
+  // 绘制模式
+  if (currentTool.value !== 'draw') return
+  
+  event.preventDefault()
   isDrawing.value = true
   drawStart.value = { x, y }
   drawCurrent.value = { x, y }
@@ -191,6 +250,18 @@ const handleDrawStart = (event: MouseEvent) => {
 // 鼠标移动
 const handleMouseMove = (event: MouseEvent) => {
   if (!currentImage.value) return
+  
+  // Pan 模式
+  if (isPanning.value) {
+    const deltaX = event.clientX - panStart.value.x
+    const deltaY = event.clientY - panStart.value.y
+    panOffset.value = {
+      x: panOffset.value.x + deltaX,
+      y: panOffset.value.y + deltaY
+    }
+    panStart.value = { x: event.clientX, y: event.clientY }
+    return
+  }
   
   // 绘制模式
   if (isDrawing.value && canvasRef.value) {
@@ -208,8 +279,9 @@ const handleMouseMove = (event: MouseEvent) => {
   const bbox = currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
   if (!bbox) return
   
-  const deltaX = (event.clientX - dragStart.value.x) / imageSize.value.width
-  const deltaY = (event.clientY - dragStart.value.y) / imageSize.value.height
+  // 使用缩放后的图像尺寸计算归一化坐标变化
+  const deltaX = (event.clientX - dragStart.value.x) / scaledImageSize.value.width
+  const deltaY = (event.clientY - dragStart.value.y) / scaledImageSize.value.height
   
   if (isDragging.value && dragStart.value.bbox) {
     // 拖动整个边界框 - 优化性能，直接修改数据
@@ -259,6 +331,13 @@ const handleMouseMove = (event: MouseEvent) => {
 
 // 鼠标释放
 const handleMouseUp = () => {
+  // 完成 Pan
+  if (isPanning.value) {
+    isPanning.value = false
+    panStart.value = { x: 0, y: 0 }
+    return
+  }
+  
   // 完成绘制
   if (isDrawing.value && currentImage.value) {
     const x1 = svgToNormalize(Math.min(drawStart.value.x, drawCurrent.value.x), 'x')
@@ -295,10 +374,10 @@ const handleMouseUp = () => {
     return
   }
   
-  // 完成拖动/调整大小 - 同步到 store
+  // 完成拖动/调整大小 - 同步到 store（仅当不是本地图像时）
   if ((isDragging.value || resizeHandle.value) && selectedBBox.value && currentImage.value) {
     const bbox = currentImage.value.boundingBoxes.find(b => b.id === selectedBBox.value)
-    if (bbox) {
+    if (bbox && !localImage.value) {
       missionStore.updateBBox(currentImage.value.id, bbox.id, {
         x: bbox.x,
         y: bbox.y,
@@ -311,6 +390,181 @@ const handleMouseUp = () => {
   isDragging.value = false
   resizeHandle.value = null
   dragStart.value = { x: 0, y: 0, bbox: null }
+}
+
+// ========== 图像上传功能 ==========
+const triggerFileUpload = () => {
+  fileInputRef.value?.click()
+}
+
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement
+  if (target.files && target.files[0]) {
+    const file = target.files[0]
+    const reader = new FileReader()
+    
+    reader.onload = (e) => {
+      const url = e.target?.result as string
+      localImage.value = {
+        id: `upload-${Date.now()}`,
+        url,
+        confidence: 1.0,
+        source: 'upload',
+        boundingBoxes: []
+      }
+      imageLoaded.value = false
+      selectedBBox.value = null
+      zoomLevel.value = 1
+      panOffset.value = { x: 0, y: 0 }
+      
+      ElMessage.success('图像已加载，开始标注吧！')
+    }
+    
+    reader.readAsDataURL(file)
+  }
+  // 清空 input 以便再次选择同一文件
+  target.value = ''
+}
+
+const handleDrop = (event: DragEvent) => {
+  event.preventDefault()
+  if (event.dataTransfer?.files && event.dataTransfer.files[0]) {
+    const file = event.dataTransfer.files[0]
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const url = e.target?.result as string
+        localImage.value = {
+          id: `upload-${Date.now()}`,
+          url,
+          confidence: 1.0,
+          source: 'upload',
+          boundingBoxes: []
+        }
+        imageLoaded.value = false
+        selectedBBox.value = null
+        zoomLevel.value = 1
+        panOffset.value = { x: 0, y: 0 }
+        
+        ElMessage.success('图像已加载，开始标注吧！')
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+}
+
+const handleDragOver = (event: DragEvent) => {
+  event.preventDefault()
+}
+
+// 清除本地图像
+const clearLocalImage = () => {
+  localImage.value = null
+  imageLoaded.value = false
+  selectedBBox.value = null
+  zoomLevel.value = 1
+  panOffset.value = { x: 0, y: 0 }
+}
+
+// ========== 导出标注功能 ==========
+const exportAnnotations = async () => {
+  if (!currentImage.value || currentImage.value.boundingBoxes.length === 0) {
+    ElMessage.warning('没有可导出的标注数据')
+    return
+  }
+  
+  try {
+    await ElMessageBox.confirm(
+      '选择导出格式',
+      '导出标注',
+      {
+        confirmButtonText: 'YOLO格式',
+        cancelButtonText: 'JSON格式',
+        distinguishCancelAndClose: true
+      }
+    )
+    exportYOLO()
+  } catch (action) {
+    if (action === 'cancel') {
+      exportJSON()
+    }
+  }
+}
+
+// 导出 YOLO 格式 (txt)
+const exportYOLO = () => {
+  if (!currentImage.value) return
+  
+  // YOLO格式: class_id center_x center_y width height (归一化坐标)
+  const lines = currentImage.value.boundingBoxes.map((bbox) => {
+    const classId = labelOptions.indexOf(bbox.label || '其他')
+    const centerX = bbox.x + bbox.width / 2
+    const centerY = bbox.y + bbox.height / 2
+    return `${classId >= 0 ? classId : labelOptions.length - 1} ${centerX.toFixed(6)} ${centerY.toFixed(6)} ${bbox.width.toFixed(6)} ${bbox.height.toFixed(6)}`
+  })
+  
+  const content = lines.join('\n')
+  downloadFile(content, `${currentImage.value.id}_annotations.txt`, 'text/plain')
+  
+  // 同时导出类别文件
+  const classesContent = labelOptions.join('\n')
+  downloadFile(classesContent, 'classes.txt', 'text/plain')
+  
+  ElMessage.success('YOLO格式标注已导出')
+}
+
+// 导出 JSON 格式
+const exportJSON = () => {
+  if (!currentImage.value) return
+  
+  const data = {
+    image_id: currentImage.value.id,
+    image_width: baseImageSize.value.naturalWidth,
+    image_height: baseImageSize.value.naturalHeight,
+    annotations: currentImage.value.boundingBoxes.map((bbox) => ({
+      id: bbox.id,
+      label: bbox.label || '目标',
+      confidence: bbox.confidence,
+      status: bbox.status,
+      bbox: {
+        x: bbox.x,
+        y: bbox.y,
+        width: bbox.width,
+        height: bbox.height
+      },
+      // 像素坐标
+      bbox_pixels: {
+        x: Math.round(bbox.x * baseImageSize.value.naturalWidth),
+        y: Math.round(bbox.y * baseImageSize.value.naturalHeight),
+        width: Math.round(bbox.width * baseImageSize.value.naturalWidth),
+        height: Math.round(bbox.height * baseImageSize.value.naturalHeight)
+      }
+    }))
+  }
+  
+  const content = JSON.stringify(data, null, 2)
+  downloadFile(content, `${currentImage.value.id}_annotations.json`, 'application/json')
+  
+  ElMessage.success('JSON格式标注已导出')
+}
+
+// 下载文件辅助函数
+const downloadFile = (content: string, filename: string, mimeType: string) => {
+  const blob = new Blob([content], { type: mimeType })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+// 重置视图
+const resetView = () => {
+  zoomLevel.value = 1
+  panOffset.value = { x: 0, y: 0 }
 }
 
 // 图像加载完成
@@ -406,10 +660,29 @@ const handleKeyPress = (e: KeyboardEvent) => {
     setTool('draw')
   }
   
+  // H键切换平移工具
+  if (e.key === 'h' || e.key === 'H') {
+    setTool('pan')
+  }
+  
+  // 0键重置视图
+  if (e.key === '0') {
+    resetView()
+  }
+  
+  // +/- 键缩放
+  if (e.key === '+' || e.key === '=') {
+    handleZoom(0.25)
+  }
+  if (e.key === '-' || e.key === '_') {
+    handleZoom(-0.25)
+  }
+  
   // Escape取消选择
   if (e.key === 'Escape') {
     selectedBBox.value = null
     isDrawing.value = false
+    isPanning.value = false
   }
 }
 
@@ -419,12 +692,24 @@ const handleZoom = (delta: number) => {
   zoomLevel.value = newZoom
 }
 
+// 滚轮缩放
+const handleWheel = (event: WheelEvent) => {
+  if (!currentImage.value) return
+  
+  // Ctrl + 滚轮 或 直接滚轮缩放
+  if (event.ctrlKey || event.metaKey) {
+    event.preventDefault()
+    const delta = event.deltaY > 0 ? -0.1 : 0.1
+    handleZoom(delta)
+  }
+}
+
 // 获取调整大小手柄位置
 const getResizeHandlePosition = (bbox: BoundingBox, handle: string) => {
   const x = normalizeToSVG(bbox.x, 'x')
   const y = normalizeToSVG(bbox.y, 'y')
-  const w = bbox.width * imageSize.value.width
-  const h = bbox.height * imageSize.value.height
+  const w = bbox.width * scaledImageSize.value.width
+  const h = bbox.height * scaledImageSize.value.height
   
   const positions: Record<string, { x: number; y: number }> = {
     'nw': { x: x, y: y },
@@ -472,10 +757,25 @@ onUnmounted(() => {
   window.removeEventListener('mouseup', handleMouseUp)
   window.removeEventListener('keydown', handleKeyPress)
 })
+
+// 获取边界框的缩放后尺寸
+const getScaledBBoxSize = (bbox: BoundingBox) => ({
+  width: bbox.width * scaledImageSize.value.width,
+  height: bbox.height * scaledImageSize.value.height
+})
 </script>
 
 <template>
-  <div class="smart-canvas" ref="canvasRef">
+  <div class="smart-canvas" ref="canvasRef" @wheel="handleWheel">
+    <!-- 隐藏的文件上传 input -->
+    <input
+      ref="fileInputRef"
+      type="file"
+      accept="image/*"
+      style="display: none"
+      @change="handleFileSelect"
+    />
+    
     <!-- 工具栏 -->
     <div class="canvas-toolbar">
       <div class="toolbar-group">
@@ -493,6 +793,13 @@ onUnmounted(() => {
         >
           <Icon icon="ph:selection" :width="20" />
         </button>
+        <button
+          @click="setTool('pan')"
+          :class="['tool-btn', { active: currentTool === 'pan' }]"
+          title="平移工具 (H)"
+        >
+          <Icon icon="ph:hand" :width="20" />
+        </button>
       </div>
       
       <div class="toolbar-divider"></div>
@@ -502,7 +809,7 @@ onUnmounted(() => {
           @click="handleZoom(-0.25)"
           class="tool-btn"
           :disabled="zoomLevel <= minZoom"
-          title="缩小"
+          title="缩小 (-)"
         >
           <Icon icon="ph:minus" :width="18" />
         </button>
@@ -511,13 +818,42 @@ onUnmounted(() => {
           @click="handleZoom(0.25)"
           class="tool-btn"
           :disabled="zoomLevel >= maxZoom"
-          title="放大"
+          title="放大 (+)"
         >
           <Icon icon="ph:plus" :width="18" />
+        </button>
+        <button
+          @click="resetView"
+          class="tool-btn"
+          title="重置视图 (0)"
+        >
+          <Icon icon="ph:arrows-in-simple" :width="18" />
         </button>
       </div>
       
       <div class="toolbar-divider"></div>
+      
+      <div class="toolbar-group">
+        <button
+          @click="triggerFileUpload"
+          class="tool-btn upload"
+          title="上传图像"
+        >
+          <Icon icon="ph:upload-simple" :width="18" />
+          <span>上传</span>
+        </button>
+        <button
+          v-if="currentImage && currentImage.boundingBoxes.length > 0"
+          @click="exportAnnotations"
+          class="tool-btn export"
+          title="导出标注"
+        >
+          <Icon icon="ph:export" :width="18" />
+          <span>导出</span>
+        </button>
+      </div>
+      
+      <div class="toolbar-divider" v-if="currentImage"></div>
       
       <div class="toolbar-group" v-if="currentImage">
         <button
@@ -528,37 +864,77 @@ onUnmounted(() => {
           <Icon icon="ph:check-circle" :width="20" />
           <span>全部确认</span>
         </button>
+        <button
+          v-if="localImage"
+          @click="clearLocalImage"
+          class="tool-btn danger"
+          title="清除本地图像"
+        >
+          <Icon icon="ph:x-circle" :width="20" />
+        </button>
       </div>
     </div>
 
-    <!-- 空状态 -->
-    <div v-if="!currentImage" class="empty-canvas">
+    <!-- 空状态 - 支持拖拽上传 -->
+    <div 
+      v-if="!currentImage" 
+      class="empty-canvas"
+      @dragover="handleDragOver"
+      @drop="handleDrop"
+    >
       <div class="empty-icon">
         <Icon icon="ph:image-square" :width="80" />
       </div>
-      <h3>请从左侧选择一张图像</h3>
-      <p>选择图像后即可开始标注工作</p>
+      <h3>请选择或上传图像</h3>
+      <p>从左侧选择图像或拖拽/点击上传开始标注</p>
+      <button class="upload-btn" @click="triggerFileUpload">
+        <Icon icon="ph:upload-simple" :width="20" />
+        <span>上传图像</span>
+      </button>
     </div>
 
     <!-- 图像和覆盖层 -->
-    <div v-else class="canvas-content">
+    <div 
+      v-else 
+      class="canvas-content"
+      @dragover="handleDragOver"
+      @drop="handleDrop"
+    >
       <!-- 图像容器 -->
       <div 
         class="image-container"
-        :class="{ 'tool-draw': currentTool === 'draw' }"
+        :class="{ 
+          'tool-draw': currentTool === 'draw',
+          'tool-pan': currentTool === 'pan',
+          'is-panning': isPanning
+        }"
         @mousedown="handleDrawStart"
         @click="handleCanvasClick"
       >
-        <img
-          v-if="currentImage.url"
-          ref="imageRef"
-          :src="currentImage.url"
-          :alt="currentImage.id"
-          @load="handleImageLoad"
-          class="canvas-image"
-          :style="{ transform: `scale(${zoomLevel})` }"
-          draggable="false"
-        />
+        <!-- 图像包装器（用于统一变换） -->
+        <div 
+          ref="imageWrapperRef"
+          class="image-wrapper"
+          :style="{
+            width: `${scaledImageSize.width}px`,
+            height: `${scaledImageSize.height}px`,
+            transform: `translate(${imageOffset.x}px, ${imageOffset.y}px)`
+          }"
+        >
+          <img
+            v-if="currentImage.url"
+            ref="imageRef"
+            :src="currentImage.url"
+            :alt="currentImage.id"
+            @load="handleImageLoad"
+            class="canvas-image"
+            :style="{
+              width: `${scaledImageSize.width}px`,
+              height: `${scaledImageSize.height}px`
+            }"
+            draggable="false"
+          />
+        </div>
         
         <!-- 加载状态 -->
         <div v-if="!imageLoaded" class="image-loading">
@@ -590,8 +966,8 @@ onUnmounted(() => {
             <rect
               :x="normalizeToSVG(bbox.x, 'x')"
               :y="normalizeToSVG(bbox.y, 'y')"
-              :width="bbox.width * imageSize.width"
-              :height="bbox.height * imageSize.height"
+              :width="getScaledBBoxSize(bbox).width"
+              :height="getScaledBBoxSize(bbox).height"
               :fill="getConfidenceColor(bbox.confidence)"
               :fill-opacity="bbox.status === 'confirmed' ? 0.15 : 0.08"
               :stroke="selectedBBox === bbox.id ? '#4A69FF' : getConfidenceColor(bbox.confidence)"
@@ -717,9 +1093,9 @@ onUnmounted(() => {
           <Icon icon="ph:info" :width="16" />
           <span>{{ currentImage.id }}</span>
         </div>
-        <div class="info-item">
-          <Icon icon="ph:gauge" :width="16" />
-          <span>置信度: {{ Math.round(currentImage.confidence * 100) }}%</span>
+        <div class="info-item" v-if="baseImageSize.naturalWidth > 0">
+          <Icon icon="ph:frame-corners" :width="16" />
+          <span>{{ baseImageSize.naturalWidth }}×{{ baseImageSize.naturalHeight }}</span>
         </div>
         <div class="info-item">
           <Icon icon="ph:square" :width="16" />
@@ -729,11 +1105,11 @@ onUnmounted(() => {
           <Icon icon="ph:source" :width="16" />
           <span>{{ currentImage.source === 'crawler' ? '爬虫' : 
                    currentImage.source === 'agent_recommended' ? 'Agent推荐' : 
-                   '手动上传' }}</span>
+                   '本地上传' }}</span>
         </div>
         <div class="info-item hint">
           <Icon icon="ph:keyboard" :width="16" />
-          <span>V选择 | B绘制 | 空格确认 | Del删除</span>
+          <span>V选择 | B绘制 | H平移 | 0重置 | ±缩放</span>
         </div>
       </div>
     </div>
@@ -820,6 +1196,45 @@ onUnmounted(() => {
       font-weight: 500;
     }
   }
+  
+  &.upload {
+    width: auto;
+    padding: 0 12px;
+    color: var(--color-primary);
+    
+    &:hover {
+      background: rgba(74, 105, 255, 0.1);
+    }
+    
+    span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+  }
+  
+  &.export {
+    width: auto;
+    padding: 0 12px;
+    color: #f59e0b;
+    
+    &:hover {
+      background: rgba(245, 158, 11, 0.1);
+    }
+    
+    span {
+      font-size: 13px;
+      font-weight: 500;
+    }
+  }
+  
+  &.danger {
+    width: 36px;
+    color: #ef4444;
+    
+    &:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+  }
 }
 
 .zoom-label {
@@ -867,6 +1282,28 @@ onUnmounted(() => {
   margin: 0;
 }
 
+.upload-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  margin-top: 16px;
+  border: 2px dashed var(--color-primary);
+  border-radius: 12px;
+  background: rgba(74, 105, 255, 0.05);
+  color: var(--color-primary);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    background: rgba(74, 105, 255, 0.15);
+    border-style: solid;
+    transform: translateY(-2px);
+  }
+}
+
 // 画布内容
 .canvas-content {
   flex: 1;
@@ -892,15 +1329,26 @@ onUnmounted(() => {
   &.tool-draw {
     cursor: crosshair;
   }
+  
+  &.tool-pan {
+    cursor: grab;
+    
+    &.is-panning {
+      cursor: grabbing;
+    }
+  }
+}
+
+.image-wrapper {
+  position: absolute;
+  will-change: transform;
 }
 
 .canvas-image {
-  max-width: 100%;
-  max-height: 100%;
+  display: block;
   object-fit: contain;
   user-select: none;
   pointer-events: none;
-  transition: transform 0.2s ease;
 }
 
 .image-loading {

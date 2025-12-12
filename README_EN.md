@@ -32,7 +32,10 @@
 - **📊 Semi-Supervised Learning**: High-quality pseudo-labeling with quality scoring
 - **📚 Curriculum Learning**: Difficulty-sorted training (easy to hard)
 - **🔗 Residual Architecture**: Information preservation and parallel execution
-- **🎨 Co-Pilot Workspace**: Data stream management, smart canvas, agent analysis, live terminal
+- **🎨 Co-Pilot Workspace**: Data stream management, smart canvas with advanced annotation tools, agent analysis, live terminal
+- **🖼️ Smart Annotation**: Real zoom support (0.25x-5x), image upload, YOLO/JSON export, multi-tool editing
+- **📊 Project-Specific Data**: Independent training metrics and configurations for each project
+- **📸 Smart Thumbnails**: Auto-generate project covers from first uploaded image
 
 ---
 
@@ -95,7 +98,7 @@ weak_supervision_config = {
 │                  Frontend (Electron Desktop)                │
 │       Vue3 + TypeScript + GSAP + Element Plus               │
 │   Project Dashboard | Workspace Monitor | Co-Pilot Workspace│
-│   Data Stream | Smart Canvas | Agent Analysis | Live Terminal│
+│   Data Stream | Smart Canvas (Zoom/Upload/Export) | Agent Panel│
 └────────────────────────┬────────────────────────────────────┘
                          │ REST API
 ┌────────────────────────▼────────────────────────────────────┐
@@ -275,6 +278,30 @@ macOS may show a security warning (unsigned app). To resolve:
 - **Health Check**: http://localhost:8000/health
 - **Frontend**: Electron window opens automatically
 
+---
+
+## 📸 Application Screenshots
+
+<table>
+  <tr>
+    <td align="center"><b>Dashboard - Project Management</b></td>
+    <td align="center"><b>Workspace Monitor - Training Details</b></td>
+    <td align="center"><b>Co-Pilot Workspace - Smart Annotation</b></td>
+  </tr>
+  <tr>
+    <td><img src="docs/images/home.png" alt="Dashboard" /></td>
+    <td><img src="docs/images/ProjectDetails.png" alt="Workspace" /></td>
+    <td><img src="docs/images/SmartCanvas.png" alt="Smart Canvas" /></td>
+  </tr>
+  <tr>
+    <td align="center"><i>Project cards, system metrics, GSAP animation effects</i></td>
+    <td align="center"><i>Evolution task monitor, YOLO metrics, loss curves, agent telemetry</i></td>
+    <td align="center"><i>Data stream management, smart canvas, annotation tools, agent analysis, live terminal</i></td>
+  </tr>
+</table>
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Backend
@@ -312,6 +339,32 @@ macOS may show a security warning (unsigned app). To resolve:
 - [Frontend README](evolauncher-frontend/README.md)
 - [Quick Start Guide](evolauncher-frontend/QUICKSTART.md)
 - [Co-Pilot Workspace Features](evolauncher-frontend/CO_PILOT_FEATURES.md)
+
+### Key Features Highlights
+
+**Smart Canvas Annotation System:**
+- ✅ Real zoom support with automatic bounding box scaling (0.25x - 5x)
+- ✅ Local image upload via drag-and-drop or click
+- ✅ Annotation export in YOLO format (txt + classes.txt) and JSON format
+- ✅ Multi-tool editing: Select (V), Draw (B), Pan (H)
+- ✅ Keyboard shortcuts: V/B/H for tools, +/- for zoom, 0 for reset, Space to confirm, Del to delete
+- ✅ Precise editing with 8 resize handles and label selection
+
+**Project-Specific Data Management:**
+- ✅ Independent training data and metrics for each project
+- ✅ Configurable model architectures (YOLO v5-11, TDA-YOLO)
+- ✅ Independent training parameters (batch size, learning rate, input size)
+- ✅ Real-time hardware resource monitoring (GPU memory, utilization)
+- ✅ Dynamic training progress and metric trends
+- ✅ Configurable loss curve convergence characteristics
+
+**Project Creation Wizard:**
+- ✅ Four-step guided creation process
+- ✅ Batch image upload support
+- ✅ Automatic thumbnail generation from first uploaded image
+- ✅ Multiple YOLO model selection (YOLOv5-11, TDA-YOLO)
+- ✅ Flexible model size configuration (Nano to XLarge)
+- ✅ Optional custom pre-trained weights upload
 
 ---
 

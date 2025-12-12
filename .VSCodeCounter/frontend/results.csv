@@ -1,0 +1,65 @@
+"filename", "language", "Python", "Markdown", "MS SQL", "pip requirements", "JSON", "comment", "blank", "total"
+"/Users/sunminghao/Desktop/EvoLabeler/backend/README.md", "Markdown", 0, 426, 0, 0, 0, 0, 150, 576
+"/Users/sunminghao/Desktop/EvoLabeler/backend/SUPABASE_KEY_FIX.md", "Markdown", 0, 43, 0, 0, 0, 0, 19, 62
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/__init__.py", "Python", 1, 0, 0, 0, 0, 6, 2, 9
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 1, 2
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/acquisition_agent.py", "Python", 322, 0, 0, 0, 0, 234, 87, 643
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/analysis_agent.py", "Python", 224, 0, 0, 0, 0, 253, 53, 530
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/base_agent.py", "Python", 24, 0, 0, 0, 0, 45, 12, 81
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/inference_agent.py", "Python", 243, 0, 0, 0, 0, 170, 59, 472
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/prompts.py", "Python", 133, 0, 0, 0, 0, 19, 26, 178
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/state.py", "Python", 17, 0, 0, 0, 0, 20, 13, 50
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/training_agent.py", "Python", 281, 0, 0, 0, 0, 161, 63, 505
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/api/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 1, 2
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 1, 2
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 1, 2
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/jobs.py", "Python", 149, 0, 0, 0, 0, 71, 42, 262
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/projects.py", "Python", 222, 0, 0, 0, 0, 81, 41, 344
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 1, 2
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/job.py", "Python", 32, 0, 0, 0, 0, 13, 21, 66
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/project.py", "Python", 49, 0, 0, 0, 0, 13, 28, 90
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/core/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 1, 2
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/core/config.py", "Python", 64, 0, 0, 0, 0, 19, 19, 102
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/core/logging_config.py", "Python", 71, 0, 0, 0, 0, 41, 29, 141
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/db/DATABASE_DESIGN.md", "Markdown", 0, 450, 0, 0, 0, 0, 121, 571
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/db/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 2, 3
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/db/migrations/002_create_projects_table.sql", "MS SQL", 0, 0, 58, 0, 0, 49, 34, 141
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/db/models.py", "Python", 23, 0, 0, 0, 0, 52, 13, 88
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/db/supabase_init.py", "Python", 26, 0, 0, 0, 0, 22, 14, 62
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/main.py", "Python", 129, 0, 0, 0, 0, 27, 36, 192
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/services/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 1, 2
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/services/advanced_orchestrator.py", "Python", 269, 0, 0, 0, 0, 138, 68, 475
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/services/orchestrator.py", "Python", 117, 0, 0, 0, 0, 60, 26, 203
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/services/workflow_graph.py", "Python", 68, 0, 0, 0, 0, 73, 28, 169
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/__init__.py", "Python", 0, 0, 0, 0, 0, 1, 2, 3
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/mcp_integration.py", "Python", 338, 0, 0, 0, 0, 116, 64, 518
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/mcp_tools.py", "Python", 254, 0, 0, 0, 0, 65, 61, 380
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/qwen_api_wrapper.py", "Python", 113, 0, 0, 0, 0, 172, 23, 308
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/remote_client.py", "Python", 217, 0, 0, 0, 0, 124, 44, 385
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/subprocess_executor.py", "Python", 151, 0, 0, 0, 0, 67, 33, 251
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/supabase_client.py", "Python", 271, 0, 0, 0, 0, 160, 59, 490
+"/Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/web_crawler.py", "Python", 105, 0, 0, 0, 0, 72, 43, 220
+"/Users/sunminghao/Desktop/EvoLabeler/backend/docs/API.md", "Markdown", 0, 316, 0, 0, 0, 0, 79, 395
+"/Users/sunminghao/Desktop/EvoLabeler/backend/docs/ARCHITECTURE.md", "Markdown", 0, 340, 0, 0, 0, 0, 109, 449
+"/Users/sunminghao/Desktop/EvoLabeler/backend/docs/DevelopPrompt.md", "Markdown", 0, 133, 0, 0, 0, 0, 26, 159
+"/Users/sunminghao/Desktop/EvoLabeler/backend/docs/PROJECT_MANAGEMENT.md", "Markdown", 0, 188, 0, 0, 0, 0, 81, 269
+"/Users/sunminghao/Desktop/EvoLabeler/backend/docs/PROJECT_SUMMARY.md", "Markdown", 0, 243, 0, 0, 0, 0, 67, 310
+"/Users/sunminghao/Desktop/EvoLabeler/backend/requirements.txt", "pip requirements", 0, 0, 0, 19, 0, 10, 10, 39
+"/Users/sunminghao/Desktop/EvoLabeler/backend/run.py", "Python", 22, 0, 0, 0, 0, 8, 9, 39
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/API_KEY_SOLUTION.md", "Markdown", 0, 54, 0, 0, 0, 0, 29, 83
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/create_tables_auto.py", "Python", 158, 0, 0, 0, 0, 24, 28, 210
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_data.py", "Python", 256, 0, 0, 0, 0, 53, 67, 376
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_data.sql", "MS SQL", 0, 0, 226, 0, 0, 14, 11, 251
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_projects.py", "Python", 197, 0, 0, 0, 0, 18, 28, 243
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/setup_database.py", "Python", 129, 0, 0, 0, 0, 42, 35, 206
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/setup_supabase.sql", "MS SQL", 0, 0, 37, 0, 0, 55, 16, 108
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/test_supabase_connection.py", "Python", 43, 0, 0, 0, 0, 8, 15, 66
+"/Users/sunminghao/Desktop/EvoLabeler/backend/scripts/verify_supabase_data.py", "Python", 75, 0, 0, 0, 0, 12, 16, 103
+"/Users/sunminghao/Desktop/EvoLabeler/backend/tests/TESTING_COMPLETE.md", "Markdown", 0, 49, 0, 0, 0, 0, 18, 67
+"/Users/sunminghao/Desktop/EvoLabeler/backend/tests/quick_playwright_test.py", "Python", 86, 0, 0, 0, 0, 18, 27, 131
+"/Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_full_system.py", "Python", 403, 0, 0, 0, 0, 86, 119, 608
+"/Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_graph.py", "Python", 130, 0, 0, 0, 0, 41, 26, 197
+"/Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_playwright_download_images.py", "Python", 142, 0, 0, 0, 0, 41, 49, 232
+"/Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_results.json", "JSON", 0, 0, 0, 0, 192, 0, 0, 192
+"/Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_web_crawler.py", "Python", 221, 0, 0, 0, 0, 51, 76, 348
+"Total", "-", 5775, 2242, 321, 19, 192, 2833, 2283, 13665

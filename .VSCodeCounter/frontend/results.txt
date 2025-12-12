@@ -1,0 +1,110 @@
+Date : 2025-12-07 22:39:29
+Directory : /Users/sunminghao/Desktop/EvoLabeler/backend
+Total : 63 files,  8549 codes, 2833 comments, 2283 blanks, all 13665 lines
+
+Languages
++------------------+------------+------------+------------+------------+------------+
+| language         | files      | code       | comment    | blank      | total      |
++------------------+------------+------------+------------+------------+------------+
+| Python           |         48 |      5,775 |      2,705 |      1,513 |      9,993 |
+| Markdown         |         10 |      2,242 |          0 |        699 |      2,941 |
+| MS SQL           |          3 |        321 |        118 |         61 |        500 |
+| JSON             |          1 |        192 |          0 |          0 |        192 |
+| pip requirements |          1 |         19 |         10 |         10 |         39 |
++------------------+------------+------------+------------+------------+------------+
+
+Directories
++----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                         | files      | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                            |         63 |      8,549 |      2,833 |      2,283 |     13,665 |
+| . (Files)                                                                                    |          4 |        510 |         18 |        188 |        716 |
+| app                                                                                          |         38 |      4,421 |      2,352 |      1,173 |      7,946 |
+| app (Files)                                                                                  |          2 |        130 |         33 |         38 |        201 |
+| app/agents                                                                                   |          8 |      1,244 |        903 |        314 |      2,461 |
+| app/api                                                                                      |          8 |        452 |        182 |        136 |        770 |
+| app/api (Files)                                                                              |          1 |          0 |          1 |          1 |          2 |
+| app/api/v1                                                                                   |          7 |        452 |        181 |        135 |        768 |
+| app/api/v1 (Files)                                                                           |          1 |          0 |          1 |          1 |          2 |
+| app/api/v1/endpoints                                                                         |          3 |        371 |        153 |         84 |        608 |
+| app/api/v1/schemas                                                                           |          3 |         81 |         27 |         50 |        158 |
+| app/core                                                                                     |          3 |        135 |         61 |         49 |        245 |
+| app/db                                                                                       |          5 |        557 |        124 |        184 |        865 |
+| app/db (Files)                                                                               |          4 |        499 |         75 |        150 |        724 |
+| app/db/migrations                                                                            |          1 |         58 |         49 |         34 |        141 |
+| app/services                                                                                 |          4 |        454 |        272 |        123 |        849 |
+| app/tools                                                                                    |          8 |      1,449 |        777 |        329 |      2,555 |
+| docs                                                                                         |          5 |      1,220 |          0 |        362 |      1,582 |
+| scripts                                                                                      |          9 |      1,175 |        226 |        245 |      1,646 |
+| tests                                                                                        |          7 |      1,223 |        237 |        315 |      1,775 |
++----------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++----------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| filename                                                                                     | language         | code       | comment    | blank      | total      |
++----------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+
+| /Users/sunminghao/Desktop/EvoLabeler/backend/README.md                                       | Markdown         |        426 |          0 |        150 |        576 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/SUPABASE_KEY_FIX.md                             | Markdown         |         43 |          0 |         19 |         62 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/__init__.py                                 | Python           |          1 |          6 |          2 |          9 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/__init__.py                          | Python           |          0 |          1 |          1 |          2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/acquisition_agent.py                 | Python           |        322 |        234 |         87 |        643 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/analysis_agent.py                    | Python           |        224 |        253 |         53 |        530 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/base_agent.py                        | Python           |         24 |         45 |         12 |         81 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/inference_agent.py                   | Python           |        243 |        170 |         59 |        472 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/prompts.py                           | Python           |        133 |         19 |         26 |        178 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/state.py                             | Python           |         17 |         20 |         13 |         50 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/training_agent.py                    | Python           |        281 |        161 |         63 |        505 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/__init__.py                             | Python           |          0 |          1 |          1 |          2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/__init__.py                          | Python           |          0 |          1 |          1 |          2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/__init__.py                | Python           |          0 |          1 |          1 |          2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/jobs.py                    | Python           |        149 |         71 |         42 |        262 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/projects.py                | Python           |        222 |         81 |         41 |        344 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/__init__.py                  | Python           |          0 |          1 |          1 |          2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/job.py                       | Python           |         32 |         13 |         21 |         66 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/project.py                   | Python           |         49 |         13 |         28 |         90 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/core/__init__.py                            | Python           |          0 |          1 |          1 |          2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/core/config.py                              | Python           |         64 |         19 |         19 |        102 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/core/logging_config.py                      | Python           |         71 |         41 |         29 |        141 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/DATABASE_DESIGN.md                       | Markdown         |        450 |          0 |        121 |        571 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/__init__.py                              | Python           |          0 |          1 |          2 |          3 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/migrations/002_create_projects_table.sql | MS SQL           |         58 |         49 |         34 |        141 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/models.py                                | Python           |         23 |         52 |         13 |         88 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/supabase_init.py                         | Python           |         26 |         22 |         14 |         62 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/main.py                                     | Python           |        129 |         27 |         36 |        192 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/services/__init__.py                        | Python           |          0 |          1 |          1 |          2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/services/advanced_orchestrator.py           | Python           |        269 |        138 |         68 |        475 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/services/orchestrator.py                    | Python           |        117 |         60 |         26 |        203 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/services/workflow_graph.py                  | Python           |         68 |         73 |         28 |        169 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/__init__.py                           | Python           |          0 |          1 |          2 |          3 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/mcp_integration.py                    | Python           |        338 |        116 |         64 |        518 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/mcp_tools.py                          | Python           |        254 |         65 |         61 |        380 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/qwen_api_wrapper.py                   | Python           |        113 |        172 |         23 |        308 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/remote_client.py                      | Python           |        217 |        124 |         44 |        385 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/subprocess_executor.py                | Python           |        151 |         67 |         33 |        251 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/supabase_client.py                    | Python           |        271 |        160 |         59 |        490 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/web_crawler.py                        | Python           |        105 |         72 |         43 |        220 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/API.md                                     | Markdown         |        316 |          0 |         79 |        395 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/ARCHITECTURE.md                            | Markdown         |        340 |          0 |        109 |        449 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/DevelopPrompt.md                           | Markdown         |        133 |          0 |         26 |        159 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/PROJECT_MANAGEMENT.md                      | Markdown         |        188 |          0 |         81 |        269 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/PROJECT_SUMMARY.md                         | Markdown         |        243 |          0 |         67 |        310 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/requirements.txt                                | pip requirements |         19 |         10 |         10 |         39 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/run.py                                          | Python           |         22 |          8 |          9 |         39 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/API_KEY_SOLUTION.md                     | Markdown         |         54 |          0 |         29 |         83 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/create_tables_auto.py                   | Python           |        158 |         24 |         28 |        210 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_data.py                     | Python           |        256 |         53 |         67 |        376 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_data.sql                    | MS SQL           |        226 |         14 |         11 |        251 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_projects.py                 | Python           |        197 |         18 |         28 |        243 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/setup_database.py                       | Python           |        129 |         42 |         35 |        206 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/setup_supabase.sql                      | MS SQL           |         37 |         55 |         16 |        108 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/test_supabase_connection.py             | Python           |         43 |          8 |         15 |         66 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/verify_supabase_data.py                 | Python           |         75 |         12 |         16 |        103 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/TESTING_COMPLETE.md                       | Markdown         |         49 |          0 |         18 |         67 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/quick_playwright_test.py                  | Python           |         86 |         18 |         27 |        131 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_full_system.py                       | Python           |        403 |         86 |        119 |        608 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_graph.py                             | Python           |        130 |         41 |         26 |        197 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_playwright_download_images.py        | Python           |        142 |         41 |         49 |        232 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_results.json                         | JSON             |        192 |          0 |          0 |        192 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_web_crawler.py                       | Python           |        221 |         51 |         76 |        348 |
+| Total                                                                                        |                  |      8,549 |      2,833 |      2,283 |     13,665 |
++----------------------------------------------------------------------------------------------+------------------+------------+------------+------------+------------+

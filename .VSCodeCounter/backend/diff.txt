@@ -1,0 +1,208 @@
+Date : 2025-12-07 22:39:51
+Directory : /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend
+Total : 129 files,  4334 codes, -2261 comments, -198 blanks, all 1875 lines
+
+Languages
++--------------------+------------+------------+------------+------------+------------+
+| language           | files      | code       | comment    | blank      | total      |
++--------------------+------------+------------+------------+------------+------------+
+| vue                |         28 |      8,986 |          0 |      1,335 |     10,321 |
+| TypeScript         |         21 |      1,871 |        467 |        308 |      2,646 |
+| SCSS               |          3 |        405 |         96 |        108 |        609 |
+| JSON               |          6 |        396 |          0 |          8 |        404 |
+| JavaScript         |          3 |         97 |          3 |          6 |        106 |
+| JSON with Comments |          1 |         26 |          3 |          5 |         34 |
+| HTML               |          1 |         13 |          0 |          2 |         15 |
+| pip requirements   |          1 |        -19 |        -10 |        -10 |        -39 |
+| MS SQL             |          3 |       -321 |       -118 |        -61 |       -500 |
+| Markdown           |         14 |     -1,345 |          3 |       -386 |     -1,728 |
+| Python             |         48 |     -5,775 |     -2,705 |     -1,513 |     -9,993 |
++--------------------+------------+------------+------------+------------+------------+
+
+Directories
++------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| path                                                                                                       | files      | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+| .                                                                                                          |        129 |      4,334 |     -2,261 |       -198 |      1,875 |
+| . (Files)                                                                                                  |         13 |      1,281 |         17 |        334 |      1,632 |
+| ..                                                                                                         |         63 |     -8,549 |     -2,833 |     -2,283 |    -13,665 |
+| ../backend                                                                                                 |         63 |     -8,549 |     -2,833 |     -2,283 |    -13,665 |
+| ../backend (Files)                                                                                         |          4 |       -510 |        -18 |       -188 |       -716 |
+| ../backend/app                                                                                             |         38 |     -4,421 |     -2,352 |     -1,173 |     -7,946 |
+| ../backend/app (Files)                                                                                     |          2 |       -130 |        -33 |        -38 |       -201 |
+| ../backend/app/agents                                                                                      |          8 |     -1,244 |       -903 |       -314 |     -2,461 |
+| ../backend/app/api                                                                                         |          8 |       -452 |       -182 |       -136 |       -770 |
+| ../backend/app/api (Files)                                                                                 |          1 |          0 |         -1 |         -1 |         -2 |
+| ../backend/app/api/v1                                                                                      |          7 |       -452 |       -181 |       -135 |       -768 |
+| ../backend/app/api/v1 (Files)                                                                              |          1 |          0 |         -1 |         -1 |         -2 |
+| ../backend/app/api/v1/endpoints                                                                            |          3 |       -371 |       -153 |        -84 |       -608 |
+| ../backend/app/api/v1/schemas                                                                              |          3 |        -81 |        -27 |        -50 |       -158 |
+| ../backend/app/core                                                                                        |          3 |       -135 |        -61 |        -49 |       -245 |
+| ../backend/app/db                                                                                          |          5 |       -557 |       -124 |       -184 |       -865 |
+| ../backend/app/db (Files)                                                                                  |          4 |       -499 |        -75 |       -150 |       -724 |
+| ../backend/app/db/migrations                                                                               |          1 |        -58 |        -49 |        -34 |       -141 |
+| ../backend/app/services                                                                                    |          4 |       -454 |       -272 |       -123 |       -849 |
+| ../backend/app/tools                                                                                       |          8 |     -1,449 |       -777 |       -329 |     -2,555 |
+| ../backend/docs                                                                                            |          5 |     -1,220 |          0 |       -362 |     -1,582 |
+| ../backend/scripts                                                                                         |          9 |     -1,175 |       -226 |       -245 |     -1,646 |
+| ../backend/tests                                                                                           |          7 |     -1,223 |       -237 |       -315 |     -1,775 |
+| electron                                                                                                   |          2 |        120 |         19 |         31 |        170 |
+| src                                                                                                        |         51 |     11,482 |        536 |      1,720 |     13,738 |
+| src (Files)                                                                                                |          2 |        135 |         16 |         29 |        180 |
+| src/api                                                                                                    |          5 |        700 |        212 |        105 |      1,017 |
+| src/api (Files)                                                                                            |          2 |        297 |        139 |         67 |        503 |
+| src/api/mocks                                                                                              |          3 |        403 |         73 |         38 |        514 |
+| src/assets                                                                                                 |          3 |        405 |         96 |        108 |        609 |
+| src/assets/styles                                                                                          |          3 |        405 |         96 |        108 |        609 |
+| src/components                                                                                             |         25 |      8,177 |          7 |      1,207 |      9,391 |
+| src/components/common                                                                                      |          4 |        594 |          0 |         91 |        685 |
+| src/components/copilot                                                                                     |          1 |        268 |          0 |         37 |        305 |
+| src/components/dashboard                                                                                   |          4 |      1,008 |          0 |        146 |      1,154 |
+| src/components/layout                                                                                      |          3 |        696 |          0 |        101 |        797 |
+| src/components/project                                                                                     |          1 |      1,555 |          0 |        204 |      1,759 |
+| src/components/workspace                                                                                   |         12 |      4,056 |          7 |        628 |      4,691 |
+| src/composables                                                                                            |          1 |         76 |         39 |         22 |        137 |
+| src/locales                                                                                                |          2 |        430 |          0 |          3 |        433 |
+| src/mock                                                                                                   |          5 |        490 |         78 |         55 |        623 |
+| src/router                                                                                                 |          1 |         43 |          3 |          7 |         53 |
+| src/store                                                                                                  |          2 |        259 |         81 |         57 |        397 |
+| src/types                                                                                                  |          1 |         13 |          0 |          3 |         16 |
+| src/utils                                                                                                  |          1 |         33 |          4 |          6 |         43 |
+| src/views                                                                                                  |          3 |        721 |          0 |        118 |        839 |
++------------------------------------------------------------------------------------------------------------+------------+------------+------------+------------+------------+
+
+Files
++------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| filename                                                                                                   | language           | code       | comment    | blank      | total      |
++------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+
+| /Users/sunminghao/Desktop/EvoLabeler/backend/README.md                                                     | Markdown           |       -426 |          0 |       -150 |       -576 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/SUPABASE_KEY_FIX.md                                           | Markdown           |        -43 |          0 |        -19 |        -62 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/__init__.py                                               | Python             |         -1 |         -6 |         -2 |         -9 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/__init__.py                                        | Python             |          0 |         -1 |         -1 |         -2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/acquisition_agent.py                               | Python             |       -322 |       -234 |        -87 |       -643 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/analysis_agent.py                                  | Python             |       -224 |       -253 |        -53 |       -530 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/base_agent.py                                      | Python             |        -24 |        -45 |        -12 |        -81 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/inference_agent.py                                 | Python             |       -243 |       -170 |        -59 |       -472 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/prompts.py                                         | Python             |       -133 |        -19 |        -26 |       -178 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/state.py                                           | Python             |        -17 |        -20 |        -13 |        -50 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/agents/training_agent.py                                  | Python             |       -281 |       -161 |        -63 |       -505 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/__init__.py                                           | Python             |          0 |         -1 |         -1 |         -2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/__init__.py                                        | Python             |          0 |         -1 |         -1 |         -2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/__init__.py                              | Python             |          0 |         -1 |         -1 |         -2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/jobs.py                                  | Python             |       -149 |        -71 |        -42 |       -262 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/endpoints/projects.py                              | Python             |       -222 |        -81 |        -41 |       -344 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/__init__.py                                | Python             |          0 |         -1 |         -1 |         -2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/job.py                                     | Python             |        -32 |        -13 |        -21 |        -66 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/api/v1/schemas/project.py                                 | Python             |        -49 |        -13 |        -28 |        -90 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/core/__init__.py                                          | Python             |          0 |         -1 |         -1 |         -2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/core/config.py                                            | Python             |        -64 |        -19 |        -19 |       -102 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/core/logging_config.py                                    | Python             |        -71 |        -41 |        -29 |       -141 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/DATABASE_DESIGN.md                                     | Markdown           |       -450 |          0 |       -121 |       -571 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/__init__.py                                            | Python             |          0 |         -1 |         -2 |         -3 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/migrations/002_create_projects_table.sql               | MS SQL             |        -58 |        -49 |        -34 |       -141 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/models.py                                              | Python             |        -23 |        -52 |        -13 |        -88 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/db/supabase_init.py                                       | Python             |        -26 |        -22 |        -14 |        -62 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/main.py                                                   | Python             |       -129 |        -27 |        -36 |       -192 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/services/__init__.py                                      | Python             |          0 |         -1 |         -1 |         -2 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/services/advanced_orchestrator.py                         | Python             |       -269 |       -138 |        -68 |       -475 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/services/orchestrator.py                                  | Python             |       -117 |        -60 |        -26 |       -203 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/services/workflow_graph.py                                | Python             |        -68 |        -73 |        -28 |       -169 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/__init__.py                                         | Python             |          0 |         -1 |         -2 |         -3 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/mcp_integration.py                                  | Python             |       -338 |       -116 |        -64 |       -518 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/mcp_tools.py                                        | Python             |       -254 |        -65 |        -61 |       -380 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/qwen_api_wrapper.py                                 | Python             |       -113 |       -172 |        -23 |       -308 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/remote_client.py                                    | Python             |       -217 |       -124 |        -44 |       -385 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/subprocess_executor.py                              | Python             |       -151 |        -67 |        -33 |       -251 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/supabase_client.py                                  | Python             |       -271 |       -160 |        -59 |       -490 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/app/tools/web_crawler.py                                      | Python             |       -105 |        -72 |        -43 |       -220 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/API.md                                                   | Markdown           |       -316 |          0 |        -79 |       -395 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/ARCHITECTURE.md                                          | Markdown           |       -340 |          0 |       -109 |       -449 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/DevelopPrompt.md                                         | Markdown           |       -133 |          0 |        -26 |       -159 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/PROJECT_MANAGEMENT.md                                    | Markdown           |       -188 |          0 |        -81 |       -269 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/docs/PROJECT_SUMMARY.md                                       | Markdown           |       -243 |          0 |        -67 |       -310 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/requirements.txt                                              | pip requirements   |        -19 |        -10 |        -10 |        -39 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/run.py                                                        | Python             |        -22 |         -8 |         -9 |        -39 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/API_KEY_SOLUTION.md                                   | Markdown           |        -54 |          0 |        -29 |        -83 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/create_tables_auto.py                                 | Python             |       -158 |        -24 |        -28 |       -210 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_data.py                                   | Python             |       -256 |        -53 |        -67 |       -376 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_data.sql                                  | MS SQL             |       -226 |        -14 |        -11 |       -251 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/insert_test_projects.py                               | Python             |       -197 |        -18 |        -28 |       -243 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/setup_database.py                                     | Python             |       -129 |        -42 |        -35 |       -206 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/setup_supabase.sql                                    | MS SQL             |        -37 |        -55 |        -16 |       -108 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/test_supabase_connection.py                           | Python             |        -43 |         -8 |        -15 |        -66 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/scripts/verify_supabase_data.py                               | Python             |        -75 |        -12 |        -16 |       -103 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/TESTING_COMPLETE.md                                     | Markdown           |        -49 |          0 |        -18 |        -67 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/quick_playwright_test.py                                | Python             |        -86 |        -18 |        -27 |       -131 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_full_system.py                                     | Python             |       -403 |        -86 |       -119 |       -608 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_graph.py                                           | Python             |       -130 |        -41 |        -26 |       -197 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_playwright_download_images.py                      | Python             |       -142 |        -41 |        -49 |       -232 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_results.json                                       | JSON               |       -192 |          0 |          0 |       -192 |
+| /Users/sunminghao/Desktop/EvoLabeler/backend/tests/test_web_crawler.py                                     | Python             |       -221 |        -51 |        -76 |       -348 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/.eslintrc.cjs                                    | JavaScript         |         27 |          0 |          2 |         29 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/.prettierrc.json                                 | JSON               |          9 |          0 |          2 |         11 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/BUILD_GUIDE.md                                   | Markdown           |        287 |          0 |        119 |        406 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/CO_PILOT_FEATURES.md                             | Markdown           |        134 |          3 |         41 |        178 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/QUICKSTART.md                                    | Markdown           |         68 |          0 |         32 |        100 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/README.md                                        | Markdown           |        408 |          0 |        121 |        529 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/electron/main.ts                                 | TypeScript         |         90 |         14 |         23 |        127 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/electron/preload.ts                              | TypeScript         |         30 |          5 |          8 |         43 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/index.html                                       | HTML               |         13 |          0 |          2 |         15 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/package.json                                     | JSON               |        139 |          0 |          1 |        140 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/postcss.config.js                                | JavaScript         |          6 |          0 |          2 |          8 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/App.vue                                      | vue                |        110 |          0 |         17 |        127 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/api/mocks/mock_logs.ts                       | TypeScript         |        124 |         26 |         23 |        173 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/api/mocks/mock_missions.ts                   | TypeScript         |         88 |         18 |          8 |        114 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/api/mocks/mock_stream.ts                     | TypeScript         |        191 |         29 |          7 |        227 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/api/projects.ts                              | TypeScript         |        234 |        100 |         53 |        387 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/api/types.ts                                 | TypeScript         |         63 |         39 |         14 |        116 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/assets/styles/_variables.scss                | SCSS               |        112 |         23 |         27 |        162 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/assets/styles/base.scss                      | SCSS               |        200 |         44 |         55 |        299 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/assets/styles/themes.scss                    | SCSS               |         93 |         29 |         26 |        148 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/common/AnimatedCard.vue           | vue                |        118 |          0 |         20 |        138 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/common/LoadingSkeleton.vue        | vue                |         90 |          0 |         13 |        103 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/common/StatusBadge.vue            | vue                |        188 |          0 |         32 |        220 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/common/ThemeToggle.vue            | vue                |        198 |          0 |         26 |        224 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/copilot/WorkspaceHeader.vue       | vue                |        268 |          0 |         37 |        305 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/dashboard/AgentStatusList.vue     | vue                |        194 |          0 |         29 |        223 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/dashboard/HeroSection.vue         | vue                |        441 |          0 |         63 |        504 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/dashboard/ProjectCard.vue         | vue                |        215 |          0 |         32 |        247 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/dashboard/ProjectList.vue         | vue                |        158 |          0 |         22 |        180 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/layout/AppErrorBoundary.vue       | vue                |         88 |          0 |         13 |        101 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/layout/AppHeader.vue              | vue                |        392 |          0 |         60 |        452 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/layout/AppSidebar.vue             | vue                |        216 |          0 |         28 |        244 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/project/CreateProjectWizard.vue   | vue                |      1,555 |          0 |        204 |      1,759 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/AgentPanel.vue          | vue                |        374 |          0 |         54 |        428 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/AgentTelemetryPanel.vue | vue                |        367 |          0 |         57 |        424 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/DataInbox.vue           | vue                |        312 |          0 |         48 |        360 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/EvolutionMonitor.vue    | vue                |        189 |          0 |         34 |        223 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/LiveTerminal.vue        | vue                |        255 |          0 |         43 |        298 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/LossChartCard.vue       | vue                |        296 |          0 |         43 |        339 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/McpToolsPanel.vue       | vue                |        308 |          0 |         47 |        355 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/SeedUploadZone.vue      | vue                |        360 |          0 |         63 |        423 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/SmartCanvas.vue         | vue                |      1,011 |          0 |        155 |      1,166 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/TrainingDetailsCard.vue | vue                |        279 |          0 |         34 |        313 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/YoloMetricsCard.vue     | vue                |        283 |          0 |         43 |        326 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/components/workspace/types.ts                | TypeScript         |         22 |          7 |          7 |         36 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/composables/useTheme.ts                      | TypeScript         |         76 |         39 |         22 |        137 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/locales/en.json                              | JSON               |        164 |          0 |          2 |        166 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/locales/zh-CN.json                           | JSON               |        266 |          0 |          1 |        267 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/main.ts                                      | TypeScript         |         25 |         16 |         12 |         53 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/mock/agents.ts                               | TypeScript         |         99 |          0 |          6 |        105 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/mock/jobStatus.ts                            | TypeScript         |        186 |         51 |         33 |        270 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/mock/mcpTools.ts                             | TypeScript         |         51 |          0 |          5 |         56 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/mock/projects.ts                             | TypeScript         |        107 |         27 |          8 |        142 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/mock/systemMetrics.ts                        | TypeScript         |         47 |          0 |          3 |         50 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/router/index.ts                              | TypeScript         |         43 |          3 |          7 |         53 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/store/app.ts                                 | TypeScript         |         63 |         14 |         16 |         93 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/store/mission.ts                             | TypeScript         |        196 |         67 |         41 |        304 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/types/electron.d.ts                          | TypeScript         |         13 |          0 |          3 |         16 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/utils/retry.ts                               | TypeScript         |         33 |          4 |          6 |         43 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/views/CoPilotWorkspaceView.vue               | vue                |        178 |          0 |         29 |        207 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/views/DashboardView.vue                      | vue                |        218 |          0 |         27 |        245 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/src/views/WorkspaceView.vue                      | vue                |        325 |          0 |         62 |        387 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/tailwind.config.js                               | JavaScript         |         64 |          3 |          2 |         69 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/tsconfig.json                                    | JSON with Comments |         26 |          3 |          5 |         34 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/tsconfig.node.json                               | JSON               |         10 |          0 |          2 |         12 |
+| /Users/sunminghao/Desktop/EvoLabeler/evolauncher-frontend/vite.config.ts                                   | TypeScript         |         90 |          8 |          3 |        101 |
+| Total                                                                                                      |                    |      4,334 |     -2,261 |       -198 |      1,875 |
++------------------------------------------------------------------------------------------------------------+--------------------+------------+------------+------------+------------+

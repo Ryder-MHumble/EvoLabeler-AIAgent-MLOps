@@ -211,12 +211,42 @@ const removeWeights = () => {
   }
 }
 
+// 生成第一张图片的缩略图 URL
+const generateThumbnailFromFirstFile = async (): Promise<string> => {
+  if (formData.value.uploadedFiles.length === 0) {
+    // 没有上传文件时使用随机图片
+    return `https://picsum.photos/seed/${Date.now()}/400/300`
+  }
+  
+  const firstFile = formData.value.uploadedFiles[0]
+  
+  return new Promise((resolve) => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      const result = e.target?.result as string
+      if (result) {
+        resolve(result)
+      } else {
+        // 回退到随机图片
+        resolve(`https://picsum.photos/seed/${Date.now()}/400/300`)
+      }
+    }
+    reader.onerror = () => {
+      resolve(`https://picsum.photos/seed/${Date.now()}/400/300`)
+    }
+    reader.readAsDataURL(firstFile)
+  })
+}
+
 // 创建项目
 const createProject = async () => {
   isCreating.value = true
   
   try {
     await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // 使用第一张上传的图片作为封面
+    const thumbnailUrl = await generateThumbnailFromFirstFile()
     
     const project = {
       id: `proj-${Date.now()}`,
@@ -227,7 +257,7 @@ const createProject = async () => {
       accuracy: 0,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      thumbnailUrl: `https://picsum.photos/seed/${Date.now()}/400/300`,
+      thumbnailUrl,
       modelSeries: formData.value.modelSeries,
       modelSize: formData.value.modelSize
     }

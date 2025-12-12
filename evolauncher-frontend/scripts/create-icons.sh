@@ -75,3 +75,6 @@ echo ""
 echo -e "${GREEN}🎉 Done! You can now build your Electron app.${NC}"
 
 
+
+
+
