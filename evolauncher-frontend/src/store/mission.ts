@@ -137,6 +137,21 @@ export const useMissionStore = defineStore('mission', () => {
   }
 
   /**
+   * 添加图像到数据流
+   */
+  const addImageToStream = async (image: ImageTask) => {
+    // 添加到数据流
+    imageStream.value.unshift(image)
+    
+    // 如果没有当前图像，设置为当前图像
+    if (!currentImage.value) {
+      currentImage.value = image
+    }
+    
+    return image
+  }
+
+  /**
    * 确认图像任务
    */
   const confirmImageTask = async (imageId: string) => {
@@ -291,6 +306,7 @@ export const useMissionStore = defineStore('mission', () => {
     selectMission,
     loadImageStream,
     selectImage,
+    addImageToStream,
     confirmImageTask,
     updateBBox,
     loadAgentLogs,

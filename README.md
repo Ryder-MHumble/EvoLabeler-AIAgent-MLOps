@@ -33,6 +33,8 @@
 - **🔗 残差架构**: 信息保留和并行执行
 - **📁 协同工作区**: 智能标注和 Agent 监控
 - **🖼️ 智能标注**: 真实缩放支持（0.25x-5x）、图像上传、YOLO/JSON导出、多工具编辑
+- **📦 数据集导入**: 支持批量导入YOLO/JSON格式的已标注数据集
+- **🎨 模块化架构**: Composables + 子组件，高可维护性设计
 - **📊 项目特定数据**: 每个项目独立的训练指标和配置
 - **📸 智能封面**: 自动使用第一张上传图片作为项目封面
 
@@ -223,7 +225,12 @@ EvoLabeler/
 │   │   │   └── CoPilotWorkspaceView.vue # 协同工作区
 │   │   ├── components/       # UI 组件
 │   │   │   ├── dashboard/    # 仪表盘模块
-│   │   │   ├── workspace/    # 工作区模块
+│   │   │   ├── workspace/    # 工作区模块（模块化重构）
+│   │   │   │   ├── SmartCanvas.vue      # 主画布组件
+│   │   │   │   ├── composables/         # 逻辑钩子
+│   │   │   │   ├── canvas/              # 子组件
+│   │   │   │   ├── constants/           # 常量定义
+│   │   │   │   └── utils/               # 工具函数
 │   │   │   └── copilot/      # 协同工作区模块
 │   │   └── store/            # 状态管理
 │   └── README.md             # 前端文档
@@ -335,13 +342,21 @@ poetry run python scripts/insert_test_projects.py
 
 ### 核心功能亮点
 
-**智能画布标注系统：**
-- ✅ 真实缩放支持，标注框自动随图像缩放（0.25x - 5x）
-- ✅ 支持拖拽或点击上传本地图像
-- ✅ 标注导出支持 YOLO 格式（txt + classes.txt）和 JSON 格式
-- ✅ 多工具编辑：选择工具(V)、绘制工具(B)、平移工具(H)
-- ✅ 完整快捷键支持：V/B/H切换工具、+/-缩放、0重置、空格确认、Del删除
-- ✅ 精确编辑：8个调整手柄、拖拽移动、标签选择
+**智能画布标注系统（重构优化版）：**
+- ✅ **真实缩放同步**：标注框完美跟随图像缩放和平移（0.25x - 5x）
+- ✅ **图像管理**：支持拖拽/点击上传，从队列选择，清除返回上传状态
+- ✅ **数据集导入**：批量导入YOLO格式（.txt）和JSON格式已标注数据集
+- ✅ **标注导出**：支持 YOLO 格式（txt + classes.txt）和 JSON 格式
+- ✅ **多工具编辑**：选择工具(V)、绘制工具(B)、平移工具(H)
+- ✅ **完整快捷键**：V/B/H切换工具、+/-缩放、0重置、空格确认、Del删除
+- ✅ **精确编辑**：8个调整手柄、拖拽移动、标签选择、批量确认
+
+**模块化架构设计：**
+- 📦 **Composables**: useCanvas、useAnnotation、useImageUpload、useDatasetImport、useAnnotationExport
+- 🎨 **子组件**: CanvasToolbar、AnnotationEditor、AnnotationOverlay、ImageInfoBar、EmptyCanvas
+- 🛠️ **工具函数**: 标注解析/导出、置信度计算、文件下载
+- 📝 **常量管理**: 工具类型、缩放配置、标签选项、颜色映射
+- 🔧 **可维护性**: 从1866行单文件重构为多个独立模块，代码更清晰易维护
 
 **项目特定数据管理：**
 - ✅ 每个项目独立的训练数据和指标
