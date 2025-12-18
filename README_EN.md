@@ -34,6 +34,8 @@
 - **🔗 Residual Architecture**: Information preservation and parallel execution
 - **🎨 Co-Pilot Workspace**: Data stream management, smart canvas with advanced annotation tools, agent analysis, live terminal
 - **🖼️ Smart Annotation**: Real zoom support (0.25x-5x), image upload, YOLO/JSON export, multi-tool editing
+- **📦 Dataset Import**: Batch import of pre-annotated datasets in YOLO/JSON formats
+- **🏗️ Modular Architecture**: Composables + sub-components, high maintainability design
 - **📊 Project-Specific Data**: Independent training metrics and configurations for each project
 - **📸 Smart Thumbnails**: Auto-generate project covers from first uploaded image
 
@@ -342,13 +344,21 @@ macOS may show a security warning (unsigned app). To resolve:
 
 ### Key Features Highlights
 
-**Smart Canvas Annotation System:**
-- ✅ Real zoom support with automatic bounding box scaling (0.25x - 5x)
-- ✅ Local image upload via drag-and-drop or click
-- ✅ Annotation export in YOLO format (txt + classes.txt) and JSON format
-- ✅ Multi-tool editing: Select (V), Draw (B), Pan (H)
-- ✅ Keyboard shortcuts: V/B/H for tools, +/- for zoom, 0 for reset, Space to confirm, Del to delete
-- ✅ Precise editing with 8 resize handles and label selection
+**Smart Canvas Annotation System (Refactored & Optimized):**
+- ✅ **Real Zoom Sync**: Bounding boxes perfectly follow image zoom and pan (0.25x - 5x)
+- ✅ **Image Management**: Drag/click upload, queue selection, clear to return to upload state
+- ✅ **Dataset Import**: Batch import YOLO format (.txt) and JSON pre-annotated datasets
+- ✅ **Annotation Export**: YOLO format (txt + classes.txt) and JSON format supported
+- ✅ **Multi-tool Editing**: Select (V), Draw (B), Pan (H) tools
+- ✅ **Full Shortcuts**: V/B/H for tools, +/- for zoom, 0 for reset, Space to confirm, Del to delete
+- ✅ **Precise Editing**: 8 resize handles, drag to move, label selection, batch confirm
+
+**Modular Architecture Design:**
+- 📦 **Composables**: useCanvas, useAnnotation, useImageUpload, useDatasetImport, useAnnotationExport
+- 🎨 **Sub-components**: CanvasToolbar, AnnotationEditor, AnnotationOverlay, ImageInfoBar, EmptyCanvas
+- 🛠️ **Utilities**: Annotation parsing/export, confidence calculation, file download
+- 📝 **Constants**: Tool types, zoom config, label options, color mappings
+- 🔧 **Maintainability**: Refactored from 1866-line monolith to modular architecture for better code clarity
 
 **Project-Specific Data Management:**
 - ✅ Independent training data and metrics for each project
