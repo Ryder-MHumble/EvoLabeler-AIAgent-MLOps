@@ -152,6 +152,10 @@ onMounted(() => {
   &.mcp {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(59, 130, 246, 0.15));
     color: #10B981;
+
+    .dark & {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(96, 165, 250, 0.25));
+    }
   }
 }
 
@@ -229,8 +233,10 @@ onMounted(() => {
   &:hover {
     transform: translateX(4px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-    
-    .dark & { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+  }
+
+  .dark &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
   }
   
   &.skeleton {
@@ -258,6 +264,10 @@ onMounted(() => {
   justify-content: center;
   color: #10B981;
   flex-shrink: 0;
+
+  .dark & {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(96, 165, 250, 0.3));
+  }
 }
 
 .mcp-info {

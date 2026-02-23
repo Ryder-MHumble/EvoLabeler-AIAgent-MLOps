@@ -1,7 +1,7 @@
 <script setup lang="ts">
 /**
  * Workspace View - 工作区主视图
- * 
+ *
  * 模块化重构版本：
  * - EvolutionMonitor: 进化任务监视器
  * - YoloMetricsCard: YOLO训练指标
@@ -9,7 +9,11 @@
  * - TrainingDetailsCard: 训练详情
  * - AgentTelemetryPanel: Agent遥测
  * - McpToolsPanel: MCP工具注册表
- * 
+ * - EvoLoopProgress: EvoLoop 迭代轮次进度
+ * - ModelHealthCard: 模型健康状态
+ * - ModelVersionsPanel: 模型版本管理
+ * - MetricsHistoryChart: 指标趋势图
+ *
  * 现在支持：根据项目ID加载不同的项目特定数据
  */
 
@@ -25,6 +29,13 @@ import LossChartCard from '@/components/workspace/LossChartCard.vue'
 import TrainingDetailsCard from '@/components/workspace/TrainingDetailsCard.vue'
 import AgentTelemetryPanel from '@/components/workspace/AgentTelemetryPanel.vue'
 import McpToolsPanel from '@/components/workspace/McpToolsPanel.vue'
+import EvoLoopProgress from '@/components/workspace/EvoLoopProgress.vue'
+import ModelVersionsPanel from '@/components/workspace/ModelVersionsPanel.vue'
+import ModelHealthCard from '@/components/workspace/ModelHealthCard.vue'
+import MetricsHistoryChart from '@/components/workspace/MetricsHistoryChart.vue'
+
+// Workspace store
+import { useWorkspaceStore } from '@/store/workspace'
 
 // 类型和Mock数据
 import type { StepConfig, YoloLossData, ProjectInfo, JobStatus } from '@/components/workspace/types'
@@ -37,6 +48,7 @@ import {
 
 const { t } = useI18n()
 const route = useRoute()
+const workspaceStore = useWorkspaceStore()
 
 // 当前项目ID
 const projectId = computed(() => (route.params.id as string) || '2')
@@ -157,6 +169,11 @@ watch(projectId, (newId) => {
   
   // 启动新的监控
   startJobMonitoring()
+
+  // 重新加载 workspace 数据
+  workspaceStore.stopPolling()
+  workspaceStore.loadProjectWorkspace(newId)
+  workspaceStore.startPolling()
 }, { immediate: false })
 
 watch(() => currentJob.value?.status, (status) => {
@@ -170,14 +187,24 @@ onMounted(() => {
   projectConfig.value = getProjectConfig(projectId.value)
   lossData.value = generateProjectLossData(projectConfig.value)
   currentStepIndex.value = projectConfig.value.initialStepIndex
-  
+
   startJobMonitoring()
+
+  // 加载 workspace 数据并开始轮询
+  workspaceStore.loadProjectWorkspace(projectId.value)
+  workspaceStore.startPolling()
 })
 
 onUnmounted(() => {
   stopJobMonitoring()
   stopLossUpdate()
+  workspaceStore.stopPolling()
 })
+
+/** Handle rollback from ModelVersionsPanel. */
+const handleRollback = (versionId: string) => {
+  workspaceStore.rollbackModel(versionId)
+}
 </script>
 
 <template>
@@ -204,7 +231,14 @@ onUnmounted(() => {
         </el-button>
       </div>
     </header>
-    
+
+    <!-- EvoLoop 轮次进度 (全宽) -->
+    <EvoLoopProgress
+      :rounds="workspaceStore.evoRounds"
+      :current-round="workspaceStore.currentRound"
+      :max-rounds="5"
+    />
+
     <!-- 主内容区：三列布局 -->
     <section class="main-section">
       <!-- 左侧：进化任务监视器 -->
@@ -214,17 +248,33 @@ onUnmounted(() => {
         :current-step-index="currentStepIndex"
         class="monitor-panel"
       />
-      
+
       <!-- 中间：指标 + 损失曲线 -->
       <div class="center-panel">
         <YoloMetricsCard :current-job="currentJob" class="metrics-card" />
         <LossChartCard ref="lossChartRef" :loss-data="lossData" class="chart-card" />
-          </div>
-          
-      <!-- 右侧：训练详情 -->
-      <TrainingDetailsCard :current-job="currentJob" :project-config="projectConfig" class="details-panel" />
+      </div>
+
+      <!-- 右侧：模型健康 + 模型版本 -->
+      <div class="right-panel">
+        <ModelHealthCard
+          :health-report="workspaceStore.healthReport"
+          :is-loading="workspaceStore.isLoading"
+        />
+        <ModelVersionsPanel
+          :versions="workspaceStore.modelVersions"
+          :is-loading="workspaceStore.isLoading"
+          @rollback="handleRollback"
+        />
+      </div>
     </section>
-    
+
+    <!-- 指标趋势图 (全宽) -->
+    <MetricsHistoryChart
+      :history="workspaceStore.metricsHistory"
+      :is-loading="workspaceStore.isLoading"
+    />
+
     <!-- 底部区域：Agent遥测 + MCP工具 -->
     <section class="secondary-section">
       <AgentTelemetryPanel class="agent-panel" />
@@ -272,11 +322,17 @@ onUnmounted(() => {
   gap: 6px;
   padding: 5px 12px;
   background: rgba(74, 105, 255, 0.1);
+  border: 1px solid transparent;
   border-radius: 20px;
   font-size: clamp(11px, 1vw, 13px);
   font-weight: 500;
   color: var(--color-primary);
   margin-bottom: 8px;
+
+  .dark & {
+    background: rgba(96, 165, 250, 0.15);
+    border-color: rgba(96, 165, 250, 0.3);
+  }
 }
 
 .workspace-title {
@@ -328,25 +384,25 @@ onUnmounted(() => {
       grid-row: 1 / 3;
     }
   
-    .details-panel {
+    .right-panel {
       grid-column: 1;
       grid-row: 2;
     }
   }
-  
+
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
     grid-template-rows: auto;
-    
+
     .monitor-panel,
     .center-panel,
-    .details-panel {
+    .right-panel {
       grid-column: 1;
       grid-row: auto;
     }
   }
-    }
-    
+}
+
 .monitor-panel {
   // 不设置固定高度，让 grid stretch 自动填充
 }
@@ -355,20 +411,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   gap: clamp(12px, 1.2vw, 16px);
-  
+
   .metrics-card {
     flex-shrink: 0;
   }
-  
+
   .chart-card {
-  flex: 1;
+    flex: 1;
     min-height: 200px;
   }
 }
 
-.details-panel {
-  // 不设置 max-height，让它和中间列等高（通过 grid align-items: stretch）
-  // 内部组件自己处理滚动
+.right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 1.2vw, 16px);
 }
 
 // ========== 底部区域 ==========

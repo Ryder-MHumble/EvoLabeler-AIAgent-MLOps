@@ -160,6 +160,57 @@
     "saveFailed": "Save failed",
     "networkError": "Network error",
     "unknownError": "Unknown error"
+  },
+  "evoloop": {
+    "title": "EvoLoop Progress",
+    "waitingStart": "Waiting for EvoLoop to start...",
+    "round": "Round {n}",
+    "statusCompleted": "Completed",
+    "statusRunning": "Running",
+    "statusFailed": "Failed",
+    "statusRollback": "Rolled Back",
+    "statusPending": "Pending",
+    "acquiredImages": "{count} acquired",
+    "continueReason": "Continue",
+    "stopReason": "Stop"
+  },
+  "modelHealth": {
+    "title": "Model Health",
+    "healthy": "Healthy",
+    "warning": "Warning",
+    "critical": "Critical",
+    "noModel": "No Model",
+    "activeVersion": "Active",
+    "bestVersion": "Best",
+    "checks": "Health Checks",
+    "recommendation": "Recommendation",
+    "severity": {
+      "info": "Info",
+      "warning": "Warning",
+      "critical": "Critical"
+    }
+  },
+  "modelVersions": {
+    "title": "Model Versions",
+    "noVersions": "No model versions",
+    "version": "Version",
+    "round": "Round",
+    "best": "Best",
+    "active": "Active",
+    "rollback": "Rollback",
+    "rollbackConfirm": "Roll back to version {version}?",
+    "metrics": {
+      "mAP50": "mAP50",
+      "precision": "Precision",
+      "recall": "Recall"
+    }
+  },
+  "metricsHistory": {
+    "title": "Metrics Trend",
+    "noData": "No history data",
+    "mAP50": "mAP50",
+    "precision": "Precision",
+    "recall": "Recall"
   }
 }
 

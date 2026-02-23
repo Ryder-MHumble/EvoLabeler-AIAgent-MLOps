@@ -292,7 +292,111 @@ a {
   
   &.is-focus {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 2px rgba(74, 105, 255, 0.1);
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.15);
+  }
+}
+
+// ============================================
+// Element Plus Dark Mode Overrides
+// ============================================
+
+.dark {
+  .el-button {
+    &:not(.el-button--primary):not(.el-button--success):not(.el-button--warning):not(.el-button--danger):not(.el-button--info) {
+      background-color: var(--color-surface-elevated);
+      border-color: var(--color-border);
+      color: var(--color-text-primary);
+
+      &:hover {
+        background-color: var(--color-surface);
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+      }
+    }
+  }
+
+  .el-card {
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+  }
+
+  .el-input__wrapper {
+    background-color: var(--color-surface-elevated);
+    box-shadow: 0 0 0 1px var(--color-border) inset;
+
+    &:hover {
+      box-shadow: 0 0 0 1px var(--color-primary-light) inset;
+    }
+
+    &.is-focus {
+      box-shadow: 0 0 0 1px var(--color-primary) inset;
+    }
+  }
+
+  .el-textarea__inner {
+    background-color: var(--color-surface-elevated);
+    border-color: var(--color-border);
+    color: var(--color-text-primary);
+    box-shadow: 0 0 0 1px var(--color-border) inset;
+
+    &:hover {
+      box-shadow: 0 0 0 1px var(--color-primary-light) inset;
+    }
+
+    &:focus {
+      box-shadow: 0 0 0 1px var(--color-primary) inset;
+    }
+  }
+
+  .el-dialog {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+
+    .el-dialog__header {
+      border-bottom-color: var(--color-border);
+    }
+
+    .el-dialog__footer {
+      border-top-color: var(--color-border);
+    }
+
+    .el-dialog__headerbtn {
+      .el-dialog__close {
+        color: var(--color-text-secondary);
+
+        &:hover {
+          color: var(--color-text-primary);
+        }
+      }
+    }
+  }
+
+  .el-overlay {
+    background-color: rgba(0, 0, 0, 0.7);
+  }
+
+  .el-input {
+    --el-input-bg-color: var(--color-surface-elevated);
+    --el-input-text-color: var(--color-text-primary);
+    --el-input-border-color: var(--color-border);
+    --el-input-hover-border-color: var(--color-primary-light);
+    --el-input-focus-border-color: var(--color-primary);
+    --el-input-placeholder-color: var(--color-text-tertiary);
+  }
+
+  .el-select {
+    .el-input__wrapper {
+      background-color: var(--color-surface-elevated);
+    }
+  }
+
+  .el-message-box {
+    background-color: var(--color-surface);
+    border-color: var(--color-border);
+  }
+
+  .el-loading-mask {
+    background-color: rgba(15, 23, 42, 0.8);
   }
 }
 

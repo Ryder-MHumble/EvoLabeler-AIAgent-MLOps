@@ -729,12 +729,6 @@ watch(() => props.visible, (newVal) => {
     overflow: hidden;
     background: var(--color-surface);
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    
-    .dark & {
-      background: rgba(15, 23, 42, 0.98);
-      backdrop-filter: blur(20px);
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
-    }
     height: 90vh;
     max-height: 90vh;
     display: flex;
@@ -761,10 +755,6 @@ watch(() => props.visible, (newVal) => {
     max-height: calc(90vh - 200px);
     background: transparent;
     @include custom-scrollbar;
-    
-    .dark & {
-      background: transparent;
-    }
   }
   
   :deep(.el-dialog__footer) {
@@ -790,21 +780,10 @@ watch(() => props.visible, (newVal) => {
       transform: rotate(90deg);
     }
     
-    .dark & {
-      background: rgba(255, 255, 255, 0.1);
-      
-      &:hover {
-        background: rgba(255, 255, 255, 0.2);
-      }
-    }
   }
-  
+
   :deep(.el-dialog__mask) {
     background: rgba(0, 0, 0, 0.5);
-    
-    .dark & {
-      background: rgba(0, 0, 0, 0.7);
-    }
   }
   
   // 响应式
@@ -1026,37 +1005,14 @@ watch(() => props.visible, (newVal) => {
     background: var(--color-surface-elevated);
     border-color: var(--color-border);
     color: var(--color-text-primary);
-    
-    .dark & {
-      background: rgba(30, 41, 59, 0.6) !important;
-      border-color: rgba(255, 255, 255, 0.15) !important;
-      color: rgba(255, 255, 255, 0.9) !important;
-    }
-    
+
     &::placeholder {
       color: var(--color-text-tertiary);
-      
-      .dark & {
-        color: rgba(255, 255, 255, 0.4) !important;
-      }
     }
-    
+
     &:focus {
       background: var(--color-surface);
       border-color: var(--color-primary);
-      
-      .dark & {
-        background: rgba(30, 41, 59, 0.8) !important;
-        border-color: rgba(96, 165, 250, 0.6) !important;
-        color: rgba(255, 255, 255, 0.95) !important;
-      }
-    }
-  }
-  
-  :deep(.el-input__wrapper) {
-    .dark & {
-      background: rgba(30, 41, 59, 0.6) !important;
-      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset !important;
     }
   }
 }
@@ -1076,22 +1032,12 @@ watch(() => props.visible, (newVal) => {
   transition: all 0.3s ease;
   background: var(--color-surface-elevated);
   margin-bottom: $spacing-xl;
-  
-  .dark & {
-    background: rgba(30, 41, 59, 0.3);
-    border-color: rgba(255, 255, 255, 0.15);
-  }
-  
+
   &:hover {
     border-color: var(--color-primary);
     background: rgba(74, 105, 255, 0.03);
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(74, 105, 255, 0.15);
-    
-    .dark & {
-      background: rgba(96, 165, 250, 0.08);
-      box-shadow: 0 8px 24px rgba(96, 165, 250, 0.2);
-    }
   }
 }
 
@@ -1102,10 +1048,6 @@ watch(() => props.visible, (newVal) => {
   background: linear-gradient(135deg, rgba(74, 105, 255, 0.1), rgba(138, 43, 226, 0.1));
   margin-bottom: $spacing-lg;
   color: var(--color-primary);
-  
-  .dark & {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(167, 139, 250, 0.15));
-  }
 }
 
 .upload-title {
@@ -1132,10 +1074,6 @@ watch(() => props.visible, (newVal) => {
   color: var(--color-success);
   font-size: $font-size-sm;
   font-weight: $font-weight-medium;
-  
-  .dark & {
-    background: rgba(16, 185, 129, 0.15);
-  }
 }
 
 // 文件列表
@@ -1157,20 +1095,11 @@ watch(() => props.visible, (newVal) => {
   border-radius: 12px;
   border: 1px solid var(--color-border);
   transition: all 0.2s ease;
-  
-  .dark & {
-    background: rgba(30, 41, 59, 0.4);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
+
   &:hover {
     border-color: var(--color-primary);
     transform: translateY(-2px);
     box-shadow: $shadow-md;
-    
-    .dark & {
-      background: rgba(30, 41, 59, 0.6);
-    }
   }
 }
 
@@ -1267,13 +1196,6 @@ watch(() => props.visible, (newVal) => {
   color: var(--color-primary);
   box-shadow: 0 2px 8px rgba(74, 105, 255, 0.15);
   flex-shrink: 0;
-  
-  .dark & {
-    background: linear-gradient(135deg, 
-      rgba(96, 165, 250, 0.2), 
-      rgba(167, 139, 250, 0.2)
-    );
-  }
 }
 
 .section-header-text {
@@ -1314,13 +1236,8 @@ watch(() => props.visible, (newVal) => {
     border: 2px solid var(--color-border);
     border-radius: 20px;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    
-    .dark & {
-      background: rgba(30, 41, 59, 0.4);
-      border-color: rgba(255, 255, 255, 0.1);
-    }
   }
-  
+
   .model-card-content {
     position: relative;
     padding: $spacing-xl;
@@ -1337,10 +1254,6 @@ watch(() => props.visible, (newVal) => {
     .model-card-bg {
       border-color: var(--model-color, var(--color-primary));
       box-shadow: 0 12px 32px rgba(74, 105, 255, 0.2);
-      
-      .dark & {
-        box-shadow: 0 12px 32px rgba(96, 165, 250, 0.3);
-      }
     }
     
     .model-icon-premium {
@@ -1382,11 +1295,6 @@ watch(() => props.visible, (newVal) => {
   color: var(--model-color, var(--color-primary));
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  
-  .dark & {
-    background: rgba(96, 165, 250, 0.15);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  }
 }
 
 .model-info-premium {
@@ -1455,12 +1363,7 @@ watch(() => props.visible, (newVal) => {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  
-  .dark & {
-    background: rgba(30, 41, 59, 0.4);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -1618,20 +1521,11 @@ watch(() => props.visible, (newVal) => {
   border-radius: 16px;
   border: 2px solid var(--color-border);
   transition: all 0.3s ease;
-  
-  .dark & {
-    background: rgba(30, 41, 59, 0.4);
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
+
   &:hover {
     border-color: var(--color-primary);
     transform: translateY(-4px);
     box-shadow: $shadow-lg;
-    
-    .dark & {
-      background: rgba(30, 41, 59, 0.6);
-    }
   }
 }
 
@@ -1783,6 +1677,109 @@ watch(() => props.visible, (newVal) => {
   
   .summary-container {
     grid-template-columns: 1fr;
+  }
+}
+
+// Dark mode styles for teleported dialog (append-to-body)
+:global(html.dark) {
+  .wizard-dialog {
+    .el-dialog {
+      background: var(--color-surface);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    }
+
+    .el-dialog__headerbtn {
+      background: rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background: rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    .el-overlay {
+      background-color: rgba(0, 0, 0, 0.7);
+    }
+
+    .el-input__inner,
+    .el-textarea__inner {
+      background: rgba(30, 41, 59, 0.6) !important;
+      border-color: rgba(255, 255, 255, 0.15) !important;
+      color: rgba(255, 255, 255, 0.9) !important;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.4) !important;
+      }
+
+      &:focus {
+        background: rgba(30, 41, 59, 0.8) !important;
+        border-color: rgba(96, 165, 250, 0.6) !important;
+        color: rgba(255, 255, 255, 0.95) !important;
+      }
+    }
+
+    .el-input__wrapper {
+      background: rgba(30, 41, 59, 0.6) !important;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset !important;
+    }
+
+    .upload-zone {
+      background: rgba(30, 41, 59, 0.3);
+      border-color: rgba(255, 255, 255, 0.15);
+
+      &:hover {
+        background: rgba(96, 165, 250, 0.08);
+        box-shadow: 0 8px 24px rgba(96, 165, 250, 0.2);
+      }
+    }
+
+    .upload-icon-wrapper {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.15), rgba(167, 139, 250, 0.15));
+    }
+
+    .upload-status {
+      background: rgba(16, 185, 129, 0.15);
+    }
+
+    .file-item {
+      background: rgba(30, 41, 59, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background: rgba(30, 41, 59, 0.6);
+      }
+    }
+
+    .model-card-bg {
+      background: rgba(30, 41, 59, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .model-card-premium:hover .model-card-bg {
+      box-shadow: 0 12px 32px rgba(96, 165, 250, 0.3);
+    }
+
+    .model-icon-premium {
+      background: rgba(96, 165, 250, 0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-icon-premium {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(167, 139, 250, 0.2));
+    }
+
+    .size-card-premium {
+      background: rgba(30, 41, 59, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .summary-card {
+      background: rgba(30, 41, 59, 0.4);
+      border-color: rgba(255, 255, 255, 0.1);
+
+      &:hover {
+        background: rgba(30, 41, 59, 0.6);
+      }
+    }
   }
 }
 </style>

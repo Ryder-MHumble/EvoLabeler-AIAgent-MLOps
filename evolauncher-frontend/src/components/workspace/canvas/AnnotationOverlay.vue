@@ -185,13 +185,22 @@ const getResizeHandlePosition = (bbox: BoundingBox, handle: string) => {
   
   .bbox-label {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+
+    .dark & {
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    }
   }
   
   .resize-handle {
     pointer-events: all;
     cursor: nwse-resize;
     transition: r 0.15s ease, fill 0.15s ease;
-    
+
+    .dark & {
+      fill: #6366f1 !important;
+      stroke: #1e1e2e !important;
+    }
+
     &.handle-nw { cursor: nwse-resize; }
     &.handle-ne { cursor: nesw-resize; }
     &.handle-sw { cursor: nesw-resize; }
@@ -200,7 +209,7 @@ const getResizeHandlePosition = (bbox: BoundingBox, handle: string) => {
     &.handle-s { cursor: ns-resize; }
     &.handle-e { cursor: ew-resize; }
     &.handle-w { cursor: ew-resize; }
-    
+
     &:hover {
       r: 8;
       fill: #6366f1;
@@ -209,6 +218,11 @@ const getResizeHandlePosition = (bbox: BoundingBox, handle: string) => {
   
   .drawing-rect {
     animation: drawPulse 1s ease-in-out infinite;
+
+    .dark & {
+      fill: rgba(99, 102, 241, 0.15) !important;
+      stroke: #818cf8 !important;
+    }
   }
 }
 

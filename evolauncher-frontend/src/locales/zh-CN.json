@@ -262,5 +262,56 @@
     "training": "正在使用新数据进行模型微调...",
     "completed": "进化完成！",
     "performanceImproved": "模型性能预估提升 {percent}%"
+  },
+  "evoloop": {
+    "title": "EvoLoop 进度",
+    "waitingStart": "等待 EvoLoop 启动...",
+    "round": "Round {n}",
+    "statusCompleted": "已完成",
+    "statusRunning": "运行中",
+    "statusFailed": "失败",
+    "statusRollback": "已回滚",
+    "statusPending": "等待中",
+    "acquiredImages": "获取 {count} 张",
+    "continueReason": "继续",
+    "stopReason": "停止"
+  },
+  "modelHealth": {
+    "title": "模型健康",
+    "healthy": "健康",
+    "warning": "警告",
+    "critical": "严重",
+    "noModel": "无模型",
+    "activeVersion": "活跃版本",
+    "bestVersion": "最佳版本",
+    "checks": "健康检查",
+    "recommendation": "建议",
+    "severity": {
+      "info": "信息",
+      "warning": "警告",
+      "critical": "严重"
+    }
+  },
+  "modelVersions": {
+    "title": "模型版本",
+    "noVersions": "暂无模型版本",
+    "version": "版本",
+    "round": "轮次",
+    "best": "最佳",
+    "active": "激活",
+    "rollback": "回滚",
+    "rollbackConfirm": "确定回滚到版本 {version}？",
+    "metrics": {
+      "mAP50": "mAP50",
+      "precision": "精确率",
+      "recall": "召回率"
+    }
+  },
+  "metricsHistory": {
+    "title": "指标趋势",
+    "noData": "暂无历史数据",
+    "mAP50": "mAP50",
+    "precision": "精确率",
+    "recall": "召回率"
   }
 }

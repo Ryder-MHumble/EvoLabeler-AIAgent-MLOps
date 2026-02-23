@@ -161,6 +161,10 @@ onMounted(() => {
   &.agent {
     background: linear-gradient(135deg, rgba(74, 105, 255, 0.15), rgba(138, 43, 226, 0.15));
     color: #4A69FF;
+
+    .dark & {
+      background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(167, 139, 250, 0.25));
+    }
   }
 }
 
@@ -264,10 +268,12 @@ onMounted(() => {
     transform: translateY(-2px);
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
     border-color: var(--color-primary);
-    
+
     &::before { opacity: 1; }
-    
-    .dark & { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3); }
+  }
+
+  .dark &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   }
   
   &.skeleton {
@@ -296,6 +302,10 @@ onMounted(() => {
   justify-content: center;
   color: #4A69FF;
   flex-shrink: 0;
+
+  .dark & {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.3), rgba(167, 139, 250, 0.3));
+  }
 }
 
 .agent-info {

@@ -5,7 +5,6 @@
  */
 
 import { Icon } from '@iconify/vue'
-import AnimatedCard from '@/components/common/AnimatedCard.vue'
 import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 import ProjectCard from './ProjectCard.vue'
 import type { Project } from '@/mock/projects'
@@ -43,13 +42,7 @@ const emit = defineEmits<{
     
     <!-- Loading State -->
     <div v-if="isLoading" class="projects-list">
-      <AnimatedCard v-for="i in 6" :key="`skeleton-${i}`" :hoverable="false">
-        <LoadingSkeleton type="image" height="200px" />
-        <div class="mt-4">
-          <LoadingSkeleton type="title" width="60%" />
-          <LoadingSkeleton type="text" width="40%" count="2" />
-        </div>
-      </AnimatedCard>
+      <LoadingSkeleton v-for="i in 6" :key="`skeleton-${i}`" variant="card" height="280px" />
     </div>
     
     <!-- Projects Grid -->

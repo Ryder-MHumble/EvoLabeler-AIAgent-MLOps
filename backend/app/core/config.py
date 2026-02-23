@@ -20,20 +20,42 @@ class Settings(BaseSettings):
     log_level: str = Field(default="INFO", alias="LOG_LEVEL")
 
     # Supabase Configuration
-    supabase_url: str = Field(..., alias="SUPABASE_URL")
-    supabase_key: str = Field(..., alias="SUPABASE_KEY")
-    supabase_service_key: Optional[str] = Field(default=None, alias="SUPABASE_SERVICE_KEY")
+    supabase_url: str = Field(
+        ...,
+        alias="SUPABASE_URL",
+        description="Supabase project URL (must start with https://)"
+    )
+    supabase_key: str = Field(
+        ...,
+        alias="SUPABASE_KEY",
+        description="Supabase anonymous key (minimum 32 characters)"
+    )
+    supabase_service_key: Optional[str] = Field(
+        default=None,
+        alias="SUPABASE_SERVICE_KEY",
+        description="Supabase service role key (optional, for admin operations)"
+    )
 
     # Qwen API Configuration (硅基流动)
-    qwen_api_key: str = Field(..., alias="QWEN_API_KEY")
+    qwen_api_key: str = Field(
+        ...,
+        alias="QWEN_API_KEY",
+        description="Qwen API key from SiliconFlow (minimum 20 characters)"
+    )
     qwen_api_base_url: str = Field(
-        default="https://api.siliconflow.cn/v1", alias="QWEN_API_BASE_URL"
+        default="https://api.siliconflow.cn/v1",
+        alias="QWEN_API_BASE_URL",
+        description="Qwen API base URL (must be a valid HTTPS URL)"
     )
     qwen_vl_model: str = Field(
-        default="Qwen/Qwen3-VL-32B-Instruct", alias="QWEN_VL_MODEL"
+        default="Qwen/Qwen3-VL-32B-Instruct",
+        alias="QWEN_VL_MODEL",
+        description="Qwen Vision-Language model name"
     )
     qwen_text_model: str = Field(
-        default="Qwen/Qwen2.5-72B-Instruct", alias="QWEN_TEXT_MODEL"
+        default="Qwen/Qwen2.5-72B-Instruct",
+        alias="QWEN_TEXT_MODEL",
+        description="Qwen text model name"
     )
 
     # Remote GPU Server Configuration (SSH)

@@ -1,0 +1,32 @@
+{
+  "name": "evolabeler",
+  "version": "1.0.0",
+  "description": "EvoLabeler - A modern desktop app with exceptional UX",
+  "private": true,
+  "author": {
+    "name": "Ryder Sun",
+    "email": "mhumble010221@gmail.com"
+  },
+  "workspaces": [
+    "evolauncher-frontend"
+  ],
+  "scripts": {
+    "electron:dev": "cd evolauncher-frontend && npm run electron:dev",
+    "dev": "cd evolauncher-frontend && npm run dev",
+    "build:mac": "cd evolauncher-frontend && npm run build:mac",
+    "build:win": "cd evolauncher-frontend && npm run build:win",
+    "install": "cd evolauncher-frontend && npm install"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/EvoLabeler"
+  },
+  "keywords": [
+    "electron",
+    "vue",
+    "desktop-app",
+    "labeling",
+    "annotation"
+  ],
+  "license": "MIT"
+}

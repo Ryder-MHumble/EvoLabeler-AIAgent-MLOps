@@ -47,3 +47,49 @@ class AgentState(TypedDict):
     scene_type: Optional[str]  # 场景类型
     model_path: Optional[str]  # 模型路径
 
+    # ==================== EvoLoop 迭代控制 ====================
+    # 当前迭代轮次（从 1 开始）
+    round_number: Optional[int]
+    # 最大允许迭代轮次
+    max_rounds: Optional[int]
+
+    # ==================== 模型版本管理 ====================
+    # 历史最佳模型路径
+    best_model_path: Optional[str]
+    # 历史最佳模型指标
+    best_metrics: Optional[dict]
+    # 当前模型版本 UUID
+    model_version_id: Optional[str]
+
+    # ==================== 评估结果 ====================
+    # 当前轮次评估指标
+    evaluation_metrics: Optional[dict]
+    # 与最佳模型的对比结果
+    model_comparison: Optional[dict]
+    # 校准指标 (ECE, MCE)
+    calibration_metrics: Optional[dict]
+    # 续停决策
+    continuation_decision: Optional[dict]
+
+    # ==================== 验证集管理 ====================
+    # 固定 holdout 验证集路径
+    holdout_validation_set: Optional[list[str]]
+    # 验证集哈希（确保跨轮次一致性）
+    validation_set_hash: Optional[str]
+
+    # ==================== 防退化追踪 ====================
+    # 连续未改善轮次数
+    rounds_without_improvement: Optional[int]
+    # 数据质量门禁结果
+    data_quality_gate_result: Optional[dict]
+    # 模型健康报告
+    model_health_report: Optional[dict]
+
+    # ==================== 训练扩展 ====================
+    # 训练配置（当前轮次）
+    training_config: Optional[dict]
+    # 课程学习信息
+    curriculum_info: Optional[dict]
+    # 数据质量指标
+    quality_metrics: Optional[dict]
+

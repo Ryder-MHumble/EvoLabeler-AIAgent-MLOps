@@ -16,6 +16,7 @@
 
 from typing import Any
 from pathlib import Path
+import shutil
 import yaml
 import json
 
@@ -26,6 +27,7 @@ from app.tools.subprocess_executor import SubprocessExecutor
 from app.tools.supabase_client import SupabaseClient
 from app.core.config import settings
 from app.core.logging_config import get_logger
+from app.services.data_quality_gate import DataQualityGate
 
 logger = get_logger(__name__)
 
@@ -254,15 +256,83 @@ class TrainingAgent(BaseAgent):
     ) -> None:
         """
         写入数据集样本
-        
+
+        将图像复制到 images/{split}/ 目录，并生成 YOLO 格式标签到
+        labels/{split}/ 目录。如果样本已有 label_path 且文件存在，则
+        直接复制该标签文件；否则根据 detections 列表生成标签。
+
         Args:
-            split_path: 数据集分割路径（train/val）
-            samples: 样本列表
+            split_path: 数据集分割路径，例如 dataset_path / "train"
+            samples: 样本列表，每个样本包含 image_path、label_path、detections 等
         """
-        # 实际实现会：
-        # 1. 复制图像到 images/{split}/
-        # 2. 生成 YOLO 格式标签到 labels/{split}/
-        pass
+        split_name = split_path.name          # "train" or "val"
+        dataset_path = split_path.parent      # e.g. /tmp/datasets/{job_id}
+        images_dir = dataset_path / "images" / split_name
+        labels_dir = dataset_path / "labels" / split_name
+
+        copied_count = 0
+        skipped_count = 0
+
+        for sample in samples:
+            image_path = Path(sample.get("image_path", ""))
+
+            # --- copy image ------------------------------------------------
+            if not image_path.exists():
+                logger.warning(
+                    f"图像文件不存在，跳过: {image_path}"
+                )
+                skipped_count += 1
+                continue
+
+            try:
+                shutil.copy2(str(image_path), str(images_dir / image_path.name))
+            except OSError as e:
+                logger.warning(
+                    f"复制图像失败，跳过: {image_path} -> {e}"
+                )
+                skipped_count += 1
+                continue
+
+            # --- write / copy label ----------------------------------------
+            image_stem = image_path.stem
+            label_dest = labels_dir / f"{image_stem}.txt"
+
+            label_path_str = sample.get("label_path", "")
+            label_path = Path(label_path_str) if label_path_str else None
+
+            if label_path and label_path.exists():
+                # Existing YOLO label file — copy directly
+                try:
+                    shutil.copy2(str(label_path), str(label_dest))
+                except OSError as e:
+                    logger.warning(
+                        f"复制标签文件失败: {label_path} -> {e}"
+                    )
+            else:
+                # Generate label from detections list
+                detections = sample.get("detections", [])
+                lines: list[str] = []
+                for det in detections:
+                    class_id = int(det["class_id"])
+                    x = float(det["x"])
+                    y = float(det["y"])
+                    w = float(det["width"])
+                    h = float(det["height"])
+                    lines.append(f"{class_id} {x} {y} {w} {h}")
+
+                try:
+                    label_dest.write_text("\n".join(lines) + "\n" if lines else "")
+                except OSError as e:
+                    logger.warning(
+                        f"写入标签文件失败: {label_dest} -> {e}"
+                    )
+
+            copied_count += 1
+
+        logger.info(
+            f"数据集写入完成 [{split_name}]: "
+            f"成功 {copied_count}, 跳过 {skipped_count}"
+        )
 
     def _generate_training_config(
         self,
@@ -441,7 +511,20 @@ async def evolution_node(state: AgentState) -> AgentState:
             state["training_status"] = "skipped"
             state["training_reason"] = "没有新的数据可用于训练"
             return state
-        
+
+        # === Data Quality Gate ===
+        quality_gate = DataQualityGate()
+        gate_result = quality_gate.check(pseudo_labels)
+        state["data_quality_gate_result"] = gate_result.to_dict()
+
+        if not gate_result.passed:
+            logger.warning(
+                f"数据质量门禁未通过: {gate_result.summary}"
+            )
+            state["training_status"] = "skipped"
+            state["training_reason"] = f"数据质量不达标: {gate_result.summary}"
+            return state
+
         # 初始化远程客户端
         remote_client = RemoteClient()
         

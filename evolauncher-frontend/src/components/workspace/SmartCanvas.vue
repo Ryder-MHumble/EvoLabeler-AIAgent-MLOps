@@ -53,14 +53,26 @@ const annotation = useAnnotation(
 )
 
 // ========== 图像上传 ==========
-const upload = useImageUpload(
+const {
+  fileInputRef, // Used in template ref binding
+  localImage,
+  triggerFileUpload,
+  handleFileSelect,
+  handleDrop,
+  handleDragOver,
+  clearAllSelection
+} = useImageUpload(
   imageLoaded,
   canvas.resetView,
   annotation.resetState
 )
 
 // ========== 数据集导入 ==========
-const dataset = useDatasetImport()
+const {
+  datasetInputRef, // Used in template ref binding
+  triggerDatasetImport,
+  handleDatasetImport
+} = useDatasetImport()
 
 // ========== 标注导出 ==========
 const exportHandler = useAnnotationExport(
@@ -69,11 +81,11 @@ const exportHandler = useAnnotationExport(
 )
 
 // 当前显示的图像（本地或 store）
-const currentImage = computed(() => upload.localImage.value || missionStore.currentImage)
+const currentImage = computed(() => localImage.value || missionStore.currentImage)
 
 // 监听图像变化
 watch(() => missionStore.currentImage, () => {
-  if (!upload.localImage.value) {
+  if (!localImage.value) {
     imageLoaded.value = false
     annotation.resetState()
     canvas.resetView()
@@ -183,7 +195,7 @@ const handleKeyPress = (e: KeyboardEvent) => {
 
 // 清除所有选择
 const handleClearSelection = () => {
-  upload.clearAllSelection(() => {
+  clearAllSelection(() => {
     missionStore.currentImage = null
   })
 }
@@ -211,21 +223,21 @@ onUnmounted(() => {
   <div class="smart-canvas" ref="canvasRef" @wheel="canvas.handleWheel">
     <!-- 隐藏的文件输入 -->
     <input
-      ref="upload.fileInputRef"
+      ref="fileInputRef"
       type="file"
       accept="image/*"
       style="display: none"
-      @change="upload.handleFileSelect"
+      @change="handleFileSelect"
     />
     
     <!-- 隐藏的数据集导入输入 -->
     <input
-      ref="dataset.datasetInputRef"
+      ref="datasetInputRef"
       type="file"
       accept="image/*,.txt,.json"
       multiple
       style="display: none"
-      @change="dataset.handleDatasetImport"
+      @change="handleDatasetImport"
     />
     
     <!-- 工具栏 -->
@@ -239,8 +251,8 @@ onUnmounted(() => {
       @set-tool="setTool"
       @zoom="canvas.handleZoom"
       @reset-view="canvas.resetView"
-      @upload="upload.triggerFileUpload"
-      @import-dataset="dataset.triggerDatasetImport"
+      @upload="triggerFileUpload"
+      @import-dataset="triggerDatasetImport"
       @export="exportHandler.exportAnnotations"
       @confirm-all="handleConfirmAll"
       @clear-selection="handleClearSelection"
@@ -249,17 +261,17 @@ onUnmounted(() => {
     <!-- 空状态 -->
     <EmptyCanvas
       v-if="!currentImage"
-      @upload="upload.triggerFileUpload"
-      @dragover="upload.handleDragOver"
-      @drop="upload.handleDrop"
+      @upload="triggerFileUpload"
+      @dragover="handleDragOver"
+      @drop="handleDrop"
     />
 
     <!-- 画布内容 -->
     <div 
       v-else 
       class="canvas-content"
-      @dragover="upload.handleDragOver"
-      @drop="upload.handleDrop"
+      @dragover="handleDragOver"
+      @drop="handleDrop"
     >
       <!-- 图像容器 -->
       <div 

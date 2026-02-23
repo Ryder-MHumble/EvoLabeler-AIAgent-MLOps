@@ -444,7 +444,7 @@ class SupabaseClient:
     async def get_project_stats(self) -> dict[str, Any]:
         """
         Get aggregate statistics for all projects.
-        
+
         Returns:
             Dictionary with project statistics
         """
@@ -452,28 +452,28 @@ class SupabaseClient:
             # Get all projects
             response = self.client.table("projects").select("*").execute()
             projects = response.data
-            
+
             total_projects = len(projects)
             active_projects = sum(
-                1 for p in projects 
+                1 for p in projects
                 if p.get("status") in ["training", "labeling"]
             )
             completed_projects = sum(
-                1 for p in projects 
+                1 for p in projects
                 if p.get("status") == "completed"
             )
             total_images = sum(p.get("image_count", 0) for p in projects)
-            
+
             # Calculate average accuracy (only for projects with accuracy)
             accuracies = [
-                p.get("accuracy") for p in projects 
+                p.get("accuracy") for p in projects
                 if p.get("accuracy") is not None
             ]
             average_accuracy = (
-                sum(accuracies) / len(accuracies) 
+                sum(accuracies) / len(accuracies)
                 if accuracies else None
             )
-            
+
             return {
                 "total_projects": total_projects,
                 "active_projects": active_projects,
@@ -481,9 +481,538 @@ class SupabaseClient:
                 "total_images": total_images,
                 "average_accuracy": average_accuracy
             }
-            
+
         except Exception as e:
             logger.error(f"Failed to get project stats: {e}")
+            raise
+
+    # ============================================
+    # Annotation Management Methods
+    # ============================================
+
+    async def create_annotation(self, annotation_data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Create a new annotation record.
+
+        Args:
+            annotation_data: Annotation data dictionary
+
+        Returns:
+            Created annotation record
+        """
+        try:
+            response = self.client.table("annotations").insert(annotation_data).execute()
+            logger.info(
+                f"Created annotation for project: {annotation_data.get('project_id')}",
+                extra={
+                    "project_id": annotation_data.get("project_id"),
+                    "image_id": annotation_data.get("image_id"),
+                }
+            )
+            return response.data[0] if response.data else annotation_data
+
+        except Exception as e:
+            logger.error(f"Failed to create annotation: {e}")
+            raise
+
+    async def get_annotations_by_project(
+        self, project_id: str, image_id: Optional[str] = None
+    ) -> list[dict[str, Any]]:
+        """
+        Get annotations for a project, optionally filtered by image_id.
+
+        Args:
+            project_id: Project identifier
+            image_id: Optional image identifier to filter by
+
+        Returns:
+            List of annotation records
+        """
+        try:
+            query = (
+                self.client.table("annotations")
+                .select("*", count="exact")
+                .eq("project_id", project_id)
+            )
+
+            if image_id:
+                query = query.eq("image_id", image_id)
+
+            query = query.order("created_at", desc=True)
+
+            response = query.execute()
+
+            return {
+                "annotations": response.data,
+                "total": response.count if hasattr(response, 'count') and response.count is not None else len(response.data)
+            }
+
+        except Exception as e:
+            logger.error(
+                f"Failed to get annotations: {e}",
+                extra={"project_id": project_id, "image_id": image_id}
+            )
+            raise
+
+    async def get_annotation_by_id(self, annotation_id: str) -> dict[str, Any]:
+        """
+        Get single annotation by UUID.
+
+        Args:
+            annotation_id: Annotation UUID
+
+        Returns:
+            Annotation record
+
+        Raises:
+            ValueError: If annotation not found
+        """
+        try:
+            response = (
+                self.client.table("annotations")
+                .select("*")
+                .eq("id", annotation_id)
+                .execute()
+            )
+
+            if not response.data:
+                raise ValueError(f"Annotation not found: {annotation_id}")
+
+            return response.data[0]
+
+        except Exception as e:
+            logger.error(f"Failed to get annotation: {e}", extra={"annotation_id": annotation_id})
+            raise
+
+    async def update_annotation(
+        self, annotation_id: str, update_data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Update annotation record.
+
+        Args:
+            annotation_id: Annotation UUID
+            update_data: Fields to update
+
+        Returns:
+            Updated annotation record
+
+        Raises:
+            ValueError: If annotation not found
+        """
+        try:
+            update_data["updated_at"] = datetime.utcnow().isoformat()
+
+            response = (
+                self.client.table("annotations")
+                .update(update_data)
+                .eq("id", annotation_id)
+                .execute()
+            )
+
+            if not response.data:
+                raise ValueError(f"Annotation not found: {annotation_id}")
+
+            logger.info(
+                f"Updated annotation: {annotation_id}",
+                extra={"annotation_id": annotation_id}
+            )
+            return response.data[0]
+
+        except Exception as e:
+            logger.error(
+                f"Failed to update annotation: {e}",
+                extra={"annotation_id": annotation_id}
+            )
+            raise
+
+    async def delete_annotation(self, annotation_id: str) -> None:
+        """
+        Delete annotation record.
+
+        Args:
+            annotation_id: Annotation UUID
+
+        Raises:
+            ValueError: If annotation not found
+        """
+        try:
+            # First check if annotation exists
+            await self.get_annotation_by_id(annotation_id)
+
+            # Delete annotation
+            self.client.table("annotations").delete().eq("id", annotation_id).execute()
+
+            logger.info(
+                f"Deleted annotation: {annotation_id}",
+                extra={"annotation_id": annotation_id}
+            )
+
+        except Exception as e:
+            logger.error(
+                f"Failed to delete annotation: {e}",
+                extra={"annotation_id": annotation_id}
+            )
+            raise
+
+    # ============================================
+    # Model Version Management Methods
+    # ============================================
+
+    async def create_model_version(self, data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Create a new model version record.
+
+        Args:
+            data: Model version data dictionary
+
+        Returns:
+            Created model version record
+        """
+        try:
+            response = self.client.table("model_versions").insert(data).execute()
+            logger.info(
+                f"Created model version for project: {data.get('project_id')}",
+                extra={
+                    "project_id": data.get("project_id"),
+                    "version": data.get("version"),
+                }
+            )
+            return response.data[0] if response.data else data
+
+        except Exception as e:
+            logger.error(
+                f"Failed to create model version: {e}",
+                extra={"project_id": data.get("project_id")}
+            )
+            raise
+
+    async def get_model_versions(self, project_id: str) -> list[dict[str, Any]]:
+        """
+        Get all model versions for a project, ordered by version desc.
+
+        Args:
+            project_id: Project identifier
+
+        Returns:
+            List of model version records
+        """
+        try:
+            response = (
+                self.client.table("model_versions")
+                .select("*")
+                .eq("project_id", project_id)
+                .order("version", desc=True)
+                .execute()
+            )
+
+            return response.data
+
+        except Exception as e:
+            logger.error(
+                f"Failed to get model versions: {e}",
+                extra={"project_id": project_id}
+            )
+            raise
+
+    async def get_best_model_version(self, project_id: str) -> Optional[dict[str, Any]]:
+        """
+        Get the best model version for a project (is_best=True).
+
+        Args:
+            project_id: Project identifier
+
+        Returns:
+            Best model version record, or None if not found
+        """
+        try:
+            response = (
+                self.client.table("model_versions")
+                .select("*")
+                .eq("project_id", project_id)
+                .eq("is_best", True)
+                .execute()
+            )
+
+            return response.data[0] if response.data else None
+
+        except Exception as e:
+            logger.error(
+                f"Failed to get best model version: {e}",
+                extra={"project_id": project_id}
+            )
+            raise
+
+    async def get_active_model_version(self, project_id: str) -> Optional[dict[str, Any]]:
+        """
+        Get the active model version for a project (is_active=True).
+
+        Args:
+            project_id: Project identifier
+
+        Returns:
+            Active model version record, or None if not found
+        """
+        try:
+            response = (
+                self.client.table("model_versions")
+                .select("*")
+                .eq("project_id", project_id)
+                .eq("is_active", True)
+                .execute()
+            )
+
+            return response.data[0] if response.data else None
+
+        except Exception as e:
+            logger.error(
+                f"Failed to get active model version: {e}",
+                extra={"project_id": project_id}
+            )
+            raise
+
+    async def update_model_version(
+        self, version_id: str, update_data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Update a model version record.
+
+        Args:
+            version_id: Model version UUID
+            update_data: Fields to update
+
+        Returns:
+            Updated model version record
+
+        Raises:
+            ValueError: If model version not found
+        """
+        try:
+            response = (
+                self.client.table("model_versions")
+                .update(update_data)
+                .eq("id", version_id)
+                .execute()
+            )
+
+            if not response.data:
+                raise ValueError(f"Model version not found: {version_id}")
+
+            logger.info(
+                f"Updated model version: {version_id}",
+                extra={"version_id": version_id}
+            )
+            return response.data[0]
+
+        except Exception as e:
+            logger.error(
+                f"Failed to update model version: {e}",
+                extra={"version_id": version_id}
+            )
+            raise
+
+    async def set_best_model(self, project_id: str, version_id: str) -> None:
+        """
+        Set a specific version as the best model (unset others first).
+
+        Args:
+            project_id: Project identifier
+            version_id: Model version UUID to set as best
+        """
+        try:
+            # Unset current best model for this project
+            self.client.table("model_versions").update(
+                {"is_best": False}
+            ).eq("project_id", project_id).eq("is_best", True).execute()
+
+            # Set new best model
+            self.client.table("model_versions").update(
+                {"is_best": True}
+            ).eq("id", version_id).execute()
+
+            logger.info(
+                f"Set best model for project {project_id}: {version_id}",
+                extra={"project_id": project_id, "version_id": version_id}
+            )
+
+        except Exception as e:
+            logger.error(
+                f"Failed to set best model: {e}",
+                extra={"project_id": project_id, "version_id": version_id}
+            )
+            raise
+
+    async def set_active_model(self, project_id: str, version_id: str) -> None:
+        """
+        Set a specific version as active (unset others first).
+
+        Args:
+            project_id: Project identifier
+            version_id: Model version UUID to set as active
+        """
+        try:
+            # Unset current active model for this project
+            self.client.table("model_versions").update(
+                {"is_active": False}
+            ).eq("project_id", project_id).eq("is_active", True).execute()
+
+            # Set new active model
+            self.client.table("model_versions").update(
+                {"is_active": True}
+            ).eq("id", version_id).execute()
+
+            logger.info(
+                f"Set active model for project {project_id}: {version_id}",
+                extra={"project_id": project_id, "version_id": version_id}
+            )
+
+        except Exception as e:
+            logger.error(
+                f"Failed to set active model: {e}",
+                extra={"project_id": project_id, "version_id": version_id}
+            )
+            raise
+
+    # ============================================
+    # EvoLoop Round Management Methods
+    # ============================================
+
+    async def create_evo_round(self, data: dict[str, Any]) -> dict[str, Any]:
+        """
+        Create a new evo round record.
+
+        Args:
+            data: Evo round data dictionary
+
+        Returns:
+            Created evo round record
+        """
+        try:
+            response = self.client.table("evo_rounds").insert(data).execute()
+            logger.info(
+                f"Created evo round for project: {data.get('project_id')}, round: {data.get('round_number')}",
+                extra={
+                    "project_id": data.get("project_id"),
+                    "job_id": data.get("job_id"),
+                    "round_number": data.get("round_number"),
+                }
+            )
+            return response.data[0] if response.data else data
+
+        except Exception as e:
+            logger.error(
+                f"Failed to create evo round: {e}",
+                extra={"project_id": data.get("project_id")}
+            )
+            raise
+
+    async def update_evo_round(
+        self, round_id: str, update_data: dict[str, Any]
+    ) -> dict[str, Any]:
+        """
+        Update an evo round record.
+
+        Args:
+            round_id: Evo round UUID
+            update_data: Fields to update
+
+        Returns:
+            Updated evo round record
+
+        Raises:
+            ValueError: If evo round not found
+        """
+        try:
+            response = (
+                self.client.table("evo_rounds")
+                .update(update_data)
+                .eq("id", round_id)
+                .execute()
+            )
+
+            if not response.data:
+                raise ValueError(f"Evo round not found: {round_id}")
+
+            logger.info(
+                f"Updated evo round: {round_id}",
+                extra={"round_id": round_id}
+            )
+            return response.data[0]
+
+        except Exception as e:
+            logger.error(
+                f"Failed to update evo round: {e}",
+                extra={"round_id": round_id}
+            )
+            raise
+
+    async def get_evo_rounds(
+        self, project_id: str, job_id: Optional[str] = None
+    ) -> list[dict[str, Any]]:
+        """
+        Get all evo rounds for a project, optionally filtered by job_id.
+
+        Args:
+            project_id: Project identifier
+            job_id: Optional job identifier to filter by
+
+        Returns:
+            List of evo round records
+        """
+        try:
+            query = (
+                self.client.table("evo_rounds")
+                .select("*")
+                .eq("project_id", project_id)
+            )
+
+            if job_id:
+                query = query.eq("job_id", job_id)
+
+            query = query.order("round_number", desc=True)
+
+            response = query.execute()
+
+            return response.data
+
+        except Exception as e:
+            logger.error(
+                f"Failed to get evo rounds: {e}",
+                extra={"project_id": project_id, "job_id": job_id}
+            )
+            raise
+
+    async def get_latest_evo_round(
+        self, project_id: str, job_id: str
+    ) -> Optional[dict[str, Any]]:
+        """
+        Get the latest evo round for a specific job.
+
+        Args:
+            project_id: Project identifier
+            job_id: Job identifier
+
+        Returns:
+            Latest evo round record, or None if not found
+        """
+        try:
+            response = (
+                self.client.table("evo_rounds")
+                .select("*")
+                .eq("project_id", project_id)
+                .eq("job_id", job_id)
+                .order("round_number", desc=True)
+                .limit(1)
+                .execute()
+            )
+
+            return response.data[0] if response.data else None
+
+        except Exception as e:
+            logger.error(
+                f"Failed to get latest evo round: {e}",
+                extra={"project_id": project_id, "job_id": job_id}
+            )
             raise
 
 

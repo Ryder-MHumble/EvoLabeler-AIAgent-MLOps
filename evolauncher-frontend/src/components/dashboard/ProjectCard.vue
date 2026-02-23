@@ -1,20 +1,48 @@
 <script setup lang="ts">
 /**
  * ProjectCard - 项目卡片组件
- * 展示项目缩略图、状态、统计信息
+ * 展示项目缩略图、状态、统计信息、EvoLoop状态指示器
  */
 
+import { computed } from 'vue'
 import { Icon } from '@iconify/vue'
 import AnimatedCard from '@/components/common/AnimatedCard.vue'
 import type { Project } from '@/mock/projects'
 
-defineProps<{
+const props = defineProps<{
   project: Project
 }>()
 
 const emit = defineEmits<{
   (e: 'click', project: Project): void
 }>()
+
+// ========== EvoLoop Status Indicators ==========
+// TODO: These placeholder values should come from a real API endpoint
+// (e.g., modelsApi.getHealth / modelsApi.listRounds) per project in the future.
+
+/** Show EvoLoop row only for training or completed projects */
+const showEvoLoop = computed(() =>
+  props.project.status === 'training' || props.project.status === 'completed'
+)
+
+/** Placeholder EvoLoop round count */
+const evoRoundCount = 3
+
+/** Placeholder mAP50 score (percentage) */
+const latestMapScore = 85
+
+/** Placeholder health status */
+const healthStatus: 'healthy' | 'warning' | 'critical' = 'healthy'
+
+const healthColor = computed(() => {
+  switch (healthStatus) {
+    case 'healthy': return '#10B981'
+    case 'warning': return '#F59E0B'
+    case 'critical': return '#EF4444'
+    default: return '#94A3B8'
+  }
+})
 </script>
 
 <template>
@@ -62,6 +90,23 @@ const emit = defineEmits<{
         <div class="stat-item">
           <span class="stat-value">{{ project.status === 'completed' ? '✓' : '•' }}</span>
           <span class="stat-label">状态</span>
+        </div>
+      </div>
+
+      <!-- EvoLoop Status Indicator Row -->
+      <!-- TODO: Replace placeholder data with real per-project model API data -->
+      <div v-if="showEvoLoop" class="evoloop-row">
+        <div class="evoloop-item">
+          <Icon icon="ph:arrows-clockwise" :width="14" class="evoloop-icon" />
+          <span class="evoloop-badge">Round {{ evoRoundCount }}</span>
+        </div>
+        <div class="evoloop-item">
+          <Icon icon="ph:chart-line-up" :width="14" class="evoloop-icon" />
+          <span class="evoloop-metric">mAP50: {{ latestMapScore }}%</span>
+        </div>
+        <div class="evoloop-item">
+          <span class="evoloop-health-dot" :style="{ backgroundColor: healthColor }"></span>
+          <span class="evoloop-health-label">{{ healthStatus }}</span>
         </div>
       </div>
     </div>
@@ -136,6 +181,12 @@ const emit = defineEmits<{
   border-radius: 50px;
   backdrop-filter: blur(12px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+
+  .dark & {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -241,6 +292,65 @@ const emit = defineEmits<{
   color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.05em;
+}
+
+// ========== EvoLoop Status Row ==========
+.evoloop-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--color-border);
+}
+
+.evoloop-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.evoloop-icon {
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.evoloop-badge {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: rgba(74, 105, 255, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+
+  .dark & {
+    background: rgba(96, 165, 250, 0.2);
+  }
+}
+
+.evoloop-metric {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.evoloop-health-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  box-shadow: 0 0 6px currentColor;
+
+  .dark & {
+    box-shadow: 0 0 8px currentColor, 0 0 12px currentColor;
+  }
+}
+
+.evoloop-health-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  text-transform: capitalize;
 }
 </style>
 

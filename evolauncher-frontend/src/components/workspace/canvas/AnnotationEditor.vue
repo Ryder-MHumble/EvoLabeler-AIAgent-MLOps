@@ -92,6 +92,10 @@ const emit = defineEmits<{
   overflow: hidden;
   z-index: 10;
   animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  .dark & {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
+  }
 }
 
 @keyframes slideIn {
@@ -175,11 +179,19 @@ const emit = defineEmits<{
   &.pending {
     background: rgba(234, 179, 8, 0.15);
     color: #eab308;
+
+    .dark & {
+      background: rgba(234, 179, 8, 0.25);
+    }
   }
-  
+
   &.confirmed {
     background: rgba(16, 185, 129, 0.15);
     color: #10b981;
+
+    .dark & {
+      background: rgba(16, 185, 129, 0.25);
+    }
   }
 }
 

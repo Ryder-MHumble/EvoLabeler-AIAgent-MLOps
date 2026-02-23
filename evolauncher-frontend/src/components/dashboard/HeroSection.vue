@@ -2,6 +2,11 @@
 /**
  * HeroSection - 仪表盘顶部 Hero 区域
  * 包含标题、描述、CTA按钮和系统指标
+ *
+ * TODO: The `metrics` prop currently receives static mock data from the parent
+ * (DashboardView). In the future this should be replaced with live data from
+ * the backend stats API (e.g., a dedicated `/api/v1/system/metrics` endpoint)
+ * so the hero section reflects real-time system telemetry.
  */
 
 import { Icon } from '@iconify/vue'

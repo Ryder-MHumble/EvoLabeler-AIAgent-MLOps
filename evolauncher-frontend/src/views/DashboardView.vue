@@ -18,11 +18,18 @@ import HeroSection from '@/components/dashboard/HeroSection.vue'
 import ProjectList from '@/components/dashboard/ProjectList.vue'
 import AgentStatusList from '@/components/dashboard/AgentStatusList.vue'
 import CreateProjectWizard from '@/components/project/CreateProjectWizard.vue'
+import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 
 // 数据与类型
+// Real API client + mock fallback for projects
+import { projectsApi } from '@/api/projects'
+import { USE_BACKEND_API } from '@/api/client'
 import { fetchProjects, type Project } from '@/mock/projects'
+
+// TODO: Replace with real backend API when agents/metrics endpoints are available
 import { fetchAgentStatuses, type AgentStatus } from '@/mock/agents'
 import { systemMetrics, type SystemMetric } from '@/mock/systemMetrics'
+
 import { ElNotification, ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -40,7 +47,35 @@ const showCreateWizard = ref(false)
 const loadProjects = async () => {
   isLoading.value = true
   try {
-    const data = await fetchProjects()
+    let data: Project[]
+
+    if (USE_BACKEND_API) {
+      try {
+        // Try real backend API first
+        const response = await projectsApi.list()
+        // Transform API Project to mock-compatible Project type
+        data = response.projects.map((p) => ({
+          id: p.id,
+          name: p.name,
+          imageCount: p.imageCount,
+          createdAt: p.createdAt,
+          updatedAt: p.updatedAt,
+          status: p.status,
+          thumbnailUrl: p.thumbnailUrl || '',
+          description: p.description,
+          accuracy: p.accuracy,
+        }))
+        console.info('[Dashboard] Loaded projects from backend API')
+      } catch (apiError) {
+        // Backend unavailable — fall back to mock data
+        console.warn('[Dashboard] Backend API failed, falling back to mock data:', apiError)
+        data = await fetchProjects()
+      }
+    } else {
+      // Backend API disabled — use mock data directly
+      data = await fetchProjects()
+    }
+
     projects.value = data
     await nextTick()
     animateCards()
@@ -196,18 +231,24 @@ onMounted(async () => {
       @created="handleProjectCreated"
     />
     
+    <!-- Loading state -->
+    <div v-if="isLoading" class="content-grid">
+      <div class="projects-grid">
+        <LoadingSkeleton v-for="i in 6" :key="i" variant="card" height="280px" />
+      </div>
+    </div>
     <!-- Main Content Layout -->
-    <div class="content-grid">
+    <div v-else class="content-grid">
       <!-- Left Column: Projects -->
-      <ProjectList 
+      <ProjectList
         :projects="projects"
         :is-loading="isLoading"
         @create-project="handleCreateProject"
         @open-project="openProject"
       />
-      
+
       <!-- Right Column: Agent Telemetry -->
-      <AgentStatusList 
+      <AgentStatusList
         :agents="agentStatuses"
         :is-loading="isLoadingAgents"
       />
@@ -233,6 +274,12 @@ onMounted(async () => {
   @media (max-width: 1280px) {
     grid-template-columns: 1fr;
   }
+}
+
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
 }
 
 // 响应式设计

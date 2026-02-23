@@ -146,6 +146,10 @@ defineProps<{
   justify-content: center;
   color: #4A69FF;
   flex-shrink: 0;
+
+  .dark & {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(167, 139, 250, 0.25));
+  }
 }
 
 .title {
@@ -171,7 +175,11 @@ defineProps<{
   font-size: clamp(10px, 0.9vw, 12px);
   font-weight: 600;
   color: var(--color-primary);
-  
+
+  .dark & {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.2), rgba(167, 139, 250, 0.2));
+  }
+
   svg {
     animation: spin 3s linear infinite;
   }
@@ -252,12 +260,12 @@ defineProps<{
   &:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
-    
+
     &::before { opacity: 1; }
-    
-    .dark & {
-      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-    }
+  }
+
+  .dark &:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
   }
 }
 
@@ -311,6 +319,10 @@ defineProps<{
   border-radius: 3px;
   overflow: hidden;
   margin-top: 6px;
+
+  .dark & {
+    background: rgba(96, 165, 250, 0.15);
+  }
 }
 
 .bar-fill {

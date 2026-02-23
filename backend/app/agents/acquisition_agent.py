@@ -19,6 +19,8 @@ import hashlib
 from typing import Any
 from pathlib import Path
 
+import httpx
+
 from app.agents.base_agent import BaseAgent
 from app.agents.state import AgentState
 from app.tools.web_crawler import WebCrawler
@@ -292,21 +294,122 @@ class AcquisitionAgent(BaseAgent):
     ) -> list[str]:
         """
         下载图像到本地存储
-        
+
+        使用 httpx.AsyncClient 异步下载图像，支持：
+        - 每个请求 30 秒超时
+        - Content-Type 验证（必须为 image/*）
+        - 文件大小验证（1KB ~ 50MB）
+        - 从 Content-Type 或 URL 推断文件扩展名
+        - 逐图错误隔离，单张失败不影响整体
+
         Args:
             image_urls: 图像 URL 列表
             job_id: 任务 ID
-            
+
         Returns:
-            本地文件路径列表
+            成功下载的本地文件路径列表
         """
-        # 简化实现：假设图像已经可访问
-        # 实际实现应该下载图像
         download_dir = Path(f"/tmp/acquired_images/{job_id}")
         download_dir.mkdir(parents=True, exist_ok=True)
-        
-        # 返回可访问的路径
-        return [url for url in image_urls if url]
+
+        # 从 Content-Type 到文件扩展名的映射
+        content_type_to_ext = {
+            "image/jpeg": ".jpg",
+            "image/jpg": ".jpg",
+            "image/png": ".png",
+            "image/gif": ".gif",
+            "image/webp": ".webp",
+            "image/bmp": ".bmp",
+            "image/tiff": ".tiff",
+            "image/svg+xml": ".svg",
+        }
+
+        min_size = 1024          # 1 KB
+        max_size = 50 * 1024 * 1024  # 50 MB
+
+        downloaded_paths: list[str] = []
+        succeeded = 0
+        failed = 0
+
+        async with httpx.AsyncClient(
+            timeout=httpx.Timeout(30.0),
+            follow_redirects=True,
+        ) as client:
+            for index, url in enumerate(image_urls):
+                if not url:
+                    failed += 1
+                    continue
+
+                try:
+                    response = await client.get(url)
+                    response.raise_for_status()
+
+                    # Validate Content-Type
+                    content_type = response.headers.get("content-type", "")
+                    # Strip parameters like charset, e.g. "image/jpeg; charset=utf-8"
+                    mime_type = content_type.split(";")[0].strip().lower()
+
+                    if not mime_type.startswith("image/"):
+                        logger.warning(
+                            f"跳过非图像内容 (Content-Type: {content_type}): {url}"
+                        )
+                        failed += 1
+                        continue
+
+                    # Validate file size
+                    data = response.content
+                    if len(data) < min_size:
+                        logger.warning(
+                            f"跳过过小文件 ({len(data)} bytes): {url}"
+                        )
+                        failed += 1
+                        continue
+
+                    if len(data) > max_size:
+                        logger.warning(
+                            f"跳过过大文件 ({len(data)} bytes): {url}"
+                        )
+                        failed += 1
+                        continue
+
+                    # Determine file extension from Content-Type first, then URL
+                    ext = content_type_to_ext.get(mime_type)
+                    if not ext:
+                        url_path = url.split("?")[0].split("#")[0]
+                        url_ext = Path(url_path).suffix.lower()
+                        if url_ext in {
+                            ".jpg", ".jpeg", ".png", ".gif",
+                            ".webp", ".bmp", ".tiff", ".svg",
+                        }:
+                            ext = url_ext
+                        else:
+                            ext = ".jpg"  # default fallback
+
+                    filename = f"{index:04d}{ext}"
+                    filepath = download_dir / filename
+
+                    filepath.write_bytes(data)
+                    downloaded_paths.append(str(filepath))
+                    succeeded += 1
+
+                except httpx.HTTPStatusError as e:
+                    logger.warning(
+                        f"HTTP 错误 {e.response.status_code} 下载图像: {url}"
+                    )
+                    failed += 1
+                except httpx.TimeoutException:
+                    logger.warning(f"下载超时: {url}")
+                    failed += 1
+                except Exception as e:
+                    logger.warning(f"下载图像失败: {url} - {e}")
+                    failed += 1
+
+        logger.info(
+            f"图像下载完成: 共 {len(image_urls)} 张, "
+            f"成功 {succeeded} 张, 失败 {failed} 张"
+        )
+
+        return downloaded_paths
 
     def _filter_and_score_pseudo_labels(
         self,

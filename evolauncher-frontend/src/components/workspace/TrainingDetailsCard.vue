@@ -236,8 +236,10 @@ const formatTime = (isoString?: string) => {
   
   &:hover {
     background: rgba(74, 105, 255, 0.05);
-    
-    .dark & { background: rgba(96, 165, 250, 0.1); }
+  }
+
+  .dark &:hover {
+    background: rgba(96, 165, 250, 0.1);
   }
   
   &.full-width {
@@ -258,7 +260,11 @@ const formatTime = (isoString?: string) => {
   justify-content: center;
   color: #4A69FF;
   flex-shrink: 0;
-  
+
+  .dark & {
+    background: rgba(96, 165, 250, 0.15);
+  }
+
   &.status { background: rgba(16, 185, 129, 0.1); color: #10B981; }
   &.progress { background: rgba(59, 130, 246, 0.1); color: #3B82F6; }
   &.model { background: rgba(139, 92, 246, 0.1); color: #8B5CF6; }
@@ -299,6 +305,10 @@ const formatTime = (isoString?: string) => {
     background: rgba(74, 105, 255, 0.08);
     padding: 2px 5px;
     border-radius: 4px;
+
+    .dark & {
+      background: rgba(96, 165, 250, 0.15);
+    }
   }
 }
 

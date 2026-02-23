@@ -42,13 +42,6 @@
     color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-// ⭐ 为所有使用CSS变量的元素添加平滑过渡
-* {
-  transition-property: background-color, border-color, color, fill, stroke;
-  transition-duration: 0.3s;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
 // Dark Theme - 优化暗色配色
 // Using .dark class on html element for instant switching
 .dark {
@@ -82,6 +75,116 @@
   // Glassmorphism for dark theme
   --glass-bg: rgba(30, 41, 59, 0.75);
   --glass-border: rgba(51, 65, 85, 0.5);
+
+  // === Element Plus Dark Mode Variable Overrides ===
+  // Background colors
+  --el-bg-color: #1E293B;
+  --el-bg-color-page: #0F172A;
+  --el-bg-color-overlay: #1E293B;
+
+  // Text colors
+  --el-text-color-primary: #F1F5F9;
+  --el-text-color-regular: #CBD5E1;
+  --el-text-color-secondary: #94A3B8;
+  --el-text-color-placeholder: #64748B;
+  --el-text-color-disabled: #475569;
+
+  // Border colors
+  --el-border-color: #334155;
+  --el-border-color-light: #1E293B;
+  --el-border-color-lighter: #1E293B;
+  --el-border-color-extra-light: #1E293B;
+  --el-border-color-dark: #475569;
+  --el-border-color-darker: #64748B;
+
+  // Fill colors
+  --el-fill-color: #334155;
+  --el-fill-color-light: #1E293B;
+  --el-fill-color-lighter: #1E293B;
+  --el-fill-color-extra-light: #1E293B;
+  --el-fill-color-dark: #475569;
+  --el-fill-color-darker: #64748B;
+  --el-fill-color-blank: #1E293B;
+
+  // Primary color adjustments for dark mode
+  --el-color-primary: #60A5FA;
+  --el-color-primary-light-3: rgba(96, 165, 250, 0.7);
+  --el-color-primary-light-5: rgba(96, 165, 250, 0.5);
+  --el-color-primary-light-7: rgba(96, 165, 250, 0.3);
+  --el-color-primary-light-8: rgba(96, 165, 250, 0.2);
+  --el-color-primary-light-9: rgba(96, 165, 250, 0.1);
+  --el-color-primary-dark-2: #3B82F6;
+
+  // Success color
+  --el-color-success: #34D399;
+  --el-color-success-light-3: rgba(52, 211, 153, 0.7);
+  --el-color-success-light-5: rgba(52, 211, 153, 0.5);
+  --el-color-success-light-7: rgba(52, 211, 153, 0.3);
+  --el-color-success-light-8: rgba(52, 211, 153, 0.2);
+  --el-color-success-light-9: rgba(52, 211, 153, 0.1);
+
+  // Warning color
+  --el-color-warning: #FBBF24;
+  --el-color-warning-light-3: rgba(251, 191, 36, 0.7);
+  --el-color-warning-light-5: rgba(251, 191, 36, 0.5);
+  --el-color-warning-light-7: rgba(251, 191, 36, 0.3);
+  --el-color-warning-light-8: rgba(251, 191, 36, 0.2);
+  --el-color-warning-light-9: rgba(251, 191, 36, 0.1);
+
+  // Danger color
+  --el-color-danger: #F87171;
+  --el-color-danger-light-3: rgba(248, 113, 113, 0.7);
+  --el-color-danger-light-5: rgba(248, 113, 113, 0.5);
+  --el-color-danger-light-7: rgba(248, 113, 113, 0.3);
+  --el-color-danger-light-8: rgba(248, 113, 113, 0.2);
+  --el-color-danger-light-9: rgba(248, 113, 113, 0.1);
+
+  // Info color
+  --el-color-info: #22D3EE;
+  --el-color-info-light-3: rgba(34, 211, 238, 0.7);
+  --el-color-info-light-5: rgba(34, 211, 238, 0.5);
+  --el-color-info-light-7: rgba(34, 211, 238, 0.3);
+  --el-color-info-light-8: rgba(34, 211, 238, 0.2);
+  --el-color-info-light-9: rgba(34, 211, 238, 0.1);
+
+  // Mask & disabled
+  --el-mask-color: rgba(0, 0, 0, 0.75);
+  --el-mask-color-extra-light: rgba(0, 0, 0, 0.4);
+  --el-disabled-bg-color: #1E293B;
+  --el-disabled-text-color: #475569;
+  --el-disabled-border-color: #334155;
+
+  // Dialog specific
+  --el-dialog-bg-color: #1E293B;
+  --el-dialog-box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+
+  // Input specific
+  --el-input-bg-color: #1E293B;
+  --el-input-text-color: #F1F5F9;
+  --el-input-border-color: #334155;
+  --el-input-hover-border-color: #60A5FA;
+  --el-input-focus-border-color: #60A5FA;
+  --el-input-placeholder-color: #64748B;
+
+  // Button specific
+  --el-button-bg-color: #1E293B;
+  --el-button-text-color: #F1F5F9;
+  --el-button-border-color: #334155;
+  --el-button-hover-bg-color: #334155;
+  --el-button-hover-text-color: #60A5FA;
+  --el-button-hover-border-color: #60A5FA;
+  --el-button-disabled-bg-color: #1E293B;
+  --el-button-disabled-text-color: #475569;
+  --el-button-disabled-border-color: #334155;
+
+  // Popup / dropdown
+  --el-popup-modal-bg-color: rgba(0, 0, 0, 0.75);
+
+  // Box shadow
+  --el-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  --el-box-shadow-light: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --el-box-shadow-lighter: 0 1px 4px rgba(0, 0, 0, 0.3);
+  --el-box-shadow-dark: 0 6px 24px rgba(0, 0, 0, 0.6);
 }
 
 // ============================================
