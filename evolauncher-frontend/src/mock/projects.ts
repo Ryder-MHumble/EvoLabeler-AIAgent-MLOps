@@ -99,6 +99,19 @@ export const mockProjects: Project[] = [
   }
 ]
 
+export const upsertMockProject = (project: Project) => {
+  const index = mockProjects.findIndex((item) => item.id === project.id)
+  if (index === -1) {
+    mockProjects.unshift(project)
+    return
+  }
+
+  mockProjects[index] = {
+    ...mockProjects[index],
+    ...project
+  }
+}
+
 /**
  * Simulate API delay for realistic loading states
  */

@@ -203,6 +203,11 @@ onMounted(() => {
   gap: 10px;
   flex: 1;
   min-height: 0;
+  // Prevent list from growing indefinitely
+  max-height: 500px;
+  overflow-y: auto;
+  padding-right: 4px;
+  @include custom-scrollbar;
 }
 
 .mcp-item {

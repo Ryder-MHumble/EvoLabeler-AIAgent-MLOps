@@ -14,11 +14,15 @@ import { ElNotification } from 'element-plus'
 
 const agentTelemetry = ref<AgentStatus[]>([])
 const isLoading = ref(true)
+// Skeleton count - typically 2-4 agents, default to 3
+const skeletonCount = ref(3)
 
 const loadAgentTelemetry = async () => {
   isLoading.value = true
   try {
     agentTelemetry.value = await fetchAgentStatuses()
+    // Dynamically set skeleton count based on actual agent count
+    skeletonCount.value = Math.max(agentTelemetry.value.length, 2)
     await nextTick()
     animateCards()
   } catch (error) {
@@ -65,7 +69,8 @@ onMounted(() => {
     </div>
 
     <div class="agents-grid">
-      <div v-if="isLoading" v-for="i in 4" :key="`skeleton-${i}`" class="agent-card skeleton">
+      <!-- Dynamic skeleton count matching expected agent count -->
+      <div v-if="isLoading" v-for="i in skeletonCount" :key="`skeleton-${i}`" class="agent-card skeleton">
         <LoadingSkeleton type="title" width="50%" />
         <LoadingSkeleton type="text" width="80%" :count="2" />
       </div>

@@ -5,8 +5,8 @@
 
 import { ref, type Ref } from 'vue'
 import { ElMessage } from 'element-plus'
-
-import type { BoundingBox } from '@/api/types'
+import { useMissionStore } from '@/store/mission'
+import type { WorkItem } from '@/mock/projectJourney'
 
 export interface LocalImage {
   id: string
@@ -24,8 +24,8 @@ export const useImageUpload = (
   resetView: () => void,
   resetAnnotation: () => void
 ) => {
+  const missionStore = useMissionStore()
   const fileInputRef = ref<HTMLInputElement | null>(null)
-  const localImage = ref<LocalImage | null>(null)
 
   /**
    * 触发文件选择
@@ -75,16 +75,27 @@ export const useImageUpload = (
     
     reader.onload = (e) => {
       const url = e.target?.result as string
-      localImage.value = {
+      const workItem: Partial<WorkItem> = {
         id: `upload-${Date.now()}`,
+        projectId: missionStore.projectId || missionStore.currentMission?.id.replace(/^mission-/, '') || 'manual',
         url,
         thumbnailUrl: url,
         confidence: 1.0,
         source: 'manual',
         boundingBoxes: [],
         status: 'incoming',
-        createdAt: new Date().toISOString()
+        queueState: 'review',
+        readyForCompletion: false,
+        createdAt: new Date().toISOString(),
+        analysis: {
+          riskLevel: 'medium',
+          reasons: ['本地上传样本已进入统一工作台。', '建议补充标注后确认并推进下一张。'],
+          recommendedAction: '完成当前样本后继续处理下一张。',
+          tags: ['本地上传'],
+        },
+        agentComment: '这是你刚刚上传的本地样本，系统已把它接入统一协同队列。'
       }
+      missionStore.addImageToStream(workItem, true)
       imageLoaded.value = false
       resetView()
       resetAnnotation()
@@ -99,7 +110,6 @@ export const useImageUpload = (
    * 清除所有选择
    */
   const clearAllSelection = (clearStoreImage: () => void) => {
-    localImage.value = null
     clearStoreImage()
     imageLoaded.value = false
     resetView()
@@ -108,7 +118,6 @@ export const useImageUpload = (
 
   return {
     fileInputRef,
-    localImage,
     triggerFileUpload,
     handleFileSelect,
     handleDrop,
@@ -116,4 +125,3 @@ export const useImageUpload = (
     clearAllSelection
   }
 }
-

@@ -8,6 +8,7 @@ import { ElMessage } from 'element-plus'
 import { useMissionStore } from '@/store/mission'
 import { parseYOLOAnnotation, parseJSONAnnotation } from '../utils/annotation'
 import type { BoundingBox } from '@/api/types'
+import type { WorkItem } from '@/mock/projectJourney'
 
 export const useDatasetImport = () => {
   const missionStore = useMissionStore()
@@ -112,16 +113,32 @@ export const useDatasetImport = () => {
     imageUrl: string,
     boundingBoxes: BoundingBox[]
   ) => {
+    const hasAnnotations = boundingBoxes.length > 0
+
     await missionStore.addImageToStream({
       id: `imported-${Date.now()}-${imageId}`,
+      projectId: missionStore.projectId || missionStore.currentMission?.id.replace(/^mission-/, '') || 'manual',
       url: imageUrl,
       thumbnailUrl: imageUrl,
       confidence: 1.0,
       source: 'manual',
       boundingBoxes,
       createdAt: new Date().toISOString(),
-      status: 'incoming'
-    })
+      status: hasAnnotations ? 'pending' : 'incoming',
+      queueState: hasAnnotations ? 'imported' : 'review',
+      readyForCompletion: false,
+      analysis: {
+        riskLevel: hasAnnotations ? 'medium' : 'low',
+        reasons: hasAnnotations
+          ? ['检测到外部导入标注。', '建议先复核框与类别映射。']
+          : ['导入图片缺少标注文件。', '建议人工补框后再进入训练集。'],
+        recommendedAction: hasAnnotations ? '进入导入校验分组' : '进入需要复核分组',
+        tags: hasAnnotations ? ['导入样本', '待校验'] : ['导入样本'],
+      },
+      agentComment: hasAnnotations
+        ? '导入数据已接入统一工作台，建议先做一轮质量校验。'
+        : '导入图片尚未匹配到标注文件，请人工复核。'
+    } satisfies Partial<WorkItem>, false)
   }
 
   return {
@@ -130,4 +147,3 @@ export const useDatasetImport = () => {
     handleDatasetImport
   }
 }
-

@@ -30,7 +30,17 @@ const formatTime = (isoString?: string) => {
       训练详情
     </h2>
     
-    <div v-if="currentJob || projectConfig" class="details-content">
+    <!-- Empty state when no data available -->
+    <div v-if="!currentJob && !projectConfig" class="empty-state">
+      <div class="empty-icon">
+        <Icon icon="ph:info" :width="48" />
+      </div>
+      <p class="empty-title">暂无详情数据</p>
+      <p class="empty-subtitle">启动任务后，详细信息将显示在此处</p>
+    </div>
+
+    <!-- Details content when data available -->
+    <div v-else class="details-content">
       <!-- 基本状态 -->
       <div class="detail-section">
         <div class="section-title">基本信息</div>
@@ -327,6 +337,49 @@ const formatTime = (isoString?: string) => {
   background: linear-gradient(90deg, #10B981, #34D399);
   border-radius: 3px;
   transition: width 0.5s ease;
+}
+
+// Empty state styling
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 3vw, 32px);
+  text-align: center;
+  min-height: 200px;
+  color: var(--color-text-secondary);
+  flex: 1;
+  gap: 12px;
+}
+
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(59, 130, 246, 0.1);
+  color: #3B82F6;
+
+  .dark & {
+    background: rgba(96, 165, 250, 0.15);
+  }
+}
+
+.empty-title {
+  font-size: clamp(14px, 1.2vw, 16px);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.empty-subtitle {
+  font-size: clamp(12px, 1vw, 13px);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 280px;
 }
 </style>
 

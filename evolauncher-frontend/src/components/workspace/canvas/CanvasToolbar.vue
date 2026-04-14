@@ -23,8 +23,8 @@ const emit = defineEmits<{
   upload: []
   importDataset: []
   export: []
-  confirmAll: []
-  clearSelection: []
+  confirmAndNext: []
+  markForReview: []
 }>()
 </script>
 
@@ -121,20 +121,20 @@ const emit = defineEmits<{
     <!-- 批量操作 -->
     <div class="toolbar-group" v-if="hasImage">
       <button
-        @click="emit('confirmAll')"
+        @click="emit('confirmAndNext')"
         class="tool-btn success"
-        title="确认所有标注"
+        title="确认并下一张"
       >
         <Icon icon="ph:check-circle" :width="20" />
-        <span>全部确认</span>
+        <span>确认并下一张</span>
       </button>
       <button
-        @click="emit('clearSelection')"
-        class="tool-btn clear"
-        title="清除选择，返回上传状态"
+        @click="emit('markForReview')"
+        class="tool-btn review"
+        title="标记为复核"
       >
-        <Icon icon="ph:x-circle" :width="20" />
-        <span>清除选择</span>
+        <Icon icon="ph:arrow-counter-clockwise" :width="20" />
+        <span>标记复核</span>
       </button>
     </div>
   </div>
@@ -195,7 +195,7 @@ const emit = defineEmits<{
   }
   
   // 带文字的按钮样式
-  &.upload, &.import, &.export, &.success, &.clear {
+  &.upload, &.import, &.export, &.success, &.review {
     width: auto;
     padding: 0 12px;
     
@@ -225,7 +225,7 @@ const emit = defineEmits<{
     &:hover { background: rgba(245, 158, 11, 0.1); }
   }
   
-  &.clear {
+  &.review {
     color: #6b7280;
     &:hover {
       background: rgba(107, 114, 128, 0.1);
@@ -242,4 +242,3 @@ const emit = defineEmits<{
   text-align: center;
 }
 </style>
-

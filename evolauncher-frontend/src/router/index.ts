@@ -15,18 +15,53 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/project/:id',
-    name: 'ProjectWorkspace',
-    component: () => import('@/views/WorkspaceView.vue'),
-    meta: {
-      title: '工作区'
-    }
+    component: () => import('@/views/project/ProjectWorkspaceShellView.vue'),
+    children: [
+      {
+        path: '',
+        redirect: (to) => ({
+          name: 'ProjectOverview',
+          params: { id: to.params.id },
+          query: to.query,
+        }),
+      },
+      {
+        path: 'overview',
+        name: 'ProjectOverview',
+        component: () => import('@/views/project/ProjectOverviewView.vue'),
+        meta: {
+          title: '项目总览'
+        }
+      },
+      {
+        path: 'annotate',
+        name: 'ProjectAnnotate',
+        component: () => import('@/views/project/ProjectAnnotateView.vue'),
+        meta: {
+          title: '协同标注'
+        }
+      },
+      {
+        path: 'train',
+        name: 'ProjectTrain',
+        component: () => import('@/views/project/ProjectTrainView.vue'),
+        meta: {
+          title: '训练面板'
+        }
+      }
+    ]
   },
   {
     path: '/copilot/:id?',
-    name: 'CoPilotWorkspace',
-    component: () => import('@/views/CoPilotWorkspaceView.vue'),
-    meta: {
-      title: '协同工作区'
+    redirect: (to) => {
+      if (to.params.id) {
+        return {
+          name: 'ProjectAnnotate',
+          params: { id: to.params.id },
+          query: to.query,
+        }
+      }
+      return { name: 'Dashboard' }
     }
   }
 ]
@@ -49,4 +84,3 @@ router.beforeEach((to, _from, next) => {
 })
 
 export default router
-

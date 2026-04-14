@@ -66,8 +66,8 @@ const trendIcon = (trend: SystemMetric['trend']) => {
         </button>
         
         <button @click="emit('open-copilot')" class="hero-cta-secondary">
-          <Icon icon="ph:robot" :width="20" />
-          <span>协同工作区</span>
+          <Icon icon="ph:rocket" :width="20" />
+          <span>打开最近项目</span>
         </button>
       </div>
     </div>
@@ -505,4 +505,3 @@ const trendIcon = (trend: SystemMetric['trend']) => {
   &.steady { color: var(--color-text-tertiary); }
 }
 </style>
-

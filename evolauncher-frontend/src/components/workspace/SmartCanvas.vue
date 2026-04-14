@@ -14,6 +14,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { Icon } from '@iconify/vue'
 import { useMissionStore } from '@/store/mission'
+import { useProjectJourneyStore } from '@/store/projectJourney'
 
 // Composables
 import { useCanvas } from './composables/useCanvas'
@@ -33,6 +34,7 @@ import EmptyCanvas from './canvas/EmptyCanvas.vue'
 import { ZOOM_CONFIG, type ToolType } from './constants/annotation'
 
 const missionStore = useMissionStore()
+const journeyStore = useProjectJourneyStore()
 
 // Refs
 const canvasRef = ref<HTMLDivElement | null>(null)
@@ -55,12 +57,10 @@ const annotation = useAnnotation(
 // ========== 图像上传 ==========
 const {
   fileInputRef, // Used in template ref binding
-  localImage,
   triggerFileUpload,
   handleFileSelect,
   handleDrop,
   handleDragOver,
-  clearAllSelection
 } = useImageUpload(
   imageLoaded,
   canvas.resetView,
@@ -80,17 +80,18 @@ const exportHandler = useAnnotationExport(
   canvas.baseImageSize
 )
 
-// 当前显示的图像（本地或 store）
-const currentImage = computed(() => localImage.value || missionStore.currentImage)
+const currentImage = computed(() => missionStore.currentWorkItem)
 
 // 监听图像变化
-watch(() => missionStore.currentImage, () => {
-  if (!localImage.value) {
+watch(
+  () => missionStore.currentWorkItem?.id,
+  () => {
     imageLoaded.value = false
     annotation.resetState()
     canvas.resetView()
-  }
-}, { immediate: true })
+  },
+  { immediate: true },
+)
 
 // 监听缩放变化
 watch(canvas.zoomLevel, () => {
@@ -193,16 +194,28 @@ const handleKeyPress = (e: KeyboardEvent) => {
   }
 }
 
-// 清除所有选择
-const handleClearSelection = () => {
-  clearAllSelection(() => {
-    missionStore.currentImage = null
-  })
+const handleConfirmAndNext = () => {
+  const previousId = currentImage.value?.id
+  missionStore.completeCurrentImage()
+  journeyStore.syncQueueSummary()
+  if (previousId) {
+    journeyStore.refreshActivity(
+      '确认并推进到下一张',
+      `${previousId} 已进入已完成队列。`,
+    )
+  }
 }
 
-// 确认所有标注
-const handleConfirmAll = () => {
-  exportHandler.confirmAllBBoxes(missionStore.updateBBox)
+const handleMarkForReview = () => {
+  const previousId = currentImage.value?.id
+  missionStore.markCurrentForReview()
+  journeyStore.syncQueueSummary()
+  if (previousId) {
+    journeyStore.refreshActivity(
+      '样本被退回复核',
+      `${previousId} 已回到需要复核分组。`,
+    )
+  }
 }
 
 // 生命周期
@@ -254,8 +267,8 @@ onUnmounted(() => {
       @upload="triggerFileUpload"
       @import-dataset="triggerDatasetImport"
       @export="exportHandler.exportAnnotations"
-      @confirm-all="handleConfirmAll"
-      @clear-selection="handleClearSelection"
+      @confirm-and-next="handleConfirmAndNext"
+      @mark-for-review="handleMarkForReview"
     />
 
     <!-- 空状态 -->

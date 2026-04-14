@@ -43,6 +43,21 @@ const healthColor = computed(() => {
     default: return '#94A3B8'
   }
 })
+
+const nextActionLabel = computed(() => {
+  switch (props.project.status) {
+    case 'idle':
+      return '进入总览启动演示'
+    case 'labeling':
+      return '继续协同标注'
+    case 'training':
+      return '查看训练进展'
+    case 'completed':
+      return '复盘模型结果'
+    default:
+      return '打开项目工作台'
+  }
+})
 </script>
 
 <template>
@@ -108,6 +123,11 @@ const healthColor = computed(() => {
           <span class="evoloop-health-dot" :style="{ backgroundColor: healthColor }"></span>
           <span class="evoloop-health-label">{{ healthStatus }}</span>
         </div>
+      </div>
+
+      <div class="project-next-action">
+        <span class="next-action-label">下一步</span>
+        <span class="next-action-value">{{ nextActionLabel }}</span>
       </div>
     </div>
   </AnimatedCard>
@@ -304,6 +324,29 @@ const healthColor = computed(() => {
   border-top: 1px dashed var(--color-border);
 }
 
+.project-next-action {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--color-border);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.next-action-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-tertiary);
+}
+
+.next-action-value {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
 .evoloop-item {
   display: inline-flex;
   align-items: center;
@@ -353,4 +396,3 @@ const healthColor = computed(() => {
   text-transform: capitalize;
 }
 </style>
-

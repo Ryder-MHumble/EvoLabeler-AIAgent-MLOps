@@ -1,331 +1,323 @@
 /**
  * Mission Store
  *
- * 管理任务状态、数据流和 Agent 日志
- * 使用 Pinia 进行状态管理
+ * 统一管理项目级协同标注状态。
  */
 
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
-import type { Mission, ImageTask, AgentLog, DataStreamCategory } from '@/api/types'
-import { USE_BACKEND_API } from '@/api/client'
-// Mock data sources — used as fallback when backend API is unavailable
+import { computed, ref } from 'vue'
+import type {
+  AgentLog,
+  BoundingBox,
+  DataStreamCategory,
+  Mission,
+  QueueState,
+} from '@/api/types'
+import { fetchAgentLogs } from '@/api/mocks/mock_logs'
 import { fetchMissions, fetchMissionById, updateMissionStatus } from '@/api/mocks/mock_missions'
-import { fetchImageStream, updateImageTaskStatus, updateBoundingBox } from '@/api/mocks/mock_stream'
-import { fetchAgentLogs, createAgentLogStream } from '@/api/mocks/mock_logs'
+import { fetchImageStream } from '@/api/mocks/mock_stream'
+import type { ActivityItem, WorkItem } from '@/mock/projectJourney'
+
+const queuePriority: QueueState[] = ['ready', 'review', 'imported', 'done']
+
+const toLogLevel = (tone: ActivityItem['tone']): AgentLog['level'] => {
+  if (tone === 'success') return 'success'
+  if (tone === 'warning') return 'warning'
+  return 'info'
+}
+
+const activityToLog = (activity: ActivityItem): AgentLog => ({
+  id: `log-${activity.id}`,
+  timestamp: activity.timestamp,
+  level: toLogLevel(activity.tone),
+  category: activity.tone === 'loop' ? 'Loop' : 'Workspace',
+  message: `${activity.title} · ${activity.detail}`,
+})
+
+const normalizeQueueState = (item: Partial<WorkItem>): QueueState => {
+  if (item.queueState) return item.queueState
+  if (item.status === 'confirmed' || item.status === 'archived') return 'done'
+  return item.confidence && item.confidence >= 0.8 ? 'ready' : 'review'
+}
+
+const normalizeWorkItem = (item: Partial<WorkItem>, projectId: string): WorkItem => {
+  const queueState = normalizeQueueState(item)
+  return {
+    id: item.id || `${projectId}-work-${Date.now()}`,
+    projectId,
+    url: item.url || '',
+    thumbnailUrl: item.thumbnailUrl || item.url || '',
+    source: item.source || 'manual',
+    status: item.status || (queueState === 'done' ? 'confirmed' : queueState === 'ready' ? 'pending' : 'incoming'),
+    queueState,
+    confidence: item.confidence ?? 1,
+    boundingBoxes: (item.boundingBoxes || []).map((bbox) => ({ ...bbox })),
+    createdAt: item.createdAt || new Date().toISOString(),
+    confirmedAt: item.confirmedAt,
+    readyForCompletion: item.readyForCompletion ?? queueState === 'ready',
+    analysis: item.analysis || {
+      riskLevel: queueState === 'ready' ? 'low' : 'medium',
+      reasons: ['等待项目工作台进一步分析。'],
+      recommendedAction: queueState === 'ready' ? '确认并进入下一张' : '继续人工复核',
+      tags: ['统一工作台'],
+    },
+    agentComment: item.agentComment || '等待协同工作台进一步处理当前样本。',
+  }
+}
 
 export const useMissionStore = defineStore('mission', () => {
-  // ========== State ==========
-
-  // 当前选中的任务
+  const projectId = ref('')
   const currentMission = ref<Mission | null>(null)
-
-  // 所有任务列表
   const missions = ref<Mission[]>([])
-
-  // 图像数据流
-  const imageStream = ref<ImageTask[]>([])
-
-  // 当前选中的图像
-  const currentImage = ref<ImageTask | null>(null)
-
-  // Agent 日志列表
+  const imageStream = ref<WorkItem[]>([])
+  const currentImage = ref<WorkItem | null>(null)
   const agentLogs = ref<AgentLog[]>([])
-
-  // 日志流控制
-  const logStreamStop = ref<(() => void) | null>(null)
-
-  // 加载状态
   const isLoadingMissions = ref(false)
   const isLoadingStream = ref(false)
   const isLoadingLogs = ref(false)
 
-  // ========== Getters ==========
+  const currentWorkItem = computed(() => currentImage.value)
 
-  /**
-   * 按分类获取图像流
-   */
   const getImageStreamByCategory = computed(() => {
-    return (category: DataStreamCategory): ImageTask[] => {
+    return (category: DataStreamCategory): WorkItem[] => {
       if (category === 'incoming') {
-        return imageStream.value.filter(img => img.status === 'incoming')
-      } else if (category === 'pending') {
-        return imageStream.value.filter(img => img.status === 'pending')
-      } else if (category === 'library') {
+        return imageStream.value.filter((item) => item.status === 'incoming')
+      }
+      if (category === 'pending') {
+        return imageStream.value.filter((item) => item.status === 'pending')
+      }
+      if (category === 'library') {
         return imageStream.value.filter(
-          img => img.status === 'confirmed' || img.status === 'archived'
+          (item) => item.status === 'confirmed' || item.status === 'archived',
         )
       }
       return []
     }
   })
 
-  /**
-   * 数据流统计
-   */
+  const getImageStreamByQueue = computed(() => {
+    return (queueState: QueueState): WorkItem[] =>
+      imageStream.value.filter((item) => item.queueState === queueState)
+  })
+
+  const orderedWorkItems = computed(() =>
+    [...imageStream.value].sort((left, right) => {
+      return queuePriority.indexOf(left.queueState) - queuePriority.indexOf(right.queueState)
+    }),
+  )
+
   const streamStats = computed(() => {
+    const ready = imageStream.value.filter((item) => item.queueState === 'ready').length
+    const review = imageStream.value.filter((item) => item.queueState === 'review').length
+    const imported = imageStream.value.filter((item) => item.queueState === 'imported').length
+    const done = imageStream.value.filter((item) => item.queueState === 'done').length
+
     return {
-      incoming: imageStream.value.filter(img => img.status === 'incoming').length,
-      pending: imageStream.value.filter(img => img.status === 'pending').length,
-      library: imageStream.value.filter(
-        img => img.status === 'confirmed' || img.status === 'archived'
-      ).length,
-      total: imageStream.value.length
+      incoming: review,
+      pending: ready + imported,
+      library: done,
+      total: imageStream.value.length,
+      ready,
+      review,
+      imported,
+      done,
     }
   })
 
-  // ========== Actions ==========
-
-  /**
-   * 加载所有任务
-   */
   const loadMissions = async () => {
     isLoadingMissions.value = true
     try {
       const data = await fetchMissions()
       missions.value = data
-
-      // 如果没有当前任务，设置第一个为当前任务
       if (!currentMission.value && data.length > 0) {
         currentMission.value = data[0]
       }
-    } catch (error) {
-      console.error('Failed to load missions:', error)
-      throw error
     } finally {
       isLoadingMissions.value = false
     }
   }
 
-  /**
-   * 选择任务
-   */
   const selectMission = async (missionId: string) => {
-    try {
-      const mission = await fetchMissionById(missionId)
-      if (mission) {
-        currentMission.value = mission
-        // 加载该任务的数据流
-        await loadImageStream()
-        // 启动日志流
-        startLogStream()
-      }
-    } catch (error) {
-      console.error('Failed to select mission:', error)
-      throw error
+    const mission = await fetchMissionById(missionId)
+    if (mission) {
+      currentMission.value = mission
+      projectId.value = missionId.replace(/^mission-/, '')
+      await loadImageStream()
     }
   }
 
-  /**
-   * 加载图像数据流
-   */
   const loadImageStream = async () => {
     isLoadingStream.value = true
     try {
-      if (USE_BACKEND_API && currentMission.value) {
-        try {
-          // Try loading from backend - when backend has image stream API
-          // For now, fall through to mock since backend doesn't have this endpoint yet
-          throw new Error('Image stream API not yet available')
-        } catch {
-          // Fall back to mock
-          const data = await fetchImageStream()
-          imageStream.value = data
-        }
-      } else {
-        const data = await fetchImageStream()
-        imageStream.value = data
-      }
-    } catch (error) {
-      console.error('Failed to load image stream:', error)
-      throw error
+      const data = await fetchImageStream()
+      imageStream.value = data.map((item) =>
+        normalizeWorkItem(item as Partial<WorkItem>, projectId.value || 'legacy'),
+      )
+      currentImage.value = orderedWorkItems.value[0] || imageStream.value[0] || null
     } finally {
       isLoadingStream.value = false
     }
   }
 
-  /**
-   * 选择图像
-   */
-  const selectImage = (imageId: string) => {
-    const image = imageStream.value.find(img => img.id === imageId)
-    if (image) {
-      currentImage.value = image
-    }
-  }
-
-  /**
-   * 添加图像到数据流
-   */
-  const addImageToStream = async (image: ImageTask) => {
-    // 添加到数据流
-    imageStream.value.unshift(image)
-
-    // 如果没有当前图像，设置为当前图像
-    if (!currentImage.value) {
-      currentImage.value = image
-    }
-
-    return image
-  }
-
-  /**
-   * 确认图像任务
-   */
-  const confirmImageTask = async (imageId: string) => {
-    try {
-      const updated = await updateImageTaskStatus(imageId, 'confirmed')
-
-      // 更新本地状态
-      const index = imageStream.value.findIndex(img => img.id === imageId)
-      if (index !== -1) {
-        imageStream.value[index] = updated
-      }
-
-      // 如果当前图像被确认，更新当前图像
-      if (currentImage.value?.id === imageId) {
-        currentImage.value = updated
-      }
-
-      return updated
-    } catch (error) {
-      console.error('Failed to confirm image task:', error)
-      throw error
-    }
-  }
-
-  /**
-   * 更新边界框
-   */
-  const updateBBox = async (
-    imageId: string,
-    bboxId: string,
-    updates: Partial<import('@/api/types').BoundingBox>
-  ) => {
-    try {
-      const updated = await updateBoundingBox(imageId, bboxId, updates)
-
-      // 更新本地状态
-      const image = imageStream.value.find(img => img.id === imageId)
-      if (image) {
-        const bboxIndex = image.boundingBoxes.findIndex(b => b.id === bboxId)
-        if (bboxIndex !== -1) {
-          image.boundingBoxes[bboxIndex] = updated
-        }
-      }
-
-      // 如果当前图像被更新，同步更新
-      if (currentImage.value?.id === imageId) {
-        const bboxIndex = currentImage.value.boundingBoxes.findIndex(b => b.id === bboxId)
-        if (bboxIndex !== -1) {
-          currentImage.value.boundingBoxes[bboxIndex] = updated
-        }
-      }
-
-      return updated
-    } catch (error) {
-      console.error('Failed to update bounding box:', error)
-      throw error
-    }
-  }
-
-  /**
-   * 加载 Agent 日志
-   */
   const loadAgentLogs = async () => {
     isLoadingLogs.value = true
     try {
-      const logs = await fetchAgentLogs()
-      agentLogs.value = logs
-    } catch (error) {
-      console.error('Failed to load agent logs:', error)
-      throw error
+      agentLogs.value = await fetchAgentLogs()
     } finally {
       isLoadingLogs.value = false
     }
   }
 
-  /**
-   * 启动日志流
-   */
-  const startLogStream = () => {
-    // 先停止现有的流
-    if (logStreamStop.value) {
-      logStreamStop.value()
-    }
-
-    // 创建新的日志流
-    logStreamStop.value = createAgentLogStream((log: AgentLog) => {
-      agentLogs.value.push(log)
-
-      // 保持最多 200 条日志
-      if (agentLogs.value.length > 200) {
-        agentLogs.value = agentLogs.value.slice(-200)
-      }
-    }, 3000)
+  const hydrateProjectMission = (
+    mission: Mission,
+    workItems: WorkItem[],
+    activities: ActivityItem[] = [],
+  ) => {
+    projectId.value = mission.id.replace(/^mission-/, '')
+    missions.value = [mission]
+    currentMission.value = mission
+    imageStream.value = workItems.map((item) => normalizeWorkItem(item, projectId.value))
+    currentImage.value =
+      orderedWorkItems.value.find((item) => item.queueState !== 'done') ||
+      orderedWorkItems.value[0] ||
+      null
+    agentLogs.value = activities.map(activityToLog)
   }
 
-  /**
-   * 停止日志流
-   */
-  const stopLogStream = () => {
-    if (logStreamStop.value) {
-      logStreamStop.value()
-      logStreamStop.value = null
+  const setAgentLogsFromActivities = (activities: ActivityItem[]) => {
+    agentLogs.value = activities.map(activityToLog)
+  }
+
+  const selectImage = (imageId: string) => {
+    const image = imageStream.value.find((item) => item.id === imageId)
+    if (image) {
+      currentImage.value = image
     }
   }
 
-  /**
-   * 更新任务状态
-   */
+  const selectNextImage = () => {
+    currentImage.value =
+      orderedWorkItems.value.find((item) => item.queueState !== 'done') ||
+      orderedWorkItems.value[0] ||
+      null
+    return currentImage.value
+  }
+
+  const setImageStream = (items: WorkItem[]) => {
+    imageStream.value = items.map((item) => normalizeWorkItem(item, projectId.value || item.projectId))
+    if (!currentImage.value || !imageStream.value.some((item) => item.id === currentImage.value?.id)) {
+      selectNextImage()
+    }
+  }
+
+  const addImageToStream = async (image: Partial<WorkItem>, select = true) => {
+    const normalized = normalizeWorkItem(image, projectId.value || image.projectId || 'manual')
+    imageStream.value.unshift(normalized)
+    if (select) {
+      currentImage.value = normalized
+    }
+    return normalized
+  }
+
+  const updateLocalBBox = (imageId: string, bboxId: string, updates: Partial<BoundingBox>) => {
+    const image = imageStream.value.find((item) => item.id === imageId)
+    if (!image) return null
+    const bbox = image.boundingBoxes.find((entry) => entry.id === bboxId)
+    if (!bbox) return null
+    Object.assign(bbox, updates)
+    if (currentImage.value?.id === imageId) {
+      currentImage.value = image
+    }
+    image.readyForCompletion = image.boundingBoxes.every((entry) => entry.status === 'confirmed')
+    return bbox
+  }
+
+  const updateBBox = async (imageId: string, bboxId: string, updates: Partial<BoundingBox>) => {
+    return updateLocalBBox(imageId, bboxId, updates)
+  }
+
+  const confirmImageTask = async (imageId: string) => {
+    const image = imageStream.value.find((item) => item.id === imageId)
+    if (!image) return null
+    image.queueState = 'done'
+    image.status = 'confirmed'
+    image.confirmedAt = new Date().toISOString()
+    image.readyForCompletion = false
+    image.boundingBoxes.forEach((bbox) => {
+      bbox.status = 'confirmed'
+    })
+    if (currentImage.value?.id === imageId) {
+      selectNextImage()
+    }
+    return image
+  }
+
+  const completeCurrentImage = () => {
+    if (!currentImage.value) return null
+    currentImage.value.boundingBoxes.forEach((bbox) => {
+      bbox.status = 'confirmed'
+    })
+    currentImage.value.status = 'confirmed'
+    currentImage.value.queueState = 'done'
+    currentImage.value.readyForCompletion = false
+    currentImage.value.confirmedAt = new Date().toISOString()
+    return selectNextImage()
+  }
+
+  const markCurrentForReview = () => {
+    if (!currentImage.value) return null
+    currentImage.value.queueState = 'review'
+    currentImage.value.status = 'incoming'
+    currentImage.value.readyForCompletion = false
+    return selectNextImage()
+  }
+
+  const skipCurrentImage = () => {
+    return markCurrentForReview()
+  }
+
   const updateMission = async (missionId: string, status: Mission['status'], progress?: number) => {
-    try {
-      const updated = await updateMissionStatus(missionId, status, progress)
-
-      // 更新本地状态
-      const index = missions.value.findIndex(m => m.id === missionId)
-      if (index !== -1) {
-        missions.value[index] = updated
-      }
-
-      // 如果当前任务被更新，同步更新
-      if (currentMission.value?.id === missionId) {
-        currentMission.value = updated
-      }
-
-      return updated
-    } catch (error) {
-      console.error('Failed to update mission:', error)
-      throw error
+    const updated = await updateMissionStatus(missionId, status, progress)
+    const index = missions.value.findIndex((item) => item.id === missionId)
+    if (index !== -1) {
+      missions.value[index] = updated
     }
+    if (currentMission.value?.id === missionId) {
+      currentMission.value = updated
+    }
+    return updated
   }
 
   return {
-    // State
+    projectId,
     currentMission,
     missions,
     imageStream,
     currentImage,
+    currentWorkItem,
     agentLogs,
     isLoadingMissions,
     isLoadingStream,
     isLoadingLogs,
-
-    // Getters
     getImageStreamByCategory,
+    getImageStreamByQueue,
+    orderedWorkItems,
     streamStats,
-
-    // Actions
     loadMissions,
     selectMission,
     loadImageStream,
+    loadAgentLogs,
+    hydrateProjectMission,
+    setAgentLogsFromActivities,
+    setImageStream,
     selectImage,
+    selectNextImage,
     addImageToStream,
     confirmImageTask,
     updateBBox,
-    loadAgentLogs,
-    startLogStream,
-    stopLogStream,
-    updateMission
+    completeCurrentImage,
+    markCurrentForReview,
+    skipCurrentImage,
+    updateMission,
   }
 })

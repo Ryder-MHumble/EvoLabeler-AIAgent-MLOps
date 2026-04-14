@@ -24,7 +24,7 @@ import LoadingSkeleton from '@/components/common/LoadingSkeleton.vue'
 // Real API client + mock fallback for projects
 import { projectsApi } from '@/api/projects'
 import { USE_BACKEND_API } from '@/api/client'
-import { fetchProjects, type Project } from '@/mock/projects'
+import { fetchProjects, type Project, upsertMockProject } from '@/mock/projects'
 
 // TODO: Replace with real backend API when agents/metrics endpoints are available
 import { fetchAgentStatuses, type AgentStatus } from '@/mock/agents'
@@ -163,13 +163,18 @@ const handleCreateProject = () => {
 }
 
 const openCoPilotWorkspace = () => {
-  router.push({ name: 'CoPilotWorkspace' })
+  const recentProject = projects.value[0]
+  if (recentProject) {
+    openProject(recentProject)
+    return
+  }
+  showCreateWizard.value = true
 }
 
 const openProject = (project: Project) => {
   try {
     router.push({
-      name: 'ProjectWorkspace',
+      name: 'ProjectOverview',
       params: { id: project.id }
     })
   } catch (error) {
@@ -179,6 +184,7 @@ const openProject = (project: Project) => {
 }
 
 const handleProjectCreated = async (newProject: Project) => {
+  upsertMockProject(newProject)
   projects.value.unshift(newProject)
   
   ElNotification.success({
@@ -200,10 +206,22 @@ const handleProjectCreated = async (newProject: Project) => {
         duration: 0.6, 
         ease: 'back.out(1.5)',
         onComplete: () => {
-          setTimeout(() => openProject(newProject), 500)
+          setTimeout(() => {
+            router.push({
+              name: 'ProjectOverview',
+              params: { id: newProject.id },
+              query: { launch: '1' }
+            })
+          }, 500)
         }
       }
     )
+  } else {
+    router.push({
+      name: 'ProjectOverview',
+      params: { id: newProject.id },
+      query: { launch: '1' }
+    })
   }
 }
 

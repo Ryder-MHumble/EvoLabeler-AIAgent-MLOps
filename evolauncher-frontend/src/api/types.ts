@@ -31,9 +31,24 @@ export interface Mission {
 export type ImageTaskStatus = 'incoming' | 'pending' | 'confirmed' | 'archived'
 
 /**
+ * 工作项队列状态
+ */
+export type QueueState = 'ready' | 'review' | 'imported' | 'done'
+
+/**
  * 图像来源
  */
 export type ImageSource = 'crawler' | 'manual' | 'agent_recommended'
+
+/**
+ * 图像分析摘要
+ */
+export interface ImageAnalysisSummary {
+  riskLevel: 'low' | 'medium' | 'high'
+  reasons: string[]
+  recommendedAction: string
+  tags?: string[]
+}
 
 /**
  * 边界框 (BoundingBox) - 用于标注目标对象
@@ -54,13 +69,17 @@ export interface BoundingBox {
  */
 export interface ImageTask {
   id: string
+  projectId?: string
   url: string
   thumbnailUrl?: string
   source: ImageSource
   status: ImageTaskStatus
+  queueState?: QueueState
   confidence: number // Agent 的总体置信度 (0-1)
   boundingBoxes: BoundingBox[]
   agentComment?: string // Agent 的分析评论
+  readyForCompletion?: boolean
+  analysis?: ImageAnalysisSummary
   createdAt: string
   confirmedAt?: string
 }
@@ -111,5 +130,4 @@ export interface DataStreamStats {
   library: number
   total: number
 }
-
 

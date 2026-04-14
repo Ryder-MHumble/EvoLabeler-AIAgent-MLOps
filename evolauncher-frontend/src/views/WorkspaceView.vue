@@ -362,28 +362,32 @@ const handleRollback = (versionId: string) => {
 // ========== 主内容区 - 三列对齐 ==========
 .main-section {
   display: grid;
-  grid-template-columns: minmax(220px, 280px) minmax(400px, 1fr) minmax(240px, 320px);
+  // Responsive columns: left (fixed), center (flexible), right (fixed)
+  grid-template-columns: minmax(220px, 280px) 1fr minmax(240px, 320px);
   gap: clamp(12px, 1.5vw, 20px);
   align-items: stretch; // 关键：让三列底部对齐
-  
+
   @media (max-width: 1400px) {
-    grid-template-columns: minmax(200px, 260px) minmax(350px, 1fr) minmax(220px, 280px);
+    grid-template-columns: minmax(200px, 240px) 1fr minmax(220px, 280px);
+    gap: clamp(10px, 1.2vw, 16px);
   }
-  
+
   @media (max-width: 1200px) {
-    grid-template-columns: minmax(200px, 1fr) minmax(200px, 1fr);
+    // Two-column layout: left + center-right stacked
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: auto auto;
-    
+    gap: clamp(10px, 1.2vw, 16px);
+
     .monitor-panel {
       grid-column: 1;
       grid-row: 1;
     }
-    
+
     .center-panel {
       grid-column: 2;
       grid-row: 1 / 3;
     }
-  
+
     .right-panel {
       grid-column: 1;
       grid-row: 2;
@@ -391,8 +395,10 @@ const handleRollback = (versionId: string) => {
   }
 
   @media (max-width: 900px) {
+    // Single column: all panels stack vertically
     grid-template-columns: 1fr;
     grid-template-rows: auto;
+    gap: clamp(12px, 1.5vw, 20px);
 
     .monitor-panel,
     .center-panel,
@@ -431,13 +437,15 @@ const handleRollback = (versionId: string) => {
 // ========== 底部区域 ==========
 .secondary-section {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  grid-template-columns: 1.6fr 1fr;
   gap: clamp(12px, 1.5vw, 20px);
   align-items: start; // 让两个面板根据内容高度自适应
   flex-shrink: 0; // 不被压缩
-  
+
   @media (max-width: 1200px) {
+    // Stack vertically at smaller breakpoints
     grid-template-columns: 1fr;
+    gap: clamp(10px, 1.2vw, 16px);
   }
 }
 

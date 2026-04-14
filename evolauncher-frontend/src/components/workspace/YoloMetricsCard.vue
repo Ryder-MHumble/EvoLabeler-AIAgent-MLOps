@@ -31,7 +31,17 @@ defineProps<{
       </div>
     </div>
     
-    <div v-if="currentJob?.yoloMetrics" class="metrics-grid">
+    <!-- Empty state when no job data -->
+    <div v-if="!currentJob?.yoloMetrics" class="empty-state">
+      <div class="empty-icon">
+        <Icon icon="ph:chart-bar" :width="48" />
+      </div>
+      <p class="empty-title">暂无训练数据</p>
+      <p class="empty-subtitle">当任务开始运行时，实时指标将在此显示</p>
+    </div>
+
+    <!-- Metrics grid when data available -->
+    <div v-else class="metrics-grid">
       <!-- mAP@50 -->
       <div class="metric-item map">
         <div class="metric-icon"><Icon icon="ph:target-fill" :width="24" /></div>
@@ -329,9 +339,51 @@ defineProps<{
   height: 100%;
   border-radius: 3px;
   transition: width 0.5s ease;
-  
+
   &.precision { background: linear-gradient(90deg, #8B5CF6, #A78BFA); }
   &.recall { background: linear-gradient(90deg, #06B6D4, #22D3EE); }
+}
+
+// Empty state styling
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(24px, 3vw, 32px);
+  text-align: center;
+  min-height: 200px;
+  color: var(--color-text-secondary);
+}
+
+.empty-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  background: rgba(74, 105, 255, 0.1);
+  color: var(--color-primary);
+  margin-bottom: 16px;
+
+  .dark & {
+    background: rgba(96, 165, 250, 0.15);
+  }
+}
+
+.empty-title {
+  font-size: clamp(14px, 1.2vw, 16px);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0 0 8px 0;
+}
+
+.empty-subtitle {
+  font-size: clamp(12px, 1vw, 13px);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 280px;
 }
 </style>
 
